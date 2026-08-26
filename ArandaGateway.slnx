@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/backend/" />
+  <Folder Name="/src/backend/api/">
+    <Project Path="src/backend/api/ArandaGateway.Api/ArandaGateway.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ArandaGateway.Api.Tests/ArandaGateway.Api.Tests.csproj" />
+  </Folder>
+</Solution>
