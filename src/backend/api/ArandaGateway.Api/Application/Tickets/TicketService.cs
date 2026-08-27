@@ -20,14 +20,14 @@ public sealed class TicketService(
 
         try
         {
-            var user = await arandaClient.GetUserByUsernameAsync(
-                username,
-                cancellationToken);
             var ticket = await arandaClient.GetTicketAsync(
                 caseNumber,
                 cancellationToken);
 
-            if (!user.IsActive || ticket.CustomerId != user.Id)
+            if (!string.Equals(
+                    ticket.CustomerUserName,
+                    username,
+                    StringComparison.OrdinalIgnoreCase))
             {
                 return new(TicketDetailResultStatus.NotFoundOrNotOwned);
             }

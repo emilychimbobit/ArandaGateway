@@ -1,6 +1,7 @@
 using ArandaGateway.Api.Application.Tickets;
 using ArandaGateway.Api.Contracts.Tickets;
 using ArandaGateway.Api.Identity;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ArandaGateway.Api.Endpoints;
 
@@ -16,6 +17,10 @@ public static class TicketEndpoints
         group
             .MapGet("/{caseNumber:long}", GetTicketDetailAsync)
             .WithName("GetTicketDetail")
+            .WithSummary("Consulta el estado de un ticket propio")
+            .WithDescription(
+                "Implementa REQ_07. Requiere temporalmente el username " +
+                "del propietario en X-Collaborator-Username.")
             .Produces<TicketDetailResponse>()
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound);
@@ -25,6 +30,8 @@ public static class TicketEndpoints
 
     private static async Task<IResult> GetTicketDetailAsync(
         long caseNumber,
+        [FromHeader(Name = HeaderCurrentCollaborator.HeaderName)]
+        string? collaboratorUsername,
         ITicketService ticketService,
         CancellationToken cancellationToken)
     {

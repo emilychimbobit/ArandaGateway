@@ -12,8 +12,7 @@ public sealed class TicketServiceTests
     {
         var client = new StubArandaClient
         {
-            User = CreateUser(10),
-            Ticket = CreateTicket(10)
+            Ticket = CreateTicket("collaborator")
         };
         var service = new TicketService(
             new StubCurrentCollaborator("collaborator"),
@@ -33,8 +32,7 @@ public sealed class TicketServiceTests
     {
         var client = new StubArandaClient
         {
-            User = CreateUser(10),
-            Ticket = CreateTicket(20)
+            Ticket = CreateTicket("another-user")
         };
         var service = new TicketService(
             new StubCurrentCollaborator("collaborator"),
@@ -66,22 +64,13 @@ public sealed class TicketServiceTests
             result.Status);
     }
 
-    private static ArandaUser CreateUser(long id) =>
-        new()
-        {
-            Id = id,
-            UserName = "collaborator",
-            Name = "Collaborator",
-            IsActive = true
-        };
-
-    private static ArandaTicket CreateTicket(long customerId) =>
+    private static ArandaTicket CreateTicket(string customerUserName) =>
         new()
         {
             Id = 154,
             IdByProject = "CASE-154",
-            CustomerId = customerId,
-            CustomerUserName = "collaborator",
+            CustomerId = 10,
+            CustomerUserName = customerUserName,
             Subject = "Subject",
             StateId = 1,
             StateName = "Open",

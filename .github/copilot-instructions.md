@@ -27,6 +27,7 @@ dotnet format .\ArandaGateway.slnx --verify-no-changes
 ```
 
 La solución usa `ArandaGateway.slnx`, la API apunta a `net10.0` y las pruebas usan xUnit.
+En desarrollo, Swagger UI está disponible en `http://localhost:5112/swagger`.
 
 ## Alcance funcional de la gateway
 

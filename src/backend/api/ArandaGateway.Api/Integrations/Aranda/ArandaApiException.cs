@@ -6,8 +6,10 @@ public sealed class ArandaApiException : Exception
 {
     public ArandaApiException(
         HttpStatusCode statusCode,
-        string message = "Aranda rejected the request.")
-        : base(message)
+        string? message = null)
+        : base(
+            message ??
+            $"Aranda rejected the request with status code {(int)statusCode}.")
     {
         StatusCode = statusCode;
     }

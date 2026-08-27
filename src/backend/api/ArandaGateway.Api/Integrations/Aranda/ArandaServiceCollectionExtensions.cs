@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using System.Net.Http.Headers;
 
 namespace ArandaGateway.Api.Integrations.Aranda;
 
@@ -24,8 +25,14 @@ public static class ArandaServiceCollectionExtensions
                     .GetRequiredService<IOptions<ArandaOptions>>()
                     .Value;
 
-                client.BaseAddress = options.BaseUrl;
+                client.BaseAddress = new Uri(
+                    $"{options.BaseUrl.AbsoluteUri.TrimEnd('/')}/");
                 client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
+                client.DefaultRequestHeaders.UserAgent.ParseAdd(
+                    "ArandaGateway/1.0");
+                client.DefaultRequestHeaders.Accept.Add(
+                    new MediaTypeWithQualityHeaderValue(
+                        "application/json"));
                 client.DefaultRequestHeaders.TryAddWithoutValidation(
                     "X-Authorization",
                     options.ApiKey);
