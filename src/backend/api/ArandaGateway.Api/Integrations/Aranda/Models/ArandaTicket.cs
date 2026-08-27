@@ -4,23 +4,23 @@ public sealed record ArandaTicket
 {
     public required long Id { get; init; }
 
-    public required string IdByProject { get; init; }
+    public string? IdByProject { get; init; }
 
-    public required long CustomerId { get; init; }
+    public long? CustomerId { get; init; }
 
-    public required string CustomerUserName { get; init; }
+    public string? CustomerUserName { get; init; }
 
-    public required string Subject { get; init; }
+    public string? Subject { get; init; }
 
     public required long StateId { get; init; }
 
-    public required string StateName { get; init; }
+    public string? StateName { get; init; }
 
-    public required long OpenedDate { get; init; }
+    public long? OpenedDate { get; init; }
 
-    public required long ModifiedDate { get; init; }
+    public long? ModifiedDate { get; init; }
 
-    public required string GroupName { get; init; }
+    public string? GroupName { get; init; }
 
     public string? CommentaryNoHtml { get; init; }
 

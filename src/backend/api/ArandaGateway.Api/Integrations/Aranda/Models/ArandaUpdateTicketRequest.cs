@@ -18,5 +18,7 @@ public sealed record ArandaUpdateTicketRequest
 
     public required long StateId { get; init; }
 
+    public required string Commentary { get; init; }
+
     public IReadOnlyList<object> ListAdditionalField { get; init; } = [];
 }

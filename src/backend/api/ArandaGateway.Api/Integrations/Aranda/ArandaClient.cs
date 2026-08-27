@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Net.Http.Headers;
 using ArandaGateway.Api.Integrations.Aranda.Models;
 
 namespace ArandaGateway.Api.Integrations.Aranda;
@@ -27,22 +28,64 @@ public sealed class ArandaClient(HttpClient httpClient) : IArandaClient
             request,
             cancellationToken);
 
-    public Task<ArandaTicket> CreateTicketAsync(
+    public Task<ArandaCreatedTicket> CreateTicketAsync(
         ArandaCreateTicketRequest request,
         CancellationToken cancellationToken) =>
-        PostAsync<ArandaCreateTicketRequest, ArandaTicket>(
+        PostAsync<ArandaCreateTicketRequest, ArandaCreatedTicket>(
             "api/v9/item/",
             request,
             cancellationToken);
 
-    public Task<ArandaTicket> UpdateTicketAsync(
+    public Task<ArandaUpdateTicketResult> UpdateTicketAsync(
         long ticketId,
         ArandaUpdateTicketRequest request,
         CancellationToken cancellationToken) =>
-        PutAsync<ArandaUpdateTicketRequest, ArandaTicket>(
+        PutAsync<ArandaUpdateTicketRequest, ArandaUpdateTicketResult>(
             $"api/v9/item/{ticketId}",
             request,
             cancellationToken);
+
+    public async Task<IReadOnlyList<ArandaFileUploadResult>>
+        UploadAttachmentAsync(
+            ArandaAttachmentUpload request,
+            CancellationToken cancellationToken)
+    {
+        using var content = new MultipartFormDataContent();
+        content.Add(
+            new StringContent(request.TicketId.ToString()),
+            "FileItemId");
+        content.Add(
+            new StringContent(request.ItemType.ToString()),
+            "FileItemType");
+        content.Add(new StringContent("0"), "UploadType");
+        content.Add(new StringContent("0"), "Concept");
+
+        if (!string.IsNullOrWhiteSpace(request.Description))
+        {
+            content.Add(
+                new StringContent(request.Description),
+                "Description");
+        }
+
+        var fileContent = new StreamContent(request.Content);
+        fileContent.Headers.ContentType =
+            MediaTypeHeaderValue.TryParse(
+                request.ContentType,
+                out var contentType)
+                ? contentType
+                : new("application/octet-stream");
+        content.Add(fileContent, "Data0", request.FileName);
+
+        using var response = await httpClient.PostAsync(
+            "api/v9/file/",
+            content,
+            cancellationToken);
+
+        return await ReadResponseAsync<
+            IReadOnlyList<ArandaFileUploadResult>>(
+                response,
+                cancellationToken);
+    }
 
     private async Task<TResponse> GetAsync<TResponse>(
         string requestUri,

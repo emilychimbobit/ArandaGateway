@@ -25,11 +25,24 @@ public sealed record ArandaSearchTicketsRequest
     public int ViewId { get; init; } = -6;
 }
 
-public sealed record ArandaSearchCriterion(
-    string FieldName,
-    string OperatorName,
-    string OperatorValue,
-    object Value);
+public sealed record ArandaSearchCriterion
+{
+    public required string FieldName { get; init; }
+
+    public required string FieldValue { get; init; }
+
+    public string? LogicOperator { get; init; }
+
+    public required string OperatorName { get; init; }
+
+    public required string OperatorValue { get; init; }
+
+    public required string Value { get; init; }
+
+    public required string ValueName { get; init; }
+
+    public required int Type { get; init; }
+}
 
 public sealed record ArandaProjectFilter(long Project);
 

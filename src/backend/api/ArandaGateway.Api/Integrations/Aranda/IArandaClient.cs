@@ -16,12 +16,16 @@ public interface IArandaClient
         ArandaSearchTicketsRequest request,
         CancellationToken cancellationToken);
 
-    Task<ArandaTicket> CreateTicketAsync(
+    Task<ArandaCreatedTicket> CreateTicketAsync(
         ArandaCreateTicketRequest request,
         CancellationToken cancellationToken);
 
-    Task<ArandaTicket> UpdateTicketAsync(
+    Task<ArandaUpdateTicketResult> UpdateTicketAsync(
         long ticketId,
         ArandaUpdateTicketRequest request,
+        CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<ArandaFileUploadResult>> UploadAttachmentAsync(
+        ArandaAttachmentUpload request,
         CancellationToken cancellationToken);
 }

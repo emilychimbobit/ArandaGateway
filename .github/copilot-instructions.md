@@ -91,6 +91,8 @@ Usar solo las operaciones de la colección que soporten el alcance:
 
 Los IDs y valores de ejemplo del Postman no son configuración válida. No copiar IDs de usuario, proyecto, modelo, servicio, categoría, estado, impacto, urgencia, grupo ni archivos desde sus payloads.
 
+La documentación oficial confirma que `repository = 1` representa casos abiertos, pero no enumera los campos indexables de `criteria`. El listado usa `customerId` con tipo numérico y debe volver a comprobar la propiedad de cada elemento devuelto; nunca confiar solo en el filtro remoto.
+
 ## Reglas funcionales obligatorias
 
 - Aplicar fail-closed: si no puede comprobarse existencia, propiedad, estado permitido o una confirmación requerida, no consultar detalles sensibles ni ejecutar modificaciones.
@@ -105,8 +107,13 @@ Los IDs y valores de ejemplo del Postman no son configuración válida. No copia
 
 ## Seguridad y observabilidad
 
-La autenticación de la gateway queda pendiente de definición con el cliente. Temporalmente los endpoints serán abiertos, pero:
+Los endpoints bajo `/api/tickets` requieren una API key propia de la gateway:
 
+- recibirla exclusivamente en `X-Api-Key` y validarla contra `Gateway:ApiKey`;
+- APIM administra y envía esta credencial; nunca reutilizar `Aranda:ApiKey` como clave de entrada;
+- mantener `Gateway:ApiKey` y `Aranda:ApiKey` como secretos distintos y no registrarlos;
+- dejar Swagger y `/health` anónimos; Swagger debe permitir ingresar `X-Api-Key` mediante **Authorize**;
+- tener presente que esta API key autentica a APIM, no identifica al colaborador final;
 - aislar la obtención de la identidad actual detrás de una abstracción reemplazable para incorporar posteriormente Microsoft Entra ID;
 - obtener temporalmente el username mediante `X-Collaborator-Username` y resolverlo con `GET /api/v9/user/{username}/detail`; no incluir el username en DTOs públicos;
 - no considerar REQ_05, REQ_06 ni REQ_07 listos para producción mientras no exista una identidad autenticada y un mapeo confiable con Aranda;
@@ -128,7 +135,7 @@ La autenticación de la gateway queda pendiente de definición con el cliente. T
 
 No resolver por inferencia:
 
-- autenticación de la gateway y mecanismo técnico de SSO;
+- mecanismo técnico de SSO e identidad delegada del colaborador;
 - identificador confiable y mapeo entre colaborador y usuario de Aranda;
 - vigencia y rotación de la API key técnica de Aranda;
 - IDs por ambiente para modelo, servicio, categoría, impacto, urgencia, grupo y estados;
