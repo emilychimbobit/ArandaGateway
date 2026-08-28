@@ -6,6 +6,12 @@ __pycache__/
 .env
 venv/
 
+# .NET
+**/bin/
+**/obj/
+*.user
+.vs/
+
 # VSCode
 .vscode/
 

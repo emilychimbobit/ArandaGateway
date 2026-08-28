@@ -1,0 +1,2403 @@
+{
+  "info": {
+    "_postman_id": "8fc4b648-b89b-4677-ae40-e7a0886c79b5",
+    "name": "API-V9",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "41577263",
+    "_collection_link": "https://go.postman.co/collection/41577263-8fc4b648-b89b-4677-ae40-e7a0886c79b5?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Manejo de sesión",
+      "item": [
+        {
+          "name": "Inicio de sesión",
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {}
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Authorization",
+                "value": "Bearer eyJ04",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "x-aranda-tenant-alias",
+                "value": "qextreme",
+                "type": "default",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"consoleType\": 1,\r\n  \"password\": \"123456\",\r\n  \"providerId\": 0,\r\n  \"userName\": \"jherrera\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/authentication/",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "authentication",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Renovación de sesión",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJBdWRpZW5jZSI6IlNlc3Npb24iLCJBdXRoZW50aWNhdGlvbkNvbnRleHRDbGFzcyI6bnVsbCwiQXV0aGVudGljYXRpb25NZXRob2RzIjpudWxsLCJBdXRoZW50aWNhdGlvblRpbWUiOiJcL0RhdGUoLTYyMTM1NTk2ODAwMDAwKVwvIiwiQXV0aG9yaXplZFBhcnR5IjpudWxsLCJFeHBpcmF0aW9uVGltZSI6IlwvRGF0ZSgxNjM2NDY5MTQ4NTE5KVwvIiwiSXNzdWVkVGltZSI6IlwvRGF0ZSgxNjM2NDY4ODQ4NTE5KVwvIiwiSXNzdWVySWRlbnRpZmllciI6Imh0dHBzOi8vc2VsZi1pc3N1ZWQubWUiLCJOb25jZSI6bnVsbCwiU3ViamVjdCI6InswNzdlMjljOS05OGVjLTQ2NmEtYmIxOC1lYmExNTU1M2JjMjN9IiwiU3ViamVjdElkZW50aWZpZXIiOiIxMDQzNCIsIlVzZXJOYW1lIjoicHJldmVudGEzIn0.3xKTpYQiFEhITeE_TLuYQnQ8-tR9Z13BK_lY9qZdeNA",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJBdWRpZW5jZSI6IlNlc3Npb24iLCJBdXRoZW50aWNhdGlvbkNvbnRleHRDbGFzcyI6bnVsbCwiQXV0aGVudGljYXRpb25NZXRob2RzIjpudWxsLCJBdXRoZW50aWNhdGlvblRpbWUiOiJcL0RhdGUoLTYyMTM1NTk2ODAwMDAwKVwvIiwiQXV0aG9yaXplZFBhcnR5IjpudWxsLCJFeHBpcmF0aW9uVGltZSI6IlwvRGF0ZSgxNjM2NDY5MTQ4NTE5KVwvIiwiSXNzdWVkVGltZSI6IlwvRGF0ZSgxNjM2NDY4ODQ4NTE5KVwvIiwiSXNzdWVySWRlbnRpZmllciI6Imh0dHBzOi8vc2VsZi1pc3N1ZWQubWUiLCJOb25jZSI6bnVsbCwiU3ViamVjdCI6InswNzdlMjljOS05OGVjLTQ2NmEtYmIxOC1lYmExNTU1M2JjMjN9IiwiU3ViamVjdElkZW50aWZpZXIiOiIxMDQzNCIsIlVzZXJOYW1lIjoicHJldmVudGEzIn0.3xKTpYQiFEhITeE_TLuYQnQ8-tR9Z13BK_lY9qZdeNA\"",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/authentication/renewtoken",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "authentication",
+                "renewtoken"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cierre sesión",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJBdWRpZW5jZSI6IlNlc3Npb24iLCJBdXRoZW50aWNhdGlvbkNvbnRleHRDbGFzcyI6bnVsbCwiQXV0aGVudGljYXRpb25NZXRob2RzIjpudWxsLCJBdXRoZW50aWNhdGlvblRpbWUiOiJcL0RhdGUoLTYyMTM1NTk2ODAwMDAwKVwvIiwiQXV0aG9yaXplZFBhcnR5IjpudWxsLCJFeHBpcmF0aW9uVGltZSI6IlwvRGF0ZSgxNjM2NDY5MTQ4NTE5KVwvIiwiSXNzdWVkVGltZSI6IlwvRGF0ZSgxNjM2NDY4ODQ4NTE5KVwvIiwiSXNzdWVySWRlbnRpZmllciI6Imh0dHBzOi8vc2VsZi1pc3N1ZWQubWUiLCJOb25jZSI6bnVsbCwiU3ViamVjdCI6InswNzdlMjljOS05OGVjLTQ2NmEtYmIxOC1lYmExNTU1M2JjMjN9IiwiU3ViamVjdElkZW50aWZpZXIiOiIxMDQzNCIsIlVzZXJOYW1lIjoicHJldmVudGEzIn0.3xKTpYQiFEhITeE_TLuYQnQ8-tR9Z13BK_lY9qZdeNA",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{api-v9}}/api/v9/authentication/logout",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "authentication",
+                "logout"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tiempo de sesión configurado",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"applicationCode\": 0,\r\n  \"key\": \"SessionTimeOut\",\r\n  \"valueType\": \"Int\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/setting/search",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "setting",
+                "search"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Manejo de caso",
+      "item": [
+        {
+          "name": "Agregar relaciones",
+          "item": [
+            {
+              "name": "Incident,ServiceCall,Problem,Change,Release",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"id\": 8894,\r\n    \"isSolution\": false,\r\n    \"itemType\": 4,\r\n    \"relatedItemId\": 8961,\r\n    \"relatedItemType\": 4,\r\n    \"relationTypeId\": 119,\r\n    \"typeIsReverse\": true\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{api-v9}}/api/v9/item/8894/relation",
+                  "host": [
+                    "{{api-v9}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v9",
+                    "item",
+                    "8894",
+                    "relation"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Ci",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"id\": 84486,\r\n    \"isSolution\": false,\r\n    \"itemType\": 4,\r\n    \"relatedItemId\": 445,\r\n    \"relatedItemType\": 21,\r\n    \"relationTypeId\": 124,\r\n    \"typeIsReverse\": true\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{api-v9}}/api/v9/item/84486/relation",
+                  "host": [
+                    "{{api-v9}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v9",
+                    "item",
+                    "84486",
+                    "relation"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Articulo",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"id\": 84486,\r\n    \"isSolution\": false,\r\n    \"itemType\": 4,\r\n    \"relatedItemId\": 724,\r\n    \"relatedItemType\": 7,\r\n    \"relationTypeId\": 35,\r\n    \"typeIsReverse\": true\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{api-v9}}/api/v9/item/84486/relation",
+                  "host": [
+                    "{{api-v9}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v9",
+                    "item",
+                    "84486",
+                    "relation"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Listar relaciones",
+          "item": [
+            {
+              "name": "Incident,ServiceCall,Problem,Chnage,Release",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"isClosed\": false,\r\n    \"relatedItemType\": null,\r\n    \"relationTypeId\": null,\r\n    \"isReverse\": true\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{api-v9}}/api/v9/item/84476/type/75/relations/list?repository=1",
+                  "host": [
+                    "{{api-v9}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v9",
+                    "item",
+                    "84476",
+                    "type",
+                    "75",
+                    "relations",
+                    "list"
+                  ],
+                  "query": [
+                    {
+                      "key": "repository",
+                      "value": "1"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Ci",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"isClosed\": false,\r\n    \"relatedItemType\": 21,\r\n    \"relationTypeId\": null,\r\n    \"isReverse\": true\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{api-v9}}/api/v9/item/84476/type/75/relations/list?repository=1",
+                  "host": [
+                    "{{api-v9}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v9",
+                    "item",
+                    "84476",
+                    "type",
+                    "75",
+                    "relations",
+                    "list"
+                  ],
+                  "query": [
+                    {
+                      "key": "repository",
+                      "value": "1"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Articulo",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"isClosed\": false,\r\n    \"relatedItemType\": 7,\r\n    \"relationTypeId\": null,\r\n    \"isReverse\": true\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{api-v9}}/api/v9/item/84476/type/75/relations/list?repository=1",
+                  "host": [
+                    "{{api-v9}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v9",
+                    "item",
+                    "84476",
+                    "type",
+                    "75",
+                    "relations",
+                    "list"
+                  ],
+                  "query": [
+                    {
+                      "key": "repository",
+                      "value": "1"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Relaciones entre items",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{api-v9}}/api/v9/item/3/4/relations/causes?language=0",
+                  "host": [
+                    "{{api-v9}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v9",
+                    "item",
+                    "3",
+                    "4",
+                    "relations",
+                    "causes"
+                  ],
+                  "query": [
+                    {
+                      "key": "language",
+                      "value": "0"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Eliminar relaciones",
+          "item": [
+            {
+              "name": "Eliminar relación",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{api-v9}}/api/v9/item/20986/1/20976/1/relation/?relationTypeId=4&isReverse=false&isSolution=false&isClosed=true",
+                  "host": [
+                    "{{api-v9}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v9",
+                    "item",
+                    "20986",
+                    "1",
+                    "20976",
+                    "1",
+                    "relation",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "relationTypeId",
+                      "value": "4"
+                    },
+                    {
+                      "key": "isReverse",
+                      "value": "false"
+                    },
+                    {
+                      "key": "isSolution",
+                      "value": "false"
+                    },
+                    {
+                      "key": "isClosed",
+                      "value": "true"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Creación caso",
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {}
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Authorization",
+                "value": "Bearer eyJ0eXk",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"categoryId\": 6745,\r\n    \"cause\": null,\r\n    \"ciId\": null,\r\n    \"companyId\": null,\r\n    \"consoleType\": \"specialist\",\r\n    \"customerId\": 43,\r\n    \"description\": \"<p>sdfgsdfg345</p>\",  \r\n    \"itemType\": 4,\r\n    \"itemVersion\": 0,\r\n    \"impactId\": 13,  \r\n    \"modelId\": 13,\r\n    \"projectId\": 17,\r\n    \"reasonId\": 483,  \r\n    \"registryTypeId\": 33,\r\n    \"serviceId\": 288,\r\n    \"stateId\": 71,\r\n    \"authorId\": 12912,\r\n    \"tempItemId\": -2,  \r\n    \"subject\": \"hjkghjkghjkg\",\r\n    \"listAdditionalField\": []\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/item/",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "item",
+                ""
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Creación caso cambio",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n   \"categoryId\":17,\r\n   \"cause\":null,\r\n   \"ciId\":null,\r\n   \"companyId\":null,\r\n   \"consoleType\":\"specialist\",\r\n   \"correctActions\":null,\r\n   \"currentTime\":0,\r\n   \"customerId\":10353,\r\n   \"description\":\"<p>Solicitud de portátil Lenovo</p>\",\r\n   \"foregroundColorRgb\":\"\",\r\n   \"followUpActions\":null,\r\n   \"groupId\":4,\r\n   \"hasMoreInformation\":false,\r\n   \"hasPendingSurvey\":false,\r\n   \"estimatedCost\":0,\r\n   \"estimatedTime\":0,\r\n   \"realCost\":0,\r\n   \"recomendations\":null,\r\n   \"impactId\":2,\r\n   \"incorrectActions\":null,\r\n   \"instance\":1636466119957,\r\n   \"isFeeAvailable\":true,\r\n   \"itemType\":3,\r\n   \"itemVersion\":0,\r\n   \"knownError\":null,\r\n   \"majorProblem\":null,\r\n   \"modelId\":8,\r\n   \"unitId\":null,\r\n   \"priorityId\":8,\r\n   \"priorityReason\":\"\",\r\n   \"projectId\":1,\r\n   \"providerId\":null,\r\n   \"reasonId\":147,\r\n   \"registryTypeId\":2149,\r\n   \"responsibleId\":10352,\r\n   \"serviceId\":4,\r\n   \"stateId\":55,\r\n   \"subject\":\"Solicitud de portátil Lenovo\",\r\n   \"surveyToken\":\"\",\r\n   \"thirdParty\":null,\r\n   \"transformed\":false,\r\n   \"urgencyId\":4,\r\n   \"listAdditionalField\":[\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"PsaDescription\",\r\n         \"enable\":false,\r\n         \"fieldId\":26,\r\n         \"fieldType\":10,\r\n         \"fieldTypeName\":\"File\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"PSO\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":null,\r\n         \"mandatory\":false,\r\n         \"name\":\"Psa\",\r\n         \"order\":1,\r\n         \"projectId\":null,\r\n         \"stringValue\":\"\",\r\n         \"type\":null,\r\n         \"url\":null,\r\n         \"visible\":false,\r\n         \"sectionId\":null\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"ScopeDescription\",\r\n         \"enable\":false,\r\n         \"fieldId\":27,\r\n         \"fieldType\":4,\r\n         \"fieldTypeName\":\"LongText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"Scope\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":null,\r\n         \"mandatory\":false,\r\n         \"name\":\"Scope\",\r\n         \"order\":2,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":null,\r\n         \"url\":null,\r\n         \"visible\":false,\r\n         \"sectionId\":null\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"BackOutPlanDescription\",\r\n         \"enable\":false,\r\n         \"fieldId\":28,\r\n         \"fieldType\":10,\r\n         \"fieldTypeName\":\"File\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"BackoutPlan\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":null,\r\n         \"mandatory\":false,\r\n         \"name\":\"BackOutPlan\",\r\n         \"order\":3,\r\n         \"projectId\":null,\r\n         \"stringValue\":\"\",\r\n         \"type\":null,\r\n         \"url\":null,\r\n         \"visible\":false,\r\n         \"sectionId\":null\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Fecha Inicio Implementacion\",\r\n         \"enable\":true,\r\n         \"fieldId\":132,\r\n         \"fieldType\":2,\r\n         \"fieldTypeName\":\"Datetime\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"HIMPLEMENTACION\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":null,\r\n         \"mandatory\":false,\r\n         \"name\":\"Fecha Inicio Implementacion\",\r\n         \"order\":1,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":null,\r\n         \"url\":null,\r\n         \"visible\":true,\r\n         \"sectionId\":17\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Fecha Fin Implementacion\",\r\n         \"enable\":true,\r\n         \"fieldId\":133,\r\n         \"fieldType\":2,\r\n         \"fieldTypeName\":\"Datetime\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"FIMPLEMENTACION\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":null,\r\n         \"mandatory\":false,\r\n         \"name\":\"Fecha Fin Implementacion\",\r\n         \"order\":5,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":null,\r\n         \"url\":null,\r\n         \"visible\":true,\r\n         \"sectionId\":null\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Descripción Fecha de Finalizacion Solicitada\",\r\n         \"enable\":true,\r\n         \"fieldId\":131,\r\n         \"fieldType\":2,\r\n         \"fieldTypeName\":\"Datetime\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"HFINALIZACION\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":null,\r\n         \"mandatory\":false,\r\n         \"name\":\"Finalizacion Solicitada\",\r\n         \"order\":2,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":null,\r\n         \"url\":null,\r\n         \"visible\":true,\r\n         \"sectionId\":17\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":1062,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Motivo del Cambio\",\r\n         \"enable\":true,\r\n         \"fieldId\":227,\r\n         \"fieldType\":11,\r\n         \"fieldTypeName\":\"CatalogList\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"Motivo\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":null,\r\n         \"mandatory\":false,\r\n         \"name\":\"Motivo del Cambio\",\r\n         \"order\":7,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":null,\r\n         \"url\":null,\r\n         \"visible\":true,\r\n         \"sectionId\":null\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"RollBack\",\r\n         \"enable\":true,\r\n         \"fieldId\":134,\r\n         \"fieldType\":4,\r\n         \"fieldTypeName\":\"LongText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"ROLLBACK\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":null,\r\n         \"mandatory\":false,\r\n         \"name\":\"RollBack\",\r\n         \"order\":8,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":null,\r\n         \"url\":null,\r\n         \"visible\":true,\r\n         \"sectionId\":null\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Solicitante\",\r\n         \"enable\":true,\r\n         \"fieldId\":281,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"Solicitante\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":null,\r\n         \"mandatory\":false,\r\n         \"name\":\"Solicitante\",\r\n         \"order\":9,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":null,\r\n         \"url\":null,\r\n         \"visible\":true,\r\n         \"sectionId\":null\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Falso o verdadero\",\r\n         \"enable\":true,\r\n         \"fieldId\":440,\r\n         \"fieldType\":5,\r\n         \"fieldTypeName\":\"CheckBox\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"Falso o verdadero\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":null,\r\n         \"mandatory\":false,\r\n         \"name\":\"Falso o verdadero\",\r\n         \"order\":10,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":null,\r\n         \"url\":null,\r\n         \"visible\":true,\r\n         \"sectionId\":null\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Arbol\",\r\n         \"enable\":false,\r\n         \"fieldId\":442,\r\n         \"fieldType\":7,\r\n         \"fieldTypeName\":\"Recursive\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"Arbol\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":null,\r\n         \"mandatory\":false,\r\n         \"name\":\"Arbol\",\r\n         \"order\":11,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":null,\r\n         \"url\":null,\r\n         \"visible\":false,\r\n         \"sectionId\":null\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Entero\",\r\n         \"enable\":true,\r\n         \"fieldId\":441,\r\n         \"fieldType\":6,\r\n         \"fieldTypeName\":\"Numeric\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"Entero\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":null,\r\n         \"mandatory\":false,\r\n         \"name\":\"Entero\",\r\n         \"order\":12,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":null,\r\n         \"url\":null,\r\n         \"visible\":true,\r\n         \"sectionId\":null\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Moneda\",\r\n         \"enable\":true,\r\n         \"fieldId\":447,\r\n         \"fieldType\":15,\r\n         \"fieldTypeName\":\"Currency\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"Moneda\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":null,\r\n         \"mandatory\":false,\r\n         \"name\":\"Moneda\",\r\n         \"order\":13,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":null,\r\n         \"url\":null,\r\n         \"visible\":true,\r\n         \"sectionId\":null\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Decimal\",\r\n         \"enable\":true,\r\n         \"fieldId\":443,\r\n         \"fieldType\":9,\r\n         \"fieldTypeName\":\"Decimal\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"Decimal\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":null,\r\n         \"mandatory\":false,\r\n         \"name\":\"Decimal\",\r\n         \"order\":14,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":null,\r\n         \"url\":null,\r\n         \"visible\":true,\r\n         \"sectionId\":null\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Archivo\",\r\n         \"enable\":true,\r\n         \"fieldId\":444,\r\n         \"fieldType\":10,\r\n         \"fieldTypeName\":\"File\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"Archivo\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":null,\r\n         \"mandatory\":false,\r\n         \"name\":\"Archivo\",\r\n         \"order\":15,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":null,\r\n         \"url\":null,\r\n         \"visible\":true,\r\n         \"sectionId\":null\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Fecha\",\r\n         \"enable\":true,\r\n         \"fieldId\":445,\r\n         \"fieldType\":13,\r\n         \"fieldTypeName\":\"Date\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"Fecha\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":null,\r\n         \"mandatory\":false,\r\n         \"name\":\"Fecha\",\r\n         \"order\":3,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":null,\r\n         \"url\":null,\r\n         \"visible\":true,\r\n         \"sectionId\":17\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Tiempo en horas\",\r\n         \"enable\":true,\r\n         \"fieldId\":446,\r\n         \"fieldType\":14,\r\n         \"fieldTypeName\":\"Time\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"Tiempo\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":null,\r\n         \"mandatory\":false,\r\n         \"name\":\"Tiempo\",\r\n         \"order\":17,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":null,\r\n         \"url\":null,\r\n         \"visible\":true,\r\n         \"sectionId\":null\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Link\",\r\n         \"enable\":true,\r\n         \"fieldId\":448,\r\n         \"fieldType\":16,\r\n         \"fieldTypeName\":\"Link\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"Link\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":null,\r\n         \"mandatory\":false,\r\n         \"name\":\"Link\",\r\n         \"order\":18,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":null,\r\n         \"url\":null,\r\n         \"visible\":true,\r\n         \"sectionId\":null\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Posición\",\r\n         \"enable\":true,\r\n         \"fieldId\":449,\r\n         \"fieldType\":17,\r\n         \"fieldTypeName\":\"Position\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"Posición\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":null,\r\n         \"mandatory\":false,\r\n         \"name\":\"Posición\",\r\n         \"order\":19,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":null,\r\n         \"url\":null,\r\n         \"visible\":true,\r\n         \"sectionId\":null\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Descripción Lista CH\",\r\n         \"enable\":true,\r\n         \"fieldId\":573,\r\n         \"fieldType\":3,\r\n         \"fieldTypeName\":\"List\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"Lista_CH\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":null,\r\n         \"mandatory\":false,\r\n         \"name\":\"Lista CH\",\r\n         \"order\":20,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":null,\r\n         \"url\":null,\r\n         \"visible\":true,\r\n         \"sectionId\":null\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":1063,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Descripción Catálogo árbol CH\",\r\n         \"enable\":true,\r\n         \"fieldId\":574,\r\n         \"fieldType\":12,\r\n         \"fieldTypeName\":\"CatalogTree\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"Catálogo_árbol_CH\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":null,\r\n         \"mandatory\":false,\r\n         \"name\":\"Catálogo árbol CH\",\r\n         \"order\":21,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":null,\r\n         \"url\":null,\r\n         \"visible\":true,\r\n         \"sectionId\":null\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Árbol\",\r\n         \"enable\":true,\r\n         \"fieldId\":580,\r\n         \"fieldType\":7,\r\n         \"fieldTypeName\":\"Recursive\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"arbol\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":null,\r\n         \"mandatory\":false,\r\n         \"name\":\"Árbol\",\r\n         \"order\":1,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":null,\r\n         \"url\":null,\r\n         \"visible\":true,\r\n         \"sectionId\":16\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Ubicacion\",\r\n         \"enable\":true,\r\n         \"fieldId\":597,\r\n         \"fieldType\":17,\r\n         \"fieldTypeName\":\"Position\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"posición\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":null,\r\n         \"mandatory\":false,\r\n         \"name\":\"posición1\",\r\n         \"order\":23,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":null,\r\n         \"url\":null,\r\n         \"visible\":true,\r\n         \"sectionId\":null\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":1,\r\n         \"dateValue\":null,\r\n         \"description\":\"Seleccion Multiple\",\r\n         \"enable\":true,\r\n         \"fieldId\":4025,\r\n         \"fieldType\":18,\r\n         \"fieldTypeName\":\"MultiSelect\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"SM001\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":null,\r\n         \"mandatory\":false,\r\n         \"name\":\"Seleccion Multiple\",\r\n         \"order\":24,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":null,\r\n         \"url\":null,\r\n         \"visible\":true,\r\n         \"sectionId\":null\r\n      }\r\n   ],\r\n   \"authorId\":10433,\r\n   \"tempItemId\":-1\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{api-v9}}/api/v9/item/",
+                  "host": [
+                    "{{api-v9}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v9",
+                    "item",
+                    ""
+                  ]
+                }
+              },
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "Creación caso requerimiento",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"applicantId\": 43,\r\n    \"categoryId\": 6763,\r\n    \"cause\": null,\r\n    \"ciId\": null,\r\n    \"companyId\": null,\r\n    \"consoleType\": \"specialist\",\r\n    \"correctActions\": null,\r\n    \"currentTime\": 0,\r\n    \"customerId\": 43,\r\n    \"description\": \"<p>prueba</p>\",\r\n    \"foregroundColorRgb\": \"\",\r\n    \"followUpActions\": null,\r\n    \"hasMoreInformation\": false,\r\n    \"hasPendingSurvey\": false,\r\n    \"estimatedCost\": 0,\r\n    \"estimatedTime\": 0,\r\n    \"realCost\": 0,\r\n    \"recomendations\": null,\r\n    \"impactId\": 13,\r\n    \"incorrectActions\": null,\r\n    \"instance\": 1661778914968,\r\n    \"isFeeAvailable\": true,\r\n    \"itemType\": 4,\r\n    \"itemVersion\": 0,\r\n    \"knownError\": null,\r\n    \"majorProblem\": null,\r\n    \"modelId\": 13,\r\n    \"unitId\": null,\r\n    \"priorityId\": 23,\r\n    \"priorityReason\": \"\",\r\n    \"projectId\": 17,\r\n    \"providerId\": null,\r\n    \"reasonId\": 483,\r\n    \"registryTypeId\": 33,\r\n    \"serviceId\": 236,\r\n    \"stateId\": 71,\r\n    \"subject\": \"prueba\",\r\n    \"surveyToken\": \"\",\r\n    \"thirdParty\": null,\r\n    \"transformed\": false,\r\n    \"urgencyId\": 17,\r\n    \"listAdditionalField\": [],\r\n    \"authorId\": 3,\r\n    \"tempItemId\": -6,\r\n    \"validate\": true\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{api-v9}}/api/v9/item/",
+                  "host": [
+                    "{{api-v9}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v9",
+                    "item",
+                    ""
+                  ]
+                }
+              },
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Actualización caso",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "",
+                "value": "",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n   \"categoryId\":1,\r\n   \"consoleType\":\"specialist\",\r\n   \"itemType\":4,\r\n   \"itemVersion\":5,\r\n   \"modelId\":16,\r\n   \"projectId\":1,\r\n   \"serviceId\":1,\r\n   \"stateId\":109,\r\n   \"listAdditionalField\":[\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"ID Solicitante\",\r\n         \"enable\":true,\r\n         \"fieldId\":199,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A01\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"ID Solicitante\",\r\n         \"order\":1,\r\n         \"projectId\":null,\r\n         \"stringValue\":\"1502\",\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Nombre del Solicitante\",\r\n         \"enable\":true,\r\n         \"fieldId\":200,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A02\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"Nombre del Solicitante\",\r\n         \"order\":2,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"ID Destinatario\",\r\n         \"enable\":true,\r\n         \"fieldId\":201,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A03\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"ID Destinatario\",\r\n         \"order\":3,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Nombre del Destinatario\",\r\n         \"enable\":true,\r\n         \"fieldId\":202,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A04\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"Nombre del Destinatario\",\r\n         \"order\":4,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"CECO del Destinatario\",\r\n         \"enable\":true,\r\n         \"fieldId\":203,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A05\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"CECO del Destinatario\",\r\n         \"order\":5,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Correo del Destinatario\",\r\n         \"enable\":true,\r\n         \"fieldId\":204,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A06\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"Correo del Destinatario\",\r\n         \"order\":6,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Ubicación del Destinario\",\r\n         \"enable\":true,\r\n         \"fieldId\":205,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A07\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"Ubicación del Destinario\",\r\n         \"order\":7,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Extensión del Destinario\",\r\n         \"enable\":true,\r\n         \"fieldId\":206,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A08\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"Extensión del Destinario\",\r\n         \"order\":8,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Teléfono del Destinario\",\r\n         \"enable\":true,\r\n         \"fieldId\":207,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A09\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"Teléfono del Destinario\",\r\n         \"order\":9,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Descripción párrafo\",\r\n         \"enable\":true,\r\n         \"fieldId\":578,\r\n         \"fieldType\":4,\r\n         \"fieldTypeName\":\"LongText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"025\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"Párrafo RF\",\r\n         \"order\":10,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": null,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"Lista de clases\",\r\n            \"enable\": true,\r\n            \"fieldId\": 4723,\r\n            \"fieldType\": 3,\r\n            \"fieldTypeName\": \"List\",\r\n            \"floatValue\": null,\r\n            \"identifier\": \"LST001\",\r\n            \"inputStream\": null,\r\n            \"intValue\": 2121,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"Lista\",\r\n            \"order\": 11,\r\n            \"projectId\": null,\r\n            \"stringValue\": \"SQL\",\r\n            \"type\": null,\r\n            \"url\": null,\r\n            \"visible\": true\r\n        }\r\n\r\n   ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/item/6138",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "item",
+                "6138"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Actualización caso estado",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n   \"categoryId\":1,\r\n   \"cause\":\"\",\r\n   \"ciId\":0,\r\n   \"commentary\":\"\",\r\n   \"companyId\":15,\r\n   \"consoleType\":\"specialist\",\r\n   \"constructionInitialDate\":null,\r\n   \"constructionFinalDate\":null,\r\n   \"correctActions\":\"\",\r\n   \"currentTime\":0,\r\n   \"customerId\":5209,\r\n   \"description\":\"<p>Entrega de cargo</p><div style=\\\"display: none;\\\"><p>Entrega de cargoEntrega de cargoEntrega de cargo&nbsp;</p></div>\",\r\n   \"estimatedCost\":0,\r\n   \"estimatedTime\":0,\r\n   \"foregroundColorRgb\":\"\",\r\n   \"followUpActions\":\"\",\r\n   \"groupId\":4,\r\n   \"hasMoreInformation\":false,\r\n   \"hasPendingSurvey\":false,\r\n   \"impactId\":2,\r\n   \"incorrectActions\":\"\",\r\n   \"instalationInitialDate\":null,\r\n   \"instalationFinalDate\":null,\r\n   \"instance\":1636414690051,\r\n   \"isFeeAvailable\":true,\r\n   \"itemType\":4,\r\n   \"itemVersion\":1,\r\n   \"knownError\":null,\r\n   \"majorProblem\":null,\r\n   \"modelId\":16,\r\n   \"olaId\":0,\r\n   \"priorityId\":8,\r\n   \"priorityReason\":\"\",\r\n   \"projectId\":1,\r\n   \"providerId\":0,\r\n   \"psoInitialDate\":null,\r\n   \"psoFinalDate\":null,\r\n   \"realCost\":0,\r\n   \"reasonId\":92,\r\n   \"recomendations\":\"\",\r\n   \"registryTypeId\":2149,\r\n   \"responsibleId\":10352,\r\n   \"serviceId\":1,\r\n   \"stateId\":103,\r\n   \"subject\":\"Entrega de cargo\",\r\n   \"surveyToken\":\"\",\r\n   \"testInitialDate\":null,\r\n   \"testFinalDate\":null,\r\n   \"thirdParty\":false,\r\n   \"transformed\":false,\r\n   \"ucId\":0,\r\n   \"unitId\":0,\r\n   \"urgencyId\":4,\r\n   \"listAdditionalField\":[\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"ID Solicitante\",\r\n         \"enable\":true,\r\n         \"fieldId\":199,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A01\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"ID Solicitante\",\r\n         \"order\":1,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Nombre del Solicitante\",\r\n         \"enable\":true,\r\n         \"fieldId\":200,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A02\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"Nombre del Solicitante\",\r\n         \"order\":2,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"ID Destinatario\",\r\n         \"enable\":true,\r\n         \"fieldId\":201,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A03\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"ID Destinatario\",\r\n         \"order\":3,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Nombre del Destinatario\",\r\n         \"enable\":true,\r\n         \"fieldId\":202,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A04\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"Nombre del Destinatario\",\r\n         \"order\":4,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"CECO del Destinatario\",\r\n         \"enable\":true,\r\n         \"fieldId\":203,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A05\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"CECO del Destinatario\",\r\n         \"order\":5,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Correo del Destinatario\",\r\n         \"enable\":true,\r\n         \"fieldId\":204,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A06\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"Correo del Destinatario\",\r\n         \"order\":6,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Ubicación del Destinario\",\r\n         \"enable\":true,\r\n         \"fieldId\":205,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A07\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"Ubicación del Destinario\",\r\n         \"order\":7,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Extensión del Destinario\",\r\n         \"enable\":true,\r\n         \"fieldId\":206,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A08\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"Extensión del Destinario\",\r\n         \"order\":8,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Teléfono del Destinario\",\r\n         \"enable\":true,\r\n         \"fieldId\":207,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A09\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"Teléfono del Destinario\",\r\n         \"order\":9,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Descripción párrafo\",\r\n         \"enable\":true,\r\n         \"fieldId\":578,\r\n         \"fieldType\":4,\r\n         \"fieldTypeName\":\"LongText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"025\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"Párrafo RF\",\r\n         \"order\":10,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      }\r\n   ]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{api-v9}}/api/v9/item/5849",
+                  "host": [
+                    "{{api-v9}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v9",
+                    "item",
+                    "5849"
+                  ]
+                }
+              },
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "Actualización caso varios",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n   \"categoryId\":1,\r\n   \"cause\":\"\",\r\n   \"ciId\":0,\r\n   \"commentary\":\"\",\r\n   \"companyId\":15,\r\n   \"consoleType\":\"specialist\",\r\n   \"constructionInitialDate\":null,\r\n   \"constructionFinalDate\":null,\r\n   \"correctActions\":\"\",\r\n   \"currentTime\":0,\r\n   \"customerId\":5209,\r\n   \"description\":\"<p>Entrega de cargo</p><div style=\\\"display: none;\\\"><p>Entrega de cargoEntrega de cargoEntrega de cargo&nbsp;</p></div>\",\r\n   \"estimatedCost\":0,\r\n   \"estimatedTime\":0,\r\n   \"foregroundColorRgb\":\"\",\r\n   \"followUpActions\":\"\",\r\n   \"groupId\":4,\r\n   \"hasMoreInformation\":false,\r\n   \"hasPendingSurvey\":false,\r\n   \"impactId\":2,\r\n   \"incorrectActions\":\"\",\r\n   \"instalationInitialDate\":null,\r\n   \"instalationFinalDate\":null,\r\n   \"instance\":1636414690051,\r\n   \"isFeeAvailable\":true,\r\n   \"itemType\":4,\r\n   \"itemVersion\":1,\r\n   \"knownError\":null,\r\n   \"majorProblem\":null,\r\n   \"modelId\":16,\r\n   \"olaId\":0,\r\n   \"priorityId\":8,\r\n   \"priorityReason\":\"\",\r\n   \"projectId\":1,\r\n   \"providerId\":0,\r\n   \"psoInitialDate\":null,\r\n   \"psoFinalDate\":null,\r\n   \"realCost\":0,\r\n   \"reasonId\":92,\r\n   \"recomendations\":\"\",\r\n   \"registryTypeId\":2149,\r\n   \"responsibleId\":10352,\r\n   \"serviceId\":1,\r\n   \"stateId\":103,\r\n   \"subject\":\"Entrega de cargo\",\r\n   \"surveyToken\":\"\",\r\n   \"testInitialDate\":null,\r\n   \"testFinalDate\":null,\r\n   \"thirdParty\":false,\r\n   \"transformed\":false,\r\n   \"ucId\":0,\r\n   \"unitId\":0,\r\n   \"urgencyId\":4,\r\n   \"listAdditionalField\":[\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"ID Solicitante\",\r\n         \"enable\":true,\r\n         \"fieldId\":199,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A01\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"ID Solicitante\",\r\n         \"order\":1,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Nombre del Solicitante\",\r\n         \"enable\":true,\r\n         \"fieldId\":200,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A02\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"Nombre del Solicitante\",\r\n         \"order\":2,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"ID Destinatario\",\r\n         \"enable\":true,\r\n         \"fieldId\":201,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A03\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"ID Destinatario\",\r\n         \"order\":3,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Nombre del Destinatario\",\r\n         \"enable\":true,\r\n         \"fieldId\":202,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A04\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"Nombre del Destinatario\",\r\n         \"order\":4,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"CECO del Destinatario\",\r\n         \"enable\":true,\r\n         \"fieldId\":203,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A05\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"CECO del Destinatario\",\r\n         \"order\":5,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Correo del Destinatario\",\r\n         \"enable\":true,\r\n         \"fieldId\":204,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A06\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"Correo del Destinatario\",\r\n         \"order\":6,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Ubicación del Destinario\",\r\n         \"enable\":true,\r\n         \"fieldId\":205,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A07\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"Ubicación del Destinario\",\r\n         \"order\":7,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Extensión del Destinario\",\r\n         \"enable\":true,\r\n         \"fieldId\":206,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A08\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"Extensión del Destinario\",\r\n         \"order\":8,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Teléfono del Destinario\",\r\n         \"enable\":true,\r\n         \"fieldId\":207,\r\n         \"fieldType\":1,\r\n         \"fieldTypeName\":\"ShortText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"A09\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"Teléfono del Destinario\",\r\n         \"order\":9,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Descripción párrafo\",\r\n         \"enable\":true,\r\n         \"fieldId\":578,\r\n         \"fieldType\":4,\r\n         \"fieldTypeName\":\"LongText\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"025\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5849,\r\n         \"mandatory\":false,\r\n         \"name\":\"Párrafo RF\",\r\n         \"order\":10,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":4,\r\n         \"url\":null,\r\n         \"visible\":true\r\n      }\r\n   ]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{api-v9}}/api/v9/item/5848",
+                  "host": [
+                    "{{api-v9}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v9",
+                    "item",
+                    "5848"
+                  ]
+                }
+              },
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Obtener caso",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Authorization",
+                "value": "Bearer eyJ4",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{api-v9}}/api/v9/item/1549",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "item",
+                "1549"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar casos",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"criteria\": [\r\n        {\r\n            \"fieldName\": \"closedDate\",\r\n            \"fieldValue\": \"closedDate\",\r\n            \"logicOperator\": null,\r\n            \"operatorName\": \"gte\",\r\n            \"operatorValue\": \">=\",\r\n            \"type\": 2,\r\n            \"value\": 1651717243000,\r\n            \"valueName\": 1651717243000\r\n        }\r\n    ],\r\n    \"level\": 0,\r\n    \"orderField\": \"openedDate\",\r\n    \"orderType\": \"desc\",\r\n    \"pageIndex\": 0,\r\n    \"pageSize\": 50,\r\n    \"projects\": [\r\n        {\r\n            \"project\": 37\r\n        },\r\n        {\r\n            \"project\": 190\r\n        },\r\n        {\r\n            \"project\": 70\r\n        },\r\n        {\r\n            \"project\": 17\r\n        },\r\n        {\r\n            \"project\": 97\r\n        },\r\n        {\r\n            \"project\": 214\r\n        },\r\n        {\r\n            \"project\": 112\r\n        },\r\n        {\r\n            \"project\": 118\r\n        },\r\n        {\r\n            \"project\": 169\r\n        },\r\n        {\r\n            \"project\": 376\r\n        }\r\n    ],\r\n    \"repository\": 1,\r\n    \"types\": [\r\n        {\r\n            \"itemType\": 3\r\n        },\r\n        {\r\n            \"itemType\": 4\r\n        },\r\n        {\r\n            \"itemType\": 1\r\n        },\r\n        {\r\n            \"itemType\": 2\r\n        }\r\n    ],\r\n    \"validate\": true,\r\n    \"viewId\": -6\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/item/search?language=0",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "item",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "language",
+                  "value": "0"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Listar casos criterio",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"criteria\": [\r\n    {\r\n      \"fieldName\": \"stateName\",\r\n      \"fieldValue\": \"stateName\",\r\n      \"logicOperator\": 1,\r\n      \"operatorName\": \"eq\",\r\n      \"operatorValue\": \"==\",\r\n      \"type\": 1,\r\n      \"value\": \"Abierto\",\r\n      \"valueName\": \"Abierto\"\r\n    },\r\n    {\r\n      \"fieldName\": \"reasonName\",\r\n      \"fieldValue\": \"reasonName\",\r\n      \"logicOperator\": 2,\r\n      \"operatorName\": \"eq\",\r\n      \"operatorValue\": \"==\",\r\n      \"type\": 1,\r\n      \"value\": \"Estado Inicial\",\r\n      \"valueName\": \"Estado Inicial\"\r\n    },\r\n    {\r\n      \"fieldName\": \"serviceName\",\r\n      \"fieldValue\": \"serviceName\",\r\n      \"logicOperator\": 1,\r\n      \"operatorName\": \"eq\",\r\n      \"operatorValue\": \"==\",\r\n      \"type\": 1,\r\n      \"value\": \"CERT - Cuenta de Dominio y Correo\",\r\n      \"valueName\": \"CERT - Cuenta de Dominio y Correo\"\r\n    },\r\n    {\r\n      \"fieldName\": \"categoryName\",\r\n      \"fieldValue\": \"categoryName\",\r\n      \"logicOperator\": null,\r\n      \"operatorName\": \"eq\",\r\n      \"operatorValue\": \"==\",\r\n      \"type\": 1,\r\n      \"value\": \"Plotter\",\r\n      \"valueName\": \"Plotter\"\r\n    }\r\n  ],\r\n  \"level\": 0,\r\n  \"orderField\": \"openedDate\",\r\n  \"orderType\": \"desc\",\r\n  \"pageIndex\": 0,\r\n  \"pageSize\": 50,\r\n  \"projects\": [\r\n    {\r\n      \"project\": 222\r\n    },\r\n    {\r\n      \"project\": 17\r\n    },\r\n    {\r\n      \"project\": 376\r\n    }\r\n  ],\r\n  \"repository\": 1,\r\n  \"types\": [\r\n    {\r\n      \"itemType\": 3\r\n    },\r\n    {\r\n      \"itemType\": 4\r\n    },\r\n    {\r\n      \"itemType\": 1\r\n    },\r\n    {\r\n      \"itemType\": 2\r\n    },\r\n    {\r\n      \"itemType\": 13\r\n    }\r\n  ],\r\n  \"validate\": true,\r\n  \"viewId\": -2\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "https://asmsdev-api.azurewebsites.net/api/v9/item/search?language=0",
+                  "protocol": "https",
+                  "host": [
+                    "asmsdev-api",
+                    "azurewebsites",
+                    "net"
+                  ],
+                  "path": [
+                    "api",
+                    "v9",
+                    "item",
+                    "search"
+                  ],
+                  "query": [
+                    {
+                      "key": "language",
+                      "value": "0"
+                    }
+                  ]
+                }
+              },
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "Listar casos",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n   \"criteria\":[\r\n      \r\n   ],\r\n   \"level\":0,\r\n   \"orderField\":\"openedDate\",\r\n   \"orderType\":\"desc\",\r\n   \"pageIndex\":0,\r\n   \"pageSize\":50,\r\n   \"projects\":[\r\n      {\r\n         \"project\":1\r\n      }\r\n   ],\r\n   \"repository\":3,\r\n   \"types\":[\r\n      {\r\n         \"itemType\":3\r\n      },\r\n      {\r\n         \"itemType\":4\r\n      },\r\n      {\r\n         \"itemType\":1\r\n      },\r\n      {\r\n         \"itemType\":2\r\n      },\r\n      {\r\n         \"itemType\":13\r\n      }\r\n   ],\r\n   \"viewId\":0\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{api-v9}}/api/v9/item/search",
+                  "host": [
+                    "{{api-v9}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v9",
+                    "item",
+                    "search"
+                  ]
+                }
+              },
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "Listar casos",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"criteria\": [\r\n        {\r\n            \"fieldName\": \"closedDate\",\r\n            \"fieldValue\": \"closedDate\",\r\n            \"logicOperator\": 1,\r\n            \"operatorName\": \"gte\",\r\n            \"operatorValue\": \">=\",\r\n            \"type\": 2,\r\n            \"value\": 1651717243000,\r\n            \"valueName\": 1651717243000\r\n        },\r\n        {\r\n            \"fieldName\": \"closedDate\",\r\n            \"fieldValue\": \"closedDate\",\r\n            \"logicOperator\": null,\r\n            \"operatorName\": \"lte\",\r\n            \"operatorValue\": \"<=\",\r\n            \"type\": 2,\r\n            \"value\": 1659243600000,\r\n            \"valueName\": 1659243600000\r\n        },\r\n        {\r\n            \"fieldName\": \"responsibleId\",\r\n            \"fieldValue\": \"responsibleId\",\r\n            \"logicOperator\": null,\r\n            \"operatorName\": \"eq\",\r\n            \"operatorValue\": \"==\",\r\n            \"type\": 6,\r\n            \"value\": 4801,\r\n            \"valueName\": 4801\r\n        }        \r\n    ],\r\n    \"level\": 0,\r\n    \"orderField\": \"openedDate\",\r\n    \"orderType\": \"desc\",\r\n    \"pageIndex\": 0,\r\n    \"pageSize\": 50,\r\n    \"projects\": [\r\n        {\r\n            \"project\": 37\r\n        },\r\n        {\r\n            \"project\": 190\r\n        },\r\n        {\r\n            \"project\": 70\r\n        },\r\n        {\r\n            \"project\": 17\r\n        },\r\n        {\r\n            \"project\": 97\r\n        },\r\n        {\r\n            \"project\": 214\r\n        },\r\n        {\r\n            \"project\": 112\r\n        },\r\n        {\r\n            \"project\": 118\r\n        },\r\n        {\r\n            \"project\": 169\r\n        },\r\n        {\r\n            \"project\": 376\r\n        }\r\n    ],\r\n    \"repository\": 3,\r\n    \"types\": [\r\n        {\r\n            \"itemType\": 3\r\n        },\r\n        {\r\n            \"itemType\": 4\r\n        },\r\n        {\r\n            \"itemType\": 1\r\n        },\r\n        {\r\n            \"itemType\": 2\r\n        }\r\n    ],\r\n    \"validate\": true,\r\n    \"viewId\": -6\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{api-v9}}/api/v9/item/search?language=0",
+                  "host": [
+                    "{{api-v9}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v9",
+                    "item",
+                    "search"
+                  ],
+                  "query": [
+                    {
+                      "key": "language",
+                      "value": "0"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                },
+                {
+                  "key": "Date",
+                  "value": "Wed, 03 Aug 2022 20:51:12 GMT"
+                },
+                {
+                  "key": "Server",
+                  "value": "Microsoft-IIS/10.0"
+                },
+                {
+                  "key": "Access-Control-Allow-Headers",
+                  "value": "Content-Type"
+                },
+                {
+                  "key": "Access-Control-Allow-Methods",
+                  "value": "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "private"
+                },
+                {
+                  "key": "Content-Encoding",
+                  "value": "gzip"
+                },
+                {
+                  "key": "Set-Cookie",
+                  "value": "ARRAffinity=c1026fae9f96123dc978f58991bfd10ba9ba2037d6645af1f4d87f91ce6892d7;Path=/;HttpOnly;Secure;Domain=asmsdev-api.azurewebsites.net"
+                },
+                {
+                  "key": "Set-Cookie",
+                  "value": "ARRAffinitySameSite=c1026fae9f96123dc978f58991bfd10ba9ba2037d6645af1f4d87f91ce6892d7;Path=/;HttpOnly;SameSite=None;Secure;Domain=asmsdev-api.azurewebsites.net"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Accept-Encoding"
+                },
+                {
+                  "key": "X-AspNet-Version",
+                  "value": "4.0.30319"
+                },
+                {
+                  "key": "X-Frame-Options",
+                  "value": "SAMEORIGIN"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "1;mode=block"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-UA-Compatible",
+                  "value": "IE=7"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"content\": [\n        {\n            \"additionals\": [],\n            \"applicantId\": 462,\n            \"applicantName\": \"Carrasco Aliendre, Juan Alexander\",\n            \"approvalType\": 2,\n            \"authorId\": 7807,\n            \"authorName\": \"mauricio.zarate\",\n            \"backgroundColorRgb\": \"37.220.240\",\n            \"buildingId\": null,\n            \"buildingName\": null,\n            \"categoryHierarchy\": \"GIIC.Soporte.Fin700.Mensaje_de_Error\",\n            \"categoryId\": 18342,\n            \"categoryName\": \"Mensaje_de_Error\",\n            \"ciAssetTag\": null,\n            \"ciId\": null,\n            \"ciName\": null,\n            \"ciSerial\": null,\n            \"cityId\": null,\n            \"cityName\": null,\n            \"closedDate\": null,\n            \"closenessToExpiration\": 2,\n            \"companyId\": 3,\n            \"companyName\": \" PERÚ S.A.\",\n            \"cost\": null,\n            \"countryId\": null,\n            \"countryName\": null,\n            \"currentprogress\": 562.34201354166669,\n            \"currenttime\": 5398.48333,\n            \"customerGroupsSpecial\": [],\n            \"customerId\": 462,\n            \"customerName\": \"Carrasco Aliendre, Juan Alexander\",\n            \"departmentCode\": null,\n            \"departmentCodeName\": null,\n            \"descriptionNoHtml\": \"Buenas noches.\\nPor favor, su apoyo revisando el caso reportado por la Srta. Lizeth Barja.\\nEs de suma importancia puedan revisar el caso.\\n \\nPor favor su apoyo revisando el reporte de Registro de Compras No domiciliados, intente descargar el reporte de Junio y me aparece solo el encabezado sin registros.\\n \\nQue atento a sus comentarios, es urgente tener esta información.\\n \\nGracias por su apoyo.\\n\",\n            \"duration\": null,\n            \"effort\": null,\n            \"estimatedTime\": 960,\n            \"expectedDate\": 1658430900000,\n            \"finalDate\": null,\n            \"finalStateId\": 0,\n            \"floorId\": null,\n            \"floorName\": null,\n            \"foregroundColorRgb\": \"0.0.0\",\n            \"groupId\": 1350,\n            \"groupName\": \"GIIC - Soporte\",\n            \"id\": 20976,\n            \"idByProject\": \"IM-20976\",\n            \"impactId\": 13,\n            \"impactName\": \"3-Un grupo de trabajo\",\n            \"initialDate\": null,\n            \"initialStatus\": false,\n            \"isClosed\": false,\n            \"isVotingProcess\": true,\n            \"isimported\": false,\n            \"itemType\": 1,\n            \"itemTypeName\": \"Incidentes\",\n            \"itemVersion\": 3,\n            \"knownError\": null,\n            \"majorProblem\": null,\n            \"modelId\": 12,\n            \"modelName\": \"Gestión Incidentes \",\n            \"modifiedDate\": 1659460417133,\n            \"olaId\": null,\n            \"olaName\": null,\n            \"openedDate\": 1658274358377,\n            \"parentId\": null,\n            \"parentIdByProject\": null,\n            \"parentItemType\": null,\n            \"parentItemTypeId\": null,\n            \"price\": null,\n            \"priorityId\": 23,\n            \"priorityName\": \"3 Media\",\n            \"progress\": 562.34201354166669,\n            \"projectId\": 17,\n            \"projectName\": \"\",\n            \"providerId\": null,\n            \"providerName\": null,\n            \"realDate\": 1659460417133,\n            \"reasonId\": 77,\n            \"reasonName\": \"Caso Resuelto Mesa\",\n            \"receptorId\": 4801,\n            \"receptorName\": \"AgendaSoporte\",\n            \"registryTypeId\": 33,\n            \"registryTypeName\": \"Autoservicio\",\n            \"responsibleId\": 4801,\n            \"responsibleName\": \"AgendaSoporte\",\n            \"riskName\": null,\n            \"serviceId\": 190,\n            \"serviceName\": \"GIIC - ERP Financiero Contable\",\n            \"slaId\": 730,\n            \"slaName\": \"GIIC - TDS 16Hr L-V 08:45 a 18:15\",\n            \"stateId\": 61,\n            \"stateName\": \"Resuelto\",\n            \"subject\": \"Inconvenientes reporte Registro de Compras No domiciliados\",\n            \"templateId\": null,\n            \"time\": 5398.48,\n            \"ucId\": null,\n            \"ucName\": null,\n            \"unitId\": null,\n            \"unitName\": null,\n            \"urgencyId\": 18,\n            \"urgencyName\": \"3-Rápidamente\"\n        },\n        {\n            \"additionals\": [],\n            \"applicantId\": 4791,\n            \"applicantName\": \"Catilao Aguayo, Dennis Alejandro\",\n            \"approvalType\": 2,\n            \"authorId\": 7753,\n            \"authorName\": \"edwin.vergara\",\n            \"backgroundColorRgb\": \"37.220.240\",\n            \"buildingId\": null,\n            \"buildingName\": null,\n            \"categoryHierarchy\": \"GIIC.Soporte.Fabricas.Incident Moebius\",\n            \"categoryId\": 7950,\n            \"categoryName\": \"Incident Moebius\",\n            \"ciAssetTag\": null,\n            \"ciId\": null,\n            \"ciName\": null,\n            \"ciSerial\": null,\n            \"cityId\": null,\n            \"cityName\": null,\n            \"closedDate\": null,\n            \"closenessToExpiration\": 0,\n            \"companyId\": 1,\n            \"companyName\": \" S.A.\",\n            \"cost\": null,\n            \"countryId\": null,\n            \"countryName\": null,\n            \"currentprogress\": null,\n            \"currenttime\": null,\n            \"customerGroupsSpecial\": [],\n            \"customerId\": 703,\n            \"customerName\": \"Borquez Iturrieta, Danilo Denix\",\n            \"departmentCode\": null,\n            \"departmentCodeName\": null,\n            \"descriptionNoHtml\": \"Estimados, \\nPlataformas de monitoreo https://asaticketqa..com/alertsdashboard ,  http://10.164.128.77/,  http://asaticket..com:82/ y  http://asaticket..com:81/ aun presentan demora y no están generando Tickets. En https://asaticketqa..com/alertsdashboard 2 servicios web se encuentran caídos, adjunto evidencia.\\n\",\n            \"duration\": null,\n            \"effort\": null,\n            \"estimatedTime\": null,\n            \"expectedDate\": null,\n            \"finalDate\": null,\n            \"finalStateId\": 0,\n            \"floorId\": null,\n            \"floorName\": null,\n            \"foregroundColorRgb\": \"0.0.0\",\n            \"groupId\": 1350,\n            \"groupName\": \"GIIC - Soporte\",\n            \"id\": 16843,\n            \"idByProject\": \"IM-16843\",\n            \"impactId\": 13,\n            \"impactName\": \"3-Un grupo de trabajo\",\n            \"initialDate\": null,\n            \"initialStatus\": false,\n            \"isClosed\": false,\n            \"isVotingProcess\": false,\n            \"isimported\": false,\n            \"itemType\": 1,\n            \"itemTypeName\": \"Incidentes\",\n            \"itemVersion\": 6,\n            \"knownError\": null,\n            \"majorProblem\": null,\n            \"modelId\": 12,\n            \"modelName\": \"Gestión Incidentes \",\n            \"modifiedDate\": 1656819434097,\n            \"olaId\": null,\n            \"olaName\": null,\n            \"openedDate\": 1656809449473,\n            \"parentId\": null,\n            \"parentIdByProject\": null,\n            \"parentItemType\": null,\n            \"parentItemTypeId\": null,\n            \"price\": null,\n            \"priorityId\": 24,\n            \"priorityName\": \"4 Media - Baja\",\n            \"progress\": null,\n            \"projectId\": 17,\n            \"projectName\": \"\",\n            \"providerId\": null,\n            \"providerName\": null,\n            \"realDate\": null,\n            \"reasonId\": 484,\n            \"reasonName\": \"Caso Resuelto\",\n            \"receptorId\": 1,\n            \"receptorName\": \"APPLICATION ADMINISTRATOR\",\n            \"registryTypeId\": 2765,\n            \"registryTypeName\": \"Correo Electrónico\",\n            \"responsibleId\": 4801,\n            \"responsibleName\": \"AgendaSoporte\",\n            \"riskName\": null,\n            \"serviceId\": 176,\n            \"serviceName\": \"GIIC - Soporte Incidentes App Corporativas\",\n            \"slaId\": 728,\n            \"slaName\": \"GIIC - TDS 12Hr L-V 08:45 a 18:15\",\n            \"stateId\": 61,\n            \"stateName\": \"Resuelto\",\n            \"subject\": \"Problemas para generar tickets\",\n            \"templateId\": null,\n            \"time\": 0,\n            \"ucId\": null,\n            \"ucName\": null,\n            \"unitId\": null,\n            \"unitName\": null,\n            \"urgencyId\": 19,\n            \"urgencyName\": \"4-Pronto\"\n        },\n        {\n            \"additionals\": [],\n            \"applicantId\": 64257,\n            \"applicantName\": \"Cortez Chihuala, Chiara Valeria\",\n            \"approvalType\": 0,\n            \"authorId\": 64257,\n            \"authorName\": \"Cortez Chihuala, Chiara Valeria\",\n            \"backgroundColorRgb\": \"251.246.64\",\n            \"buildingId\": null,\n            \"buildingName\": null,\n            \"categoryHierarchy\": \"Redes y comunicaciones.Asignar dirección IP\",\n            \"categoryId\": 6763,\n            \"categoryName\": \"Asignar dirección IP\",\n            \"ciAssetTag\": null,\n            \"ciId\": null,\n            \"ciName\": null,\n            \"ciSerial\": null,\n            \"cityId\": null,\n            \"cityName\": null,\n            \"closedDate\": null,\n            \"closenessToExpiration\": 2,\n            \"companyId\": 3,\n            \"companyName\": \" PERÚ S.A.\",\n            \"cost\": null,\n            \"countryId\": null,\n            \"countryName\": null,\n            \"currentprogress\": 644.378471875,\n            \"currenttime\": 6186.03333,\n            \"customerGroupsSpecial\": [],\n            \"customerId\": 64257,\n            \"customerName\": \"Cortez Chihuala, Chiara Valeria\",\n            \"departmentCode\": null,\n            \"departmentCodeName\": null,\n            \"descriptionNoHtml\": \"Estimados,\\nPor favor su apoyo en revisar la opp 295471, ya que se le asignó al responsable de delivery y preventa correspondiente pero al momento de solicitar aprobación en la etapa prueba, no aparce nadie desginado y el preventa confirma que no lo tiene como aprobación pendiente. Quedo atenta a sus comentarios.\\n\",\n            \"duration\": null,\n            \"effort\": null,\n            \"estimatedTime\": 960,\n            \"expectedDate\": 1658430900000,\n            \"finalDate\": null,\n            \"finalStateId\": 0,\n            \"floorId\": null,\n            \"floorName\": null,\n            \"foregroundColorRgb\": \"0.0.0\",\n            \"groupId\": 1350,\n            \"groupName\": \"GIIC - Soporte\",\n            \"id\": 20971,\n            \"idByProject\": \"RF-20971\",\n            \"impactId\": 13,\n            \"impactName\": \"3-Un grupo de trabajo\",\n            \"initialDate\": null,\n            \"initialStatus\": true,\n            \"isClosed\": false,\n            \"isVotingProcess\": false,\n            \"isimported\": false,\n            \"itemType\": 4,\n            \"itemTypeName\": \"Requerimiento de Servicio\",\n            \"itemVersion\": 3,\n            \"knownError\": null,\n            \"majorProblem\": null,\n            \"modelId\": 13,\n            \"modelName\": \"Gestión Requerimientos \",\n            \"modifiedDate\": 1658964832983,\n            \"olaId\": null,\n            \"olaName\": null,\n            \"openedDate\": 1658271911517,\n            \"parentId\": null,\n            \"parentIdByProject\": null,\n            \"parentItemType\": null,\n            \"parentItemTypeId\": null,\n            \"price\": null,\n            \"priorityId\": 23,\n            \"priorityName\": \"3 Media\",\n            \"progress\": 644.378471875,\n            \"projectId\": 17,\n            \"projectName\": \"\",\n            \"providerId\": null,\n            \"providerName\": null,\n            \"realDate\": null,\n            \"reasonId\": 483,\n            \"reasonName\": \"Estado Inicial\",\n            \"receptorId\": 4801,\n            \"receptorName\": \"AgendaSoporte\",\n            \"registryTypeId\": 33,\n            \"registryTypeName\": \"Autoservicio\",\n            \"responsibleId\": 4801,\n            \"responsibleName\": \"AgendaSoporte\",\n            \"riskName\": null,\n            \"serviceId\": 236,\n            \"serviceName\": \"AR - Redes y Comunicaciones\",\n            \"slaId\": 730,\n            \"slaName\": \"GIIC - TDS 16Hr L-V 08:45 a 18:15\",\n            \"stateId\": 71,\n            \"stateName\": \"Abierto\",\n            \"subject\": \"Prueba servicio\",\n            \"templateId\": null,\n            \"time\": 6186.03,\n            \"ucId\": null,\n            \"ucName\": null,\n            \"unitId\": null,\n            \"unitName\": null,\n            \"urgencyId\": 18,\n            \"urgencyName\": \"3-Rápidamente\"\n        },\n        {\n            \"additionals\": [],\n            \"applicantId\": 7488,\n            \"applicantName\": \"Sandoval Diaz, Lizeth Juliana\",\n            \"approvalType\": 0,\n            \"authorId\": 7488,\n            \"authorName\": \"Sandoval Diaz, Lizeth Juliana\",\n            \"backgroundColorRgb\": \"37.220.240\",\n            \"buildingId\": null,\n            \"buildingName\": null,\n            \"categoryHierarchy\": \"GIIC.Soporte.CA ITSM.SDM.Soporte Funcional\",\n            \"categoryId\": 8566,\n            \"categoryName\": \"Soporte Funcional\",\n            \"ciAssetTag\": null,\n            \"ciId\": null,\n            \"ciName\": null,\n            \"ciSerial\": null,\n            \"cityId\": null,\n            \"cityName\": null,\n            \"closedDate\": null,\n            \"closenessToExpiration\": 0,\n            \"companyId\": 8,\n            \"companyName\": \" COLOMBIA S.A.\",\n            \"cost\": null,\n            \"countryId\": null,\n            \"countryName\": null,\n            \"currentprogress\": 29.281250000000004,\n            \"currenttime\": 281.1,\n            \"customerGroupsSpecial\": [],\n            \"customerId\": 7488,\n            \"customerName\": \"Sandoval Diaz, Lizeth Juliana\",\n            \"departmentCode\": null,\n            \"departmentCodeName\": null,\n            \"descriptionNoHtml\": \"El presente tiene como fin solicitar la colaboración para cerrar en la herramienta de CA el siguiente caso 15864263, ya que por equivocación fue creado en  AMS QUALIDADE cuando era para _colombia.Ahora al momento de intentar cerrar este, nos indica el siguiente error:AHD03116:Incumplimiento de cliente en Request 15864263 perteneciente al cliente  AMS QUALIDADE - atributo zContrato referencias zContrato CO - MESA INTERNA pertenecientes al cliente _Colombia.\\nLa solución que se puede adjuntar en este es la siguiente: Se da cierre al caso, sin respuesta por parte del cliente. Después de 24 horas del escalamiento se solicitó feedback del evento y no se obtuvo respuesta, pasadas 48 horas se da cierre al caso.\\nAsignatario: Vasquez Peña, Angie Natalia\\n\",\n            \"duration\": null,\n            \"effort\": null,\n            \"estimatedTime\": 960,\n            \"expectedDate\": 1658171700000,\n            \"finalDate\": null,\n            \"finalStateId\": 0,\n            \"floorId\": null,\n            \"floorName\": null,\n            \"foregroundColorRgb\": \"0.0.0\",\n            \"groupId\": 1350,\n            \"groupName\": \"GIIC - Soporte\",\n            \"id\": 20015,\n            \"idByProject\": \"RF-20015\",\n            \"impactId\": 13,\n            \"impactName\": \"3-Un grupo de trabajo\",\n            \"initialDate\": null,\n            \"initialStatus\": false,\n            \"isClosed\": false,\n            \"isVotingProcess\": false,\n            \"isimported\": false,\n            \"itemType\": 4,\n            \"itemTypeName\": \"Requerimiento de Servicio\",\n            \"itemVersion\": 6,\n            \"knownError\": null,\n            \"majorProblem\": null,\n            \"modelId\": 13,\n            \"modelName\": \"Gestión Requerimientos \",\n            \"modifiedDate\": 1657906347283,\n            \"olaId\": null,\n            \"olaName\": null,\n            \"openedDate\": 1657848320537,\n            \"parentId\": null,\n            \"parentIdByProject\": null,\n            \"parentItemType\": null,\n            \"parentItemTypeId\": null,\n            \"price\": null,\n            \"priorityId\": 23,\n            \"priorityName\": \"3 Media\",\n            \"progress\": 29.281250000000004,\n            \"projectId\": 17,\n            \"projectName\": \"\",\n            \"providerId\": null,\n            \"providerName\": null,\n            \"realDate\": 1657905965933,\n            \"reasonId\": 97,\n            \"reasonName\": \"Caso en progreso\",\n            \"receptorId\": 4801,\n            \"receptorName\": \"AgendaSoporte\",\n            \"registryTypeId\": 33,\n            \"registryTypeName\": \"Autoservicio\",\n            \"responsibleId\": 4801,\n            \"responsibleName\": \"AgendaSoporte\",\n            \"riskName\": null,\n            \"serviceId\": 215,\n            \"serviceName\": \"GIIC - CA Regional\",\n            \"slaId\": 730,\n            \"slaName\": \"GIIC - TDS 16Hr L-V 08:45 a 18:15\",\n            \"stateId\": 72,\n            \"stateName\": \"Resuelto\",\n            \"subject\": \"Cierre de caso 15864263\",\n            \"templateId\": null,\n            \"time\": 281.1,\n            \"ucId\": null,\n            \"ucName\": null,\n            \"unitId\": null,\n            \"unitName\": null,\n            \"urgencyId\": 18,\n            \"urgencyName\": \"3-Rápidamente\"\n        },\n        {\n            \"additionals\": [],\n            \"applicantId\": 7767,\n            \"applicantName\": \"Villanueva Murillo, Liliana Constanza\",\n            \"approvalType\": 2,\n            \"authorId\": 7767,\n            \"authorName\": \"Villanueva Murillo, Liliana Constanza\",\n            \"backgroundColorRgb\": \"37.220.240\",\n            \"buildingId\": null,\n            \"buildingName\": null,\n            \"categoryHierarchy\": \"GIIC.Soporte.Fin700.Mensaje_de_Error\",\n            \"categoryId\": 18342,\n            \"categoryName\": \"Mensaje_de_Error\",\n            \"ciAssetTag\": null,\n            \"ciId\": null,\n            \"ciName\": null,\n            \"ciSerial\": null,\n            \"cityId\": null,\n            \"cityName\": null,\n            \"closedDate\": null,\n            \"closenessToExpiration\": 2,\n            \"companyId\": 8,\n            \"companyName\": \" COLOMBIA S.A.\",\n            \"cost\": null,\n            \"countryId\": null,\n            \"countryName\": null,\n            \"currentprogress\": 567.35416635416675,\n            \"currenttime\": 5446.599997,\n            \"customerGroupsSpecial\": [],\n            \"customerId\": 7767,\n            \"customerName\": \"Villanueva Murillo, Liliana Constanza\",\n            \"departmentCode\": null,\n            \"departmentCodeName\": null,\n            \"descriptionNoHtml\": \"Buenas tardes solicito su ayuda con el siguiente error \\nQuien solicita @Bustos Rivera, Nohemi <Nohemi.Bustos@.com>\\n\\n\",\n            \"duration\": null,\n            \"effort\": null,\n            \"estimatedTime\": 960,\n            \"expectedDate\": 1658430900000,\n            \"finalDate\": null,\n            \"finalStateId\": 0,\n            \"floorId\": null,\n            \"floorName\": null,\n            \"foregroundColorRgb\": \"0.0.0\",\n            \"groupId\": 1350,\n            \"groupName\": \"GIIC - Soporte\",\n            \"id\": 20972,\n            \"idByProject\": \"IM-20972\",\n            \"impactId\": 13,\n            \"impactName\": \"3-Un grupo de trabajo\",\n            \"initialDate\": null,\n            \"initialStatus\": false,\n            \"isClosed\": false,\n            \"isVotingProcess\": true,\n            \"isimported\": false,\n            \"itemType\": 1,\n            \"itemTypeName\": \"Incidentes\",\n            \"itemVersion\": 3,\n            \"knownError\": null,\n            \"majorProblem\": null,\n            \"modelId\": 12,\n            \"modelName\": \"Gestión Incidentes \",\n            \"modifiedDate\": 1659463304377,\n            \"olaId\": null,\n            \"olaName\": null,\n            \"openedDate\": 1658272265770,\n            \"parentId\": null,\n            \"parentIdByProject\": null,\n            \"parentItemType\": null,\n            \"parentItemTypeId\": null,\n            \"price\": null,\n            \"priorityId\": 23,\n            \"priorityName\": \"3 Media\",\n            \"progress\": 567.35416635416675,\n            \"projectId\": 17,\n            \"projectName\": \"\",\n            \"providerId\": null,\n            \"providerName\": null,\n            \"realDate\": 1659463304377,\n            \"reasonId\": 77,\n            \"reasonName\": \"Caso Resuelto Mesa\",\n            \"receptorId\": 4801,\n            \"receptorName\": \"AgendaSoporte\",\n            \"registryTypeId\": 33,\n            \"registryTypeName\": \"Autoservicio\",\n            \"responsibleId\": 4801,\n            \"responsibleName\": \"AgendaSoporte\",\n            \"riskName\": null,\n            \"serviceId\": 220,\n            \"serviceName\": \"GIIC - ERP Logístico, Ventas y Facturación\",\n            \"slaId\": 730,\n            \"slaName\": \"GIIC - TDS 16Hr L-V 08:45 a 18:15\",\n            \"stateId\": 61,\n            \"stateName\": \"Resuelto\",\n            \"subject\": \"OC CONSORCIO  ICBF 006 2019\",\n            \"templateId\": null,\n            \"time\": 5446.6,\n            \"ucId\": null,\n            \"ucName\": null,\n            \"unitId\": null,\n            \"unitName\": null,\n            \"urgencyId\": 18,\n            \"urgencyName\": \"3-Rápidamente\"\n        }\n    ],\n    \"totalItems\": 5,\n    \"additionalData\": null,\n    \"totalPage\": 5\n}"
+            }
+          ]
+        },
+        {
+          "name": "Agregar archivo",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "FileItemId",
+                  "value": "6138",
+                  "type": "text"
+                },
+                {
+                  "key": "FileItemType",
+                  "value": "4",
+                  "type": "text"
+                },
+                {
+                  "key": "Concept",
+                  "value": "0",
+                  "type": "text"
+                },
+                {
+                  "key": "UploadType",
+                  "value": "0",
+                  "type": "text"
+                },
+                {
+                  "key": "Description",
+                  "value": "Archivo de prueba",
+                  "type": "text"
+                },
+                {
+                  "key": "IsPublic",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "Data0",
+                  "type": "file",
+                  "src": "/C:/Users/lunah/Downloads/asdk_item.pdf"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/file/",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "file",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar archivo",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"fileId\": 809,\r\n    \"isPublic\": true,\r\n    \"itemId\": 6138,\r\n    \"itemType\": 4,\r\n    \"uploadType\": 0\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/file/809?uploadType=0",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "file",
+                "809"
+              ],
+              "query": [
+                {
+                  "key": "uploadType",
+                  "value": "0"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Descargar archivo",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "",
+                "value": "",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{api-v9}}/api/v9/file/813",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "file",
+                "813"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar archivos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api-v9}}/api/v9/item/6198/files?itemType=4&uploadType=0",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "item",
+                "6198",
+                "files"
+              ],
+              "query": [
+                {
+                  "key": "itemType",
+                  "value": "4"
+                },
+                {
+                  "key": "uploadType",
+                  "value": "0"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Agregar nota",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"description\": \"Anotación al caso RF\",\r\n    \"itemType\": 4,\r\n    \"visible\": true\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/item/5860/note",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "item",
+                "5860",
+                "note"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar historico",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api-v9}}/api/v9/item/84486/history/list?isClosed=false&consoleType=1&modelId=70&statusId=267",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "item",
+                "84486",
+                "history",
+                "list"
+              ],
+              "query": [
+                {
+                  "key": "isClosed",
+                  "value": "false"
+                },
+                {
+                  "key": "consoleType",
+                  "value": "1"
+                },
+                {
+                  "key": "modelId",
+                  "value": "70"
+                },
+                {
+                  "key": "statusId",
+                  "value": "267"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Agregar tarea",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"consoleType\": \"specialist\",\r\n    \"description\": \"<p>Hola</p>\",\r\n    \"endDate\": 1632323155773,\r\n    \"duration\": 600,\r\n    \"groupId\": 5,\r\n    \"hasPendingSurvey\": false,\r\n    \"instance\": 1632287170697,\r\n    \"isModified\": true,\r\n    \"itemType\": 6,\r\n    \"itemVersion\": 0,\r\n    \"listAdditionalField\": [],\r\n    \"modelId\": 62,\r\n    \"parentId\": 84411,\r\n    \"projectId\": 19,\r\n    \"reasonId\": 839,\r\n    \"relationTypeId\": 143,\r\n    \"responsibleId\": 4832,\r\n    \"startDate\": 1632287155773,\r\n    \"stateId\": 613,\r\n    \"subject\": \"Hola \",\r\n    \"tempId\": -1\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/task",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "task"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar tareas",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"isClosed\": false,\r\n    \"isReverse\": null,\r\n    \"relatedItemType\": 6,\r\n    \"relationTypeId\": null\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/item/84476/type/3/relations/list?repository=3",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "item",
+                "84476",
+                "type",
+                "3",
+                "relations",
+                "list"
+              ],
+              "query": [
+                {
+                  "key": "repository",
+                  "value": "3"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener modelo por categoria",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api-v9}}api/v9/item/4/categories/6745/service/238/model",
+              "host": [
+                "{{api-v9}}api"
+              ],
+              "path": [
+                "v9",
+                "item",
+                "4",
+                "categories",
+                "6745",
+                "service",
+                "238",
+                "model"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Estados",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api-v9}}/api/v9/model/13/4/states",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "model",
+                "13",
+                "4",
+                "states"
+              ],
+              "query": [
+                {
+                  "key": "itemId",
+                  "value": "5860",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Próximos estados",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{api-v9}}/api/v9/model/16/4/states?stateId=103",
+                  "host": [
+                    "{{api-v9}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v9",
+                    "model",
+                    "16",
+                    "4",
+                    "states"
+                  ],
+                  "query": [
+                    {
+                      "key": "stateId",
+                      "value": "103"
+                    },
+                    {
+                      "key": "itemId",
+                      "value": "5860",
+                      "disabled": true
+                    }
+                  ]
+                }
+              },
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "Estado inicial",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{api-v9}}/api/v9/model/16/4/states",
+                  "host": [
+                    "{{api-v9}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v9",
+                    "model",
+                    "16",
+                    "4",
+                    "states"
+                  ],
+                  "query": [
+                    {
+                      "key": "itemId",
+                      "value": "5860",
+                      "disabled": true
+                    }
+                  ]
+                }
+              },
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Agregar archivo article",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "FileItemId",
+                  "value": "3",
+                  "type": "text"
+                },
+                {
+                  "key": "FileItemType",
+                  "value": "7",
+                  "type": "text"
+                },
+                {
+                  "key": "Concept",
+                  "value": "5",
+                  "type": "text"
+                },
+                {
+                  "key": "UploadType",
+                  "value": "0",
+                  "type": "text"
+                },
+                {
+                  "key": "Description",
+                  "value": "Archivo de prueba",
+                  "type": "text"
+                },
+                {
+                  "key": "IsPublic",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "Data0",
+                  "type": "file",
+                  "src": "/C:/Users/lunah/Downloads/cmdb_ci.pdf"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/file/",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "file",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener campos del caso por estado",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "[{\"field\":\"username\",\"value\":\"preventa1\"},{\"field\":\"password\",\"value\":\"123456\"},{\"field\":\"providerId\",\"value\":\"1\"},{\"field\":\"consoleId\",\"value\":2},{\"field\":\"anonymousAccess\",\"value\":false},{\"field\":\"authtype\",\"value\":\"Forms\"},{\"field\":\"serverId\",\"value\":\"0\"},{\"field\":\"consoleType\",\"value\":2}]",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/project/1/interfacefield?type=client&consoleType=specialist&status=1",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "project",
+                "1",
+                "interfacefield"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "client"
+                },
+                {
+                  "key": "consoleType",
+                  "value": "specialist"
+                },
+                {
+                  "key": "status",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Estados Siguientes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api-v9}}/api/v9/model/13/4/states?stateId=71",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "model",
+                "13",
+                "4",
+                "states"
+              ],
+              "query": [
+                {
+                  "key": "itemId",
+                  "value": "5860",
+                  "disabled": true
+                },
+                {
+                  "key": "stateId",
+                  "value": "71"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Contratos por proyecto",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Authorization",
+                "value": "bearer eX_w",
+                "type": "default"
+              }
+            ],
+            "url": {
+              "raw": "{{api-v9}}/api/v9/project/377/contracts",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "project",
+                "377",
+                "contracts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ubicaciones por proyecto",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api-v9}}/api/v9/project/17/locations",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "project",
+                "17",
+                "locations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener información campos core",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api-v9}}/api/v9/model/653/interfacefield?itemType=1&consoleType=Specialist&statusId=9424&isView=false&language=0",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "model",
+                "653",
+                "interfacefield"
+              ],
+              "query": [
+                {
+                  "key": "itemType",
+                  "value": "1"
+                },
+                {
+                  "key": "consoleType",
+                  "value": "Specialist"
+                },
+                {
+                  "key": "statusId",
+                  "value": "9424"
+                },
+                {
+                  "key": "isView",
+                  "value": "false"
+                },
+                {
+                  "key": "language",
+                  "value": "0"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              ""
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Manejo de servicios",
+      "item": [
+        {
+          "name": "Listar servicios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api-v9}}/api/v9/project/230/1/services/search?console=Specialist&application=ASDK&criteria=",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "project",
+                "230",
+                "1",
+                "services",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "console",
+                  "value": "Specialist"
+                },
+                {
+                  "key": "application",
+                  "value": "ASDK"
+                },
+                {
+                  "key": "criteria",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Servicios por contrato",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Authorization",
+                "value": "",
+                "type": "default"
+              }
+            ],
+            "url": {
+              "raw": "{{api-v9}}/api/v9/service/contract/292?type=4&projectId=377",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "service",
+                "contract",
+                "292"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "4"
+                },
+                {
+                  "key": "projectId",
+                  "value": "377"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Manejo de usuarios",
+      "item": [
+        {
+          "name": "Detalle usuario",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api-v9}}/api/v9/user/?id=10445",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "user",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "10445"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar/buscar usuarios por proyecto",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api-v9}}/api/v9/user/searchAll?projectId=17&itemType=specialist&criteria=AgendaSoporte&caseType=specialist",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "user",
+                "searchAll"
+              ],
+              "query": [
+                {
+                  "key": "projectId",
+                  "value": "17"
+                },
+                {
+                  "key": "itemType",
+                  "value": "specialist"
+                },
+                {
+                  "key": "criteria",
+                  "value": "AgendaSoporte"
+                },
+                {
+                  "key": "caseType",
+                  "value": "specialist"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Edición",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"active\": 1,\r\n    \"name\": \"Carlos Sanchez\",\r\n    \"userName\": \"TestUser5\",\r\n    \"consoleType\": \"Administrator\",\r\n    \"registerType\": \"Specialist\",\r\n    \"projectId\" : 6,\r\n    \"stateId\": 1,\r\n    \"listAdditionalField\": []\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/user/10445",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "user",
+                "10445"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Creación",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"active\": 1,\r\n    \"birthDate\": 1636434000000,\r\n    \"name\": \"TestUser3\",\r\n    \"userName\": \"pruebamabc14\",\r\n    \"consoleType\" : \"Administrator\",\r\n    \"registerType\": \"specialist\",\r\n    \"projectId\": 6,\r\n    \"stateId\": 1,\r\n    \"email\": \"TestUser@gmail5.com\",\r\n    \"password\": \"Aranda123\",\r\n    \"listAdditionalField\": []\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/user",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "user"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Especialista por grupo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api-v9}}/api/v9/group/4/specialists",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "group",
+                "4",
+                "specialists"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Manejo de categorías",
+      "item": [
+        {
+          "name": "Listar categorias root",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/item/4/services/238/categories?dataType=parent",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "item",
+                "4",
+                "services",
+                "238",
+                "categories"
+              ],
+              "query": [
+                {
+                  "key": "dataType",
+                  "value": "parent"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar categorias nodos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api-v9}}/api/v9/item/1/services/1230/categories?dataType=child&parentId=18628",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "item",
+                "1",
+                "services",
+                "1230",
+                "categories"
+              ],
+              "query": [
+                {
+                  "key": "dataType",
+                  "value": "child"
+                },
+                {
+                  "key": "parentId",
+                  "value": "18628"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Búsqueda de categorías",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"orderField\": \"Hierarchy\",\r\n    \"orderType\": \"Desc\",\r\n    \"pageIndex\": 0,\r\n    \"pageSize\": 1000,\r\n    \"ItemType\": 1,\r\n    \"ServiceId\": 1230,\r\n    \"search\": \"\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/item/categoriesHierarchy",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "item",
+                "categoriesHierarchy"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Manejo de campos adicionales",
+      "item": [
+        {
+          "name": "Obtener valores de un campo adicional tipo combo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api-v9}}/api/v9/additionalsfields/4723/type/3/values",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "additionalsfields",
+                "4723",
+                "type",
+                "3",
+                "values"
+              ],
+              "query": [
+                {
+                  "key": "dataType",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "parentId",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "catalogId",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "userId",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar campos adicionales de un caso",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"asdkWeb\": true,\r\n    \"categoryId\": 27048,\r\n    \"consoleType\": \"specialist\",\r\n    \"id\": 8753,\r\n    \"itemType\": 3,\r\n    \"modelId\": 4,\r\n    \"serviceId\": 292,\r\n    \"stateId\": 34\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/item/additionalfields",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "item",
+                "additionalfields"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar campos adicionales categoría/servicio",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"asdkWeb\": true,\r\n    \"categoryId\": 6745,\r\n    \"consoleType\": \"specialist\",\r\n    \"itemType\": 4,\r\n    \"modelId\": 4,\r\n    \"serviceId\": 288,\r\n    \"stateId\": 71\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/item/additionalfields",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "item",
+                "additionalfields"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Manejo de Tareas",
+      "item": [
+        {
+          "name": "Crear Tarea",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n   \"consoleType\":\"specialist\",\r\n   \"description\":\"<p>Tarea capacita 2</p>\",\r\n   \"endDate\":1636711203000,\r\n   \"duration\":300,\r\n   \"groupId\":4,\r\n   \"hasPendingSurvey\":false,\r\n   \"instance\":1636643097952,\r\n   \"isModified\":true,\r\n   \"itemType\":6,\r\n   \"itemVersion\":0,\r\n   \"listAdditionalField\":[\r\n      \r\n   ],\r\n   \"modelId\":5,\r\n   \"parentId\":5849,\r\n   \"projectId\":1,\r\n   \"reasonId\":154,\r\n   \"relationTypeId\":86,\r\n   \"responsibleId\":10432,\r\n   \"startDate\":1636693203000,\r\n   \"stateId\":37,\r\n   \"subject\":\"Tarea capacita2\",\r\n   \"tempId\":-1\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/task/",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "task",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener Tarea",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api-v9}}/api/v9/task/8558",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "task",
+                "8558"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar Tarea",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n   \"configFormAdditionalField\":[\r\n      \r\n   ],\r\n   \"consoleType\":\"specialist\",\r\n   \"description\":\"Valida Reparación\",\r\n   \"groupId\":455,\r\n   \"hasPendingSurvey\":false,\r\n   \"instance\":1636642736747,\r\n   \"isModified\":false,\r\n   \"itemId\":5850,\r\n   \"itemType\":6,\r\n   \"itemVersion\":2,\r\n   \"listAdditionalField\":[\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Cumplimiento\",\r\n         \"enable\":false,\r\n         \"fieldId\":384,\r\n         \"fieldType\":3,\r\n         \"fieldTypeName\":\"List\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"Cumplimiento\",\r\n         \"inputStream\":null,\r\n         \"intValue\":218,\r\n         \"itemId\":5850,\r\n         \"mandatory\":false,\r\n         \"name\":\"Cumplimiento\",\r\n         \"order\":1,\r\n         \"projectId\":null,\r\n         \"stringValue\":\"Cumple\",\r\n         \"type\":6,\r\n         \"url\":null,\r\n         \"visible\":true,\r\n         \"sectionId\":null\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":24,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Campo catalogo lista tareas\",\r\n         \"enable\":true,\r\n         \"fieldId\":450,\r\n         \"fieldType\":11,\r\n         \"fieldTypeName\":\"CatalogList\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"002\",\r\n         \"inputStream\":null,\r\n         \"intValue\":36,\r\n         \"itemId\":5850,\r\n         \"mandatory\":false,\r\n         \"name\":\"Catalogo lista\",\r\n         \"order\":2,\r\n         \"projectId\":null,\r\n         \"stringValue\":\"​​Manzanillo\",\r\n         \"type\":6,\r\n         \"url\":null,\r\n         \"visible\":true,\r\n         \"sectionId\":null\r\n      },\r\n      {\r\n         \"boolValue\":null,\r\n         \"catalogId\":null,\r\n         \"dataSourceId\":null,\r\n         \"dateValue\":null,\r\n         \"description\":\"Campo lista\",\r\n         \"enable\":true,\r\n         \"fieldId\":451,\r\n         \"fieldType\":3,\r\n         \"fieldTypeName\":\"List\",\r\n         \"floatValue\":null,\r\n         \"identifier\":\"003\",\r\n         \"inputStream\":null,\r\n         \"intValue\":null,\r\n         \"itemId\":5850,\r\n         \"mandatory\":false,\r\n         \"name\":\"Lista Tareas\",\r\n         \"order\":3,\r\n         \"projectId\":null,\r\n         \"stringValue\":null,\r\n         \"type\":6,\r\n         \"url\":null,\r\n         \"visible\":true,\r\n         \"sectionId\":null\r\n      }\r\n   ],\r\n   \"modelId\":5,\r\n   \"reasonId\":28,\r\n   \"responsibleId\":2670,\r\n   \"stateId\":39,\r\n   \"subject\":\"Valida Reparación\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/task/8559",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "task",
+                "8559"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Relaciones del caso",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n   \"isClosed\":false,\r\n   \"isReverse\":false,\r\n   \"relatedItemType\":6,\r\n   \"relationTypeId\":null\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/item/5849/type/3/relations/list?repository=3",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "item",
+                "5849",
+                "type",
+                "3",
+                "relations",
+                "list"
+              ],
+              "query": [
+                {
+                  "key": "repository",
+                  "value": "3"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Manejo de CIs",
+      "item": [
+        {
+          "name": "Add",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Authorization",
+                "value": "Bearer eI",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"tempItemId\" :-1,\r\n    \"consoleType\":\"Administrator\",\r\n    \"assetTag\": \"ST0347935\",\r\n    \"authorId\": 1,\r\n    \"barCode\": \"\",\r\n    \"brandId\": 2223,\r\n    \"categoryId\": 47,\r\n    \"checkinDate\": 1620331200000,\r\n    \"depreciationMethod\": 1,\r\n    \"description\": \"Portatil XT Capacitación\",\r\n    \"impactId\": 2152,\r\n    \"licenseNumber\": \"\",\r\n    \"manufacturerId\": 15,\r\n    \"modelId\": null,\r\n    \"name\": \"PT-002\",\r\n    \"price\": 0,\r\n    \"projectId\" : 6,\r\n    \"providerId\": 15,\r\n    \"rfid\": \"\",\r\n    \"reponsibleDate\": 1620331200000,\r\n    \"residualValue\": null,\r\n    \"responsibleId\": 10441,\r\n    \"serial\": \"SN003564989\",\r\n    \"size\": \"120\",\r\n    \"stateId\": 312,\r\n    \"type\": 21,\r\n    \"unit\": 5004,\r\n    \"reasonId\":null,\r\n    \"riskId\": null, \r\n    \"acceptDate\": 1620331200000, \r\n  \"listAdditionalField\":\r\n  [\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": 27,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"Department\",\r\n            \"enable\": false,\r\n            \"fieldId\": 408,\r\n            \"fieldType\": 11,\r\n            \"fieldTypeName\": \"CatalogList\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"Department\",\r\n            \"order\": 1,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": 4,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"NoDpto\",\r\n            \"enable\": false,\r\n            \"fieldId\": 409,\r\n            \"fieldType\": 11,\r\n            \"fieldTypeName\": \"CatalogList\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"NoDpto\",\r\n            \"order\": 2,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": 24,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"City\",\r\n            \"enable\": false,\r\n            \"fieldId\": 410,\r\n            \"fieldType\": 11,\r\n            \"fieldTypeName\": \"CatalogList\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"City\",\r\n            \"order\": 3,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": 3,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"Country\",\r\n            \"enable\": false,\r\n            \"fieldId\": 411,\r\n            \"fieldType\": 11,\r\n            \"fieldTypeName\": \"CatalogList\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"Country\",\r\n            \"order\": 4,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": 6,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"Branch\",\r\n            \"enable\": false,\r\n            \"fieldId\": 412,\r\n            \"fieldType\": 11,\r\n            \"fieldTypeName\": \"CatalogList\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"Branch\",\r\n            \"order\": 5,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": 22,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"TheBuilding\",\r\n            \"enable\": false,\r\n            \"fieldId\": 413,\r\n            \"fieldType\": 11,\r\n            \"fieldTypeName\": \"CatalogList\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"TheBuilding\",\r\n            \"order\": 6,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": 5,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"Floor\",\r\n            \"enable\": false,\r\n            \"fieldId\": 414,\r\n            \"fieldType\": 11,\r\n            \"fieldTypeName\": \"CatalogList\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"Floor\",\r\n            \"order\": 7,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": 2,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"Subsidiary\",\r\n            \"enable\": false,\r\n            \"fieldId\": 415,\r\n            \"fieldType\": 11,\r\n            \"fieldTypeName\": \"CatalogList\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"Subsidiary\",\r\n            \"order\": 8,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": null,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"Address1\",\r\n            \"enable\": false,\r\n            \"fieldId\": 416,\r\n            \"fieldType\": 1,\r\n            \"fieldTypeName\": \"ShortText\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"Address1\",\r\n            \"order\": 9,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": null,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"File\",\r\n            \"enable\": false,\r\n            \"fieldId\": 417,\r\n            \"fieldType\": 10,\r\n            \"fieldTypeName\": \"File\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"File\",\r\n            \"order\": 10,\r\n            \"projectId\": null,\r\n            \"stringValue\": \"\",\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": null,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"Codigo de configuración\",\r\n            \"enable\": false,\r\n            \"fieldId\": 418,\r\n            \"fieldType\": 1,\r\n            \"fieldTypeName\": \"ShortText\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"Configuración\",\r\n            \"order\": 11,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        }\r\n  ]\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/ci",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "ci"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GetDetails",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api-v9}}/api/v9/ci/?id=8210",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "ci",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "8210"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GetCis",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"criteria\": [\r\n        {\r\n            \"fieldValue\": \"responsibleName\",\r\n            \"logicOperator\": null,\r\n            \"operatorValue\": \"LIKE\",\r\n            \"type\": 1,\r\n            \"value\": \"carlos\"\r\n        }\r\n    ],\r\n    \"level\": 0,\r\n    \"orderField\": \"Id\",\r\n    \"orderType\": \"desc\",\r\n    \"pageIndex\": 0,\r\n    \"pageSize\": 10,\r\n    \"progressExpired\": false,\r\n    \"progressSoon\": false,\r\n    \"projects\": [\r\n        {\r\n            \"id\": 25\r\n        }\r\n    ],\r\n    \"repository\": 3,\r\n    \"types\": [],\r\n    \"viewId\": -1,\r\n    \"categories\": [],\r\n    \"folders\": [],\r\n    \"order\": null\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/ci/list",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "ci",
+                "list"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"consoleType\":\"Administrator\",\r\n    \"categoryId\": 47,\r\n    \"id\":8210,\r\n    \"name\": \"PT-002\",\r\n    \"stateId\": 313,\r\n    \"responsibleId\": 10441,\r\n    \"type\": 21,\r\n  \"listAdditionalField\":\r\n  [\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": 27,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"Department\",\r\n            \"enable\": false,\r\n            \"fieldId\": 408,\r\n            \"fieldType\": 11,\r\n            \"fieldTypeName\": \"CatalogList\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"Department\",\r\n            \"order\": 1,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": 4,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"NoDpto\",\r\n            \"enable\": false,\r\n            \"fieldId\": 409,\r\n            \"fieldType\": 11,\r\n            \"fieldTypeName\": \"CatalogList\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"NoDpto\",\r\n            \"order\": 2,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": 24,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"City\",\r\n            \"enable\": false,\r\n            \"fieldId\": 410,\r\n            \"fieldType\": 11,\r\n            \"fieldTypeName\": \"CatalogList\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"City\",\r\n            \"order\": 3,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": 3,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"Country\",\r\n            \"enable\": false,\r\n            \"fieldId\": 411,\r\n            \"fieldType\": 11,\r\n            \"fieldTypeName\": \"CatalogList\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": 2218,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"Country\",\r\n            \"order\": 4,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": 6,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"Branch\",\r\n            \"enable\": false,\r\n            \"fieldId\": 412,\r\n            \"fieldType\": 11,\r\n            \"fieldTypeName\": \"CatalogList\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"Branch\",\r\n            \"order\": 5,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": 22,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"TheBuilding\",\r\n            \"enable\": false,\r\n            \"fieldId\": 413,\r\n            \"fieldType\": 11,\r\n            \"fieldTypeName\": \"CatalogList\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"TheBuilding\",\r\n            \"order\": 6,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": 5,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"Floor\",\r\n            \"enable\": false,\r\n            \"fieldId\": 414,\r\n            \"fieldType\": 11,\r\n            \"fieldTypeName\": \"CatalogList\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"Floor\",\r\n            \"order\": 7,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": 2,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"Subsidiary\",\r\n            \"enable\": false,\r\n            \"fieldId\": 415,\r\n            \"fieldType\": 11,\r\n            \"fieldTypeName\": \"CatalogList\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"Subsidiary\",\r\n            \"order\": 8,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": null,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"Address1\",\r\n            \"enable\": false,\r\n            \"fieldId\": 416,\r\n            \"fieldType\": 1,\r\n            \"fieldTypeName\": \"ShortText\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"Address1\",\r\n            \"order\": 9,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": null,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"File\",\r\n            \"enable\": false,\r\n            \"fieldId\": 417,\r\n            \"fieldType\": 10,\r\n            \"fieldTypeName\": \"File\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"File\",\r\n            \"order\": 10,\r\n            \"projectId\": null,\r\n            \"stringValue\": \"\",\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": null,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"Codigo de configuración\",\r\n            \"enable\": false,\r\n            \"fieldId\": 418,\r\n            \"fieldType\": 1,\r\n            \"fieldTypeName\": \"ShortText\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"Configuración\",\r\n            \"order\": 11,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        }\r\n  ]\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api-v9}}/api/v9/ci/8211",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "ci",
+                "8211"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Update",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"consoleType\":\"Administrator\",\r\n    \"assetTag\": \"ST0347935\",\r\n    \"authorId\": 1,\r\n    \"barCode\": \"\",\r\n    \"brandId\": 2223,\r\n    \"categoryId\": 47,\r\n    \"checkinDate\": 1620331200000,\r\n    \"depreciationMethod\": 1,\r\n    \"description\": \"Portatil XT presidencia\",\r\n    \"impactId\": 2152,\r\n    \"licenseNumber\": \"\",\r\n    \"manufacturerId\": 15,\r\n    \"modelId\": null,\r\n    \"name\": \"PT-001\",\r\n    \"price\": 0,\r\n    \"projectId\" : 6,\r\n    \"providerId\": 15,\r\n    \"rfid\": \"\",\r\n    \"reponsibleDate\": 1620331200000,\r\n    \"residualValue\": null,\r\n    \"responsibleId\": 10441,\r\n    \"serial\": \"SN003564989\",\r\n    \"size\": \"120\",\r\n    \"stateId\": 312,\r\n    \"type\": 21,\r\n    \"unit\": 5004,\r\n    \"reasonId\":null,\r\n    \"riskId\": null, \r\n    \"acceptDate\": 1620331200000, \r\n  \"listAdditionalField\":\r\n  [\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": 27,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"Department\",\r\n            \"enable\": false,\r\n            \"fieldId\": 408,\r\n            \"fieldType\": 11,\r\n            \"fieldTypeName\": \"CatalogList\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"Department\",\r\n            \"order\": 1,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": 4,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"NoDpto\",\r\n            \"enable\": false,\r\n            \"fieldId\": 409,\r\n            \"fieldType\": 11,\r\n            \"fieldTypeName\": \"CatalogList\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"NoDpto\",\r\n            \"order\": 2,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": 24,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"City\",\r\n            \"enable\": false,\r\n            \"fieldId\": 410,\r\n            \"fieldType\": 11,\r\n            \"fieldTypeName\": \"CatalogList\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"City\",\r\n            \"order\": 3,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": 3,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"Country\",\r\n            \"enable\": false,\r\n            \"fieldId\": 411,\r\n            \"fieldType\": 11,\r\n            \"fieldTypeName\": \"CatalogList\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"Country\",\r\n            \"order\": 4,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": 6,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"Branch\",\r\n            \"enable\": false,\r\n            \"fieldId\": 412,\r\n            \"fieldType\": 11,\r\n            \"fieldTypeName\": \"CatalogList\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"Branch\",\r\n            \"order\": 5,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": 22,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"TheBuilding\",\r\n            \"enable\": false,\r\n            \"fieldId\": 413,\r\n            \"fieldType\": 11,\r\n            \"fieldTypeName\": \"CatalogList\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"TheBuilding\",\r\n            \"order\": 6,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": 5,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"Floor\",\r\n            \"enable\": false,\r\n            \"fieldId\": 414,\r\n            \"fieldType\": 11,\r\n            \"fieldTypeName\": \"CatalogList\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"Floor\",\r\n            \"order\": 7,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": 2,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"Subsidiary\",\r\n            \"enable\": false,\r\n            \"fieldId\": 415,\r\n            \"fieldType\": 11,\r\n            \"fieldTypeName\": \"CatalogList\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"Subsidiary\",\r\n            \"order\": 8,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": null,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"Address1\",\r\n            \"enable\": false,\r\n            \"fieldId\": 416,\r\n            \"fieldType\": 1,\r\n            \"fieldTypeName\": \"ShortText\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"Address1\",\r\n            \"order\": 9,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": null,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"File\",\r\n            \"enable\": false,\r\n            \"fieldId\": 417,\r\n            \"fieldType\": 10,\r\n            \"fieldTypeName\": \"File\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"File\",\r\n            \"order\": 10,\r\n            \"projectId\": null,\r\n            \"stringValue\": \"\",\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        },\r\n        {\r\n            \"boolValue\": null,\r\n            \"catalogId\": null,\r\n            \"dataSourceId\": null,\r\n            \"dateValue\": null,\r\n            \"description\": \"Codigo de configuración\",\r\n            \"enable\": false,\r\n            \"fieldId\": 418,\r\n            \"fieldType\": 1,\r\n            \"fieldTypeName\": \"ShortText\",\r\n            \"floatValue\": null,\r\n            \"identifier\": null,\r\n            \"inputStream\": null,\r\n            \"intValue\": null,\r\n            \"itemId\": null,\r\n            \"mandatory\": false,\r\n            \"name\": \"Configuración\",\r\n            \"order\": 11,\r\n            \"projectId\": null,\r\n            \"stringValue\": null,\r\n            \"type\": 21,\r\n            \"url\": null,\r\n            \"visible\": false\r\n        }\r\n  ]\r\n}\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{api-v9}}/api/v9/ci/8210",
+                  "host": [
+                    "{{api-v9}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v9",
+                    "ci",
+                    "8210"
+                  ]
+                }
+              },
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "GetStatesByCategory",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api-v9}}/api/v9/ci/category/47/states?initialState=3063",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "ci",
+                "category",
+                "47",
+                "states"
+              ],
+              "query": [
+                {
+                  "key": "initialState",
+                  "value": "3063"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api-v9}}/api/v9/ci/search?projectId=25&criteria=Ci",
+              "host": [
+                "{{api-v9}}"
+              ],
+              "path": [
+                "api",
+                "v9",
+                "ci",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "projectId",
+                  "value": "25"
+                },
+                {
+                  "key": "criteria",
+                  "value": "Ci"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar campos adicionales",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Authorization",
+                "value": "Bearer eyI",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{api-v9}}api/v9/ci/category/47/additionalfields",
+              "host": [
+                "{{api-v9}}api"
+              ],
+              "path": [
+                "v9",
+                "ci",
+                "category",
+                "47",
+                "additionalfields"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "api-v9-e",
+      "value": "http://localhost/Aranda.Rest.API/"
+    },
+    {
+      "key": "api-v9",
+      "value": ""
+    }
+  ]
+}
