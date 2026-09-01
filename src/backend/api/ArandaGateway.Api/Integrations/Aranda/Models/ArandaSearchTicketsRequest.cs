@@ -37,9 +37,9 @@ public sealed record ArandaSearchCriterion
 
     public required string OperatorValue { get; init; }
 
-    public required string Value { get; init; }
+    public required long Value { get; init; }
 
-    public required string ValueName { get; init; }
+    public required long ValueName { get; init; }
 
     public required int Type { get; init; }
 }

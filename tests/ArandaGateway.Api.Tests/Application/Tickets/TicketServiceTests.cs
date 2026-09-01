@@ -89,6 +89,7 @@ public sealed class TicketServiceTests
         Assert.Equal(1, client.LastCreateRequest?.ProjectId);
         Assert.Equal(2, client.LastCreateRequest?.AuthorId);
         Assert.Equal(10, client.LastCreateRequest?.CustomerId);
+        Assert.Equal(9, client.LastCreateRequest?.UnitId);
         Assert.Equal("Subject", client.LastCreateRequest?.Subject);
     }
 
@@ -143,9 +144,54 @@ public sealed class TicketServiceTests
 
         var ticket = Assert.Single(result.Value!);
         Assert.Equal("CASE-154", ticket.CaseNumber);
-        Assert.Equal(1, client.LastSearchRequest?.Repository);
-        Assert.Equal("customerId",
-            client.LastSearchRequest?.Criteria.Single().FieldName);
+        Assert.Equal(3, client.LastSearchRequest?.Repository);
+        Assert.Equal(0, client.LastSearchRequest?.PageIndex);
+        Assert.Equal([1L, 2L, 3L, 4L],
+            client.LastSearchRequest?.Types.Select(type => type.ItemType));
+        var criterion = Assert.Single(client.LastSearchRequest!.Criteria);
+        Assert.Equal("customerId", criterion.FieldName);
+        Assert.Equal("eq", criterion.OperatorName);
+        Assert.Equal("==", criterion.OperatorValue);
+        Assert.Equal(10, criterion.Value);
+        Assert.Equal(10, criterion.ValueName);
+    }
+
+    [Fact]
+    public async Task ListOpenTicketsAsync_MapsSearchItemsWithoutCustomerId()
+    {
+        var client = new StubArandaClient
+        {
+            User = CreateUser(),
+            SearchResult = new()
+            {
+                Content =
+                [
+                    CreateTicket("UE BIT 20") with
+                    {
+                        Id = 50518,
+                        IdByProject = "RF-50518",
+                        CustomerId = null,
+                        Subject = "Solicitud de acceso a Microsoft Teams",
+                        StateId = 66,
+                        StateName = "Resuelto",
+                        OpenedDate = 1786568146563
+                    }
+                ],
+                TotalItems = 1,
+                TotalPage = 1
+            }
+        };
+        var service = CreateService(client);
+
+        var result = await service.ListOpenTicketsAsync(
+            CancellationToken.None);
+
+        var ticket = Assert.Single(result.Value!);
+        Assert.Equal("RF-50518", ticket.CaseNumber);
+        Assert.Equal(
+            "Solicitud de acceso a Microsoft Teams",
+            ticket.Subject);
+        Assert.Equal("Resuelto", ticket.Status);
     }
 
     [Fact]
@@ -210,6 +256,8 @@ public sealed class TicketServiceTests
         Assert.Equal(TicketOperationResultStatus.Success, result.Status);
         Assert.Equal(91, client.LastUpdateRequest?.StateId);
         Assert.Equal(1, client.LastUpdateRequest?.ItemVersion);
+        Assert.Equal(8, client.LastUpdateRequest?.RegistryTypeId);
+        Assert.Equal(0, client.LastUpdateRequest?.UnitId);
         Assert.Equal(
             "User reason",
             client.LastUpdateRequest?.Commentary);
@@ -291,6 +339,7 @@ public sealed class TicketServiceTests
             UrgencyId = 6,
             GroupId = 7,
             RegistryTypeId = 8,
+            UnitId = 9,
             IncidentModelId = 9,
             IncidentInitialStateId = 10,
             IncidentCancellationStateId = 11,
@@ -325,6 +374,7 @@ public sealed class TicketServiceTests
             ItemVersion = 1,
             ModelId = 12,
             ProjectId = 1,
+            RegistryTypeId = 8,
             ServiceId = 4,
             CategoryId = 3,
             ItemType = 4

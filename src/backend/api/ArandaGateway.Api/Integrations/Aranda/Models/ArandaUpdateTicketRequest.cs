@@ -14,11 +14,15 @@ public sealed record ArandaUpdateTicketRequest
 
     public required long ProjectId { get; init; }
 
+    public required long RegistryTypeId { get; init; }
+
     public required long ServiceId { get; init; }
 
     public required long StateId { get; init; }
 
     public required string Commentary { get; init; }
+
+    public long UnitId { get; init; }
 
     public IReadOnlyList<object> ListAdditionalField { get; init; } = [];
 }

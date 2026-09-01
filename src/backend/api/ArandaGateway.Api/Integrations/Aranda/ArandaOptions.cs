@@ -30,6 +30,8 @@ public sealed class ArandaOptions
 
     public long? RegistryTypeId { get; init; }
 
+    public long? UnitId { get; init; }
+
     public long? IncidentModelId { get; init; }
 
     public long? IncidentInitialStateId { get; init; }

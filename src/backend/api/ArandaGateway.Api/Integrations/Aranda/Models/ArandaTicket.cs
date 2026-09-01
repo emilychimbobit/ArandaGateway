@@ -32,6 +32,8 @@ public sealed record ArandaTicket
 
     public required long ProjectId { get; init; }
 
+    public long? RegistryTypeId { get; init; }
+
     public required long ServiceId { get; init; }
 
     public required long CategoryId { get; init; }
