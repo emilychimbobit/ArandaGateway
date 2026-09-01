@@ -80,6 +80,7 @@ public sealed class TicketService(
                 ModelId = configuration.ModelId,
                 ProjectId = arandaOptions.ProjectId,
                 RegistryTypeId = configuration.RegistryTypeId,
+                UnitId = configuration.UnitId,
                 ServiceId = configuration.ServiceId,
                 StateId = configuration.InitialStateId,
                 AuthorId = arandaOptions.AuthorId,
@@ -112,7 +113,6 @@ public sealed class TicketService(
                 IReadOnlyList<TicketSummaryResponse>>();
         }
 
-        var userId = user.Id.ToString(CultureInfo.InvariantCulture);
         var search = await arandaClient.SearchTicketsAsync(
             new ArandaSearchTicketsRequest
             {
@@ -122,24 +122,26 @@ public sealed class TicketService(
                     {
                         FieldName = "customerId",
                         FieldValue = "customerId",
-                        OperatorName = "equal",
-                        OperatorValue = "=",
-                        Value = userId,
-                        ValueName = userId,
+                        OperatorName = "eq",
+                        OperatorValue = "==",
+                        Value = user.Id,
+                        ValueName = user.Id,
                         Type = 6
                     }
                 ],
-                PageIndex = 1,
+                PageIndex = 0,
                 PageSize = arandaOptions.SearchPageSize,
                 Projects =
                 [
                     new ArandaProjectFilter(
                         arandaOptions.ProjectId)
                 ],
-                Repository = 1,
+                Repository = 3,
                 Types =
                 [
                     new ArandaItemTypeFilter(1),
+                    new ArandaItemTypeFilter(2),
+                    new ArandaItemTypeFilter(3),
                     new ArandaItemTypeFilter(4)
                 ]
             },
@@ -147,7 +149,8 @@ public sealed class TicketService(
 
         var tickets = search.Content
             .Where(ticket =>
-                ticket.CustomerId == user.Id &&
+                (ticket.CustomerId is null ||
+                    ticket.CustomerId == user.Id) &&
                 !ticket.IsClosed &&
                 ticket.IdByProject is not null &&
                 ticket.Subject is not null &&
@@ -262,6 +265,14 @@ public sealed class TicketService(
             return ConfigurationMissing<CancelTicketResponse>();
         }
 
+        var registryTypeId = IsPositive(ticket.RegistryTypeId)
+            ? ticket.RegistryTypeId
+            : arandaOptions.RegistryTypeId;
+        if (!IsPositive(registryTypeId))
+        {
+            return ConfigurationMissing<CancelTicketResponse>();
+        }
+
         var update = await arandaClient.UpdateTicketAsync(
             ticket.Id,
             new ArandaUpdateTicketRequest
@@ -271,6 +282,7 @@ public sealed class TicketService(
                 ItemVersion = ticket.ItemVersion,
                 ModelId = ticket.ModelId,
                 ProjectId = ticket.ProjectId,
+                RegistryTypeId = registryTypeId!.Value,
                 ServiceId = ticket.ServiceId,
                 StateId = cancellationStateId!.Value,
                 Commentary = HtmlEncoder.Default.Encode(
@@ -437,7 +449,8 @@ public sealed class TicketService(
             !IsPositive(arandaOptions.ImpactId) ||
             !IsPositive(arandaOptions.UrgencyId) ||
             !IsPositive(arandaOptions.GroupId) ||
-            !IsPositive(arandaOptions.RegistryTypeId))
+            !IsPositive(arandaOptions.RegistryTypeId) ||
+            !IsPositive(arandaOptions.UnitId))
         {
             configuration = default;
             return false;
@@ -452,7 +465,8 @@ public sealed class TicketService(
             arandaOptions.ImpactId!.Value,
             arandaOptions.UrgencyId!.Value,
             arandaOptions.GroupId!.Value,
-            arandaOptions.RegistryTypeId!.Value);
+            arandaOptions.RegistryTypeId!.Value,
+            arandaOptions.UnitId!.Value);
         return true;
     }
 
@@ -487,5 +501,6 @@ public sealed class TicketService(
         long ImpactId,
         long UrgencyId,
         long GroupId,
-        long RegistryTypeId);
+        long RegistryTypeId,
+        long UnitId);
 }

@@ -4,7 +4,7 @@ public sealed record ArandaCreateTicketRequest
 {
     public required long CategoryId { get; init; }
 
-    public int ConsoleType { get; init; } = 2;
+    public string ConsoleType { get; init; } = "specialist";
 
     public required long CustomerId { get; init; }
 
@@ -25,6 +25,8 @@ public sealed record ArandaCreateTicketRequest
     public required long ProjectId { get; init; }
 
     public required long RegistryTypeId { get; init; }
+
+    public required long UnitId { get; init; }
 
     public required long ServiceId { get; init; }
 
