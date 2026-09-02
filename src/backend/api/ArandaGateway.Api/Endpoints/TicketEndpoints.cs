@@ -33,19 +33,21 @@ public static class TicketEndpoints
             .Produces(StatusCodes.Status404NotFound);
 
         group
-            .MapGet("/{caseNumber:long}", GetTicketDetailAsync)
+            .MapGet("/{caseNumber}", GetTicketDetailAsync)
             .WithName("GetTicketDetail")
             .WithSummary("Consulta el estado de un ticket propio")
             .WithDescription(
-                "Implementa REQ_07. Requiere temporalmente el username " +
-                "del propietario en X-Collaborator-Username.")
+                "Implementa REQ_07. Recibe el número de caso tal como lo " +
+                "devuelven la creación y el listado. Requiere " +
+                "temporalmente el username del propietario en " +
+                "X-Collaborator-Username.")
             .Produces<TicketDetailResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound);
 
         group
             .MapPost(
-                "/{caseNumber:long}/cancellation",
+                "/{caseNumber}/cancellation",
                 CancelTicketAsync)
             .WithName("CancelTicket")
             .WithSummary("Anula un ticket propio")
@@ -57,7 +59,7 @@ public static class TicketEndpoints
 
         group
             .MapPost(
-                "/{caseNumber:long}/attachments",
+                "/{caseNumber}/attachments",
                 UploadAttachmentAsync)
             .WithName("UploadTicketAttachment")
             .WithSummary("Adjunta un archivo a un ticket propio")
@@ -100,7 +102,7 @@ public static class TicketEndpoints
     }
 
     private static async Task<IResult> GetTicketDetailAsync(
-        long caseNumber,
+        string caseNumber,
         [FromHeader(Name = HeaderCurrentCollaborator.HeaderName)]
         string? collaboratorUsername,
         ITicketService ticketService,
@@ -124,7 +126,7 @@ public static class TicketEndpoints
     }
 
     private static async Task<IResult> CancelTicketAsync(
-        long caseNumber,
+        string caseNumber,
         CancelTicketRequest request,
         [FromHeader(Name = HeaderCurrentCollaborator.HeaderName)]
         string? collaboratorUsername,
@@ -139,7 +141,7 @@ public static class TicketEndpoints
     }
 
     private static async Task<IResult> UploadAttachmentAsync(
-        long caseNumber,
+        string caseNumber,
         IFormFile file,
         [FromForm] string? description,
         [FromHeader(Name = HeaderCurrentCollaborator.HeaderName)]
