@@ -48,11 +48,8 @@ app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.MapTicketEndpoints();
 app.MapGet("/health", () => TypedResults.Ok(new { status = "Healthy" }))
