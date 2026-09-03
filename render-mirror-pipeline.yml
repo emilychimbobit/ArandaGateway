@@ -1,0 +1,27 @@
+# Espeja la rama 'develop' de Azure DevOps hacia la rama 'main' del repo de Render.
+# Render despliega desde 'main' de https://github.com/emilychimbobit/ArandaGateway
+#
+# Requisito: definir una variable secreta de pipeline llamada RENDER_GITHUB_PAT
+# (Personal Access Token de GitHub con permiso de escritura sobre el repo de Render).
+
+trigger:
+  branches:
+    include:
+      - develop
+
+pr: none
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - checkout: self
+    fetchDepth: 0
+    persistCredentials: false
+
+  - script: |
+      set -euo pipefail
+      git config user.email "azure-devops@minsur.local"
+      git config user.name "Azure DevOps Mirror"
+      git push "https://$(RENDER_GITHUB_PAT)@github.com/emilychimbobit/ArandaGateway.git" HEAD:main --force
+    displayName: "Espejar develop -> Render main"
