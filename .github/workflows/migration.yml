@@ -1,0 +1,27 @@
+name: Migrar a Azure
+
+on:
+    pull_request:
+        types: [closed]
+        branches: [main]
+    workflow_dispatch:
+
+jobs:
+    approval:
+        if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+        runs-on: ubuntu-latest
+        environment: production
+        steps:
+            - run: echo "Migration approved"
+
+    call-migration:
+        needs: approval
+        uses: BusinessITEcuador/BIT-INFRAESTRUCTURA-DEVOPS/.github/workflows/migration-gh-az.yml@main
+        with:
+            AZURE_REPO_NAME: Aranda.02
+            AZURE_PROJECT_NAME: ${{ vars.AZURE_PROJECT_NAME }}
+            AZURE_ORG: ${{ vars.AZURE_ORG }}
+            TARGET_BRANCH: ${{ vars.TARGET_BRANCH }}-${{ github.run_number }}
+            CODE_PATH: src/backend/api
+        secrets:
+            AZURE_DEVOPS_TOKEN: ${{ secrets.AZURE_DEVOPS_TOKEN }}

@@ -1,0 +1,94 @@
+name: Deploy Backend API - Dev
+
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - 'src/backend/api/**'
+      - 'tests/ArandaGateway.Api.Tests/**'
+      - 'ArandaGateway.slnx'
+      - '.github/workflows/deploy-backend-api-dev.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  AZURE_WEBAPP_NAME: app-agenteminsurout-dev
+  AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+  DOTNET_VERSION: '10.0.x'
+  API_PROJECT_PATH: src/backend/api/ArandaGateway.Api/ArandaGateway.Api.csproj
+  PUBLISH_OUTPUT_PATH: ${{ github.workspace }}/publish
+  ACCESS_RULE_NAME: gha-temp-${{ github.run_id }}
+
+jobs:
+  build-and-deploy:
+    name: Build, test y deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore
+        run: dotnet restore ArandaGateway.slnx
+
+      - name: Build
+        run: dotnet build ArandaGateway.slnx --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test ArandaGateway.slnx --no-build --configuration Release
+
+      - name: Publish API
+        run: >
+          dotnet publish ${{ env.API_PROJECT_PATH }}
+          --no-build
+          --configuration Release
+          --output ${{ env.PUBLISH_OUTPUT_PATH }}
+
+      - name: Azure login (Service Principal)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Obtener IP publica del runner
+        id: runner_ip
+        run: echo "ip=$(curl -s https://api.ipify.org)" >> "$GITHUB_OUTPUT"
+
+      - name: Abrir temporalmente el SCM site para este runner
+        run: |
+          az webapp config access-restriction add \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "$AZURE_WEBAPP_NAME" \
+            --rule-name "$ACCESS_RULE_NAME" \
+            --action Allow \
+            --ip-address "${{ steps.runner_ip.outputs.ip }}/32" \
+            --priority 300 \
+            --scm-site true
+
+      - name: Deploy a Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          package: ${{ env.PUBLISH_OUTPUT_PATH }}
+
+      - name: Cerrar la regla temporal del SCM site
+        if: always()
+        run: |
+          az webapp config access-restriction remove \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "$AZURE_WEBAPP_NAME" \
+            --rule-name "$ACCESS_RULE_NAME" \
+            --scm-site true
+
+      - name: Azure logout
+        if: always()
+        run: az logout
