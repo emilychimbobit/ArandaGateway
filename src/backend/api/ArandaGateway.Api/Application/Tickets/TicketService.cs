@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Net;
 using System.Text.Encodings.Web;
 using ArandaGateway.Api.Contracts.Tickets;
@@ -80,6 +79,7 @@ public sealed class TicketService(
                 ModelId = configuration.ModelId,
                 ProjectId = arandaOptions.ProjectId,
                 RegistryTypeId = configuration.RegistryTypeId,
+                UnitId = configuration.UnitId,
                 ServiceId = configuration.ServiceId,
                 StateId = configuration.InitialStateId,
                 AuthorId = arandaOptions.AuthorId,
@@ -112,42 +112,14 @@ public sealed class TicketService(
                 IReadOnlyList<TicketSummaryResponse>>();
         }
 
-        var userId = user.Id.ToString(CultureInfo.InvariantCulture);
         var search = await arandaClient.SearchTicketsAsync(
-            new ArandaSearchTicketsRequest
-            {
-                Criteria =
-                [
-                    new ArandaSearchCriterion
-                    {
-                        FieldName = "customerId",
-                        FieldValue = "customerId",
-                        OperatorName = "equal",
-                        OperatorValue = "=",
-                        Value = userId,
-                        ValueName = userId,
-                        Type = 6
-                    }
-                ],
-                PageIndex = 1,
-                PageSize = arandaOptions.SearchPageSize,
-                Projects =
-                [
-                    new ArandaProjectFilter(
-                        arandaOptions.ProjectId)
-                ],
-                Repository = 1,
-                Types =
-                [
-                    new ArandaItemTypeFilter(1),
-                    new ArandaItemTypeFilter(4)
-                ]
-            },
+            BuildCollaboratorTicketsSearch(user.Id),
             cancellationToken);
 
         var tickets = search.Content
             .Where(ticket =>
-                ticket.CustomerId == user.Id &&
+                (ticket.CustomerId is null ||
+                    ticket.CustomerId == user.Id) &&
                 !ticket.IsClosed &&
                 ticket.IdByProject is not null &&
                 ticket.Subject is not null &&
@@ -165,7 +137,7 @@ public sealed class TicketService(
     }
 
     public async Task<TicketDetailResult> GetTicketDetailAsync(
-        long caseNumber,
+        string caseNumber,
         CancellationToken cancellationToken)
     {
         if (currentCollaborator.Username is not { } username)
@@ -173,46 +145,38 @@ public sealed class TicketService(
             return new(TicketDetailResultStatus.MissingCollaborator);
         }
 
-        try
-        {
-            var ticket = await GetOwnedTicketAsync(
-                caseNumber,
-                username,
-                cancellationToken);
+        var ticket = await ResolveOwnedTicketAsync(
+            caseNumber,
+            username,
+            cancellationToken);
 
-            if (ticket is null)
-            {
-                return new(TicketDetailResultStatus.NotFoundOrNotOwned);
-            }
-
-            if (ticket.IdByProject is null ||
-                ticket.StateName is null ||
-                ticket.ModifiedDate is null)
-            {
-                throw new ArandaContractException(
-                    "Aranda returned an incomplete ticket.");
-            }
-
-            return new(
-                TicketDetailResultStatus.Success,
-                new TicketDetailResponse(
-                    ticket.IdByProject,
-                    ticket.StateName,
-                    ticket.GroupName,
-                    DateTimeOffset.FromUnixTimeMilliseconds(
-                        ticket.ModifiedDate.Value),
-                    null));
-        }
-        catch (ArandaApiException exception)
-            when (exception.StatusCode == HttpStatusCode.NotFound)
+        if (ticket is null)
         {
             return new(TicketDetailResultStatus.NotFoundOrNotOwned);
         }
+
+        if (ticket.IdByProject is null ||
+            ticket.StateName is null ||
+            ticket.ModifiedDate is null)
+        {
+            throw new ArandaContractException(
+                "Aranda returned an incomplete ticket.");
+        }
+
+        return new(
+            TicketDetailResultStatus.Success,
+            new TicketDetailResponse(
+                ticket.IdByProject,
+                ticket.StateName,
+                ticket.GroupName,
+                DateTimeOffset.FromUnixTimeMilliseconds(
+                    ticket.ModifiedDate.Value),
+                null));
     }
 
     public async Task<TicketOperationResult<CancelTicketResponse>>
         CancelTicketAsync(
-            long caseNumber,
+            string caseNumber,
             CancelTicketRequest request,
             CancellationToken cancellationToken)
     {
@@ -233,7 +197,7 @@ public sealed class TicketService(
                 "El motivo de anulación es obligatorio.");
         }
 
-        var ticket = await GetOwnedTicketOrNullAsync(
+        var ticket = await ResolveOwnedTicketAsync(
             caseNumber,
             username,
             cancellationToken);
@@ -262,6 +226,14 @@ public sealed class TicketService(
             return ConfigurationMissing<CancelTicketResponse>();
         }
 
+        var registryTypeId = IsPositive(ticket.RegistryTypeId)
+            ? ticket.RegistryTypeId
+            : arandaOptions.RegistryTypeId;
+        if (!IsPositive(registryTypeId))
+        {
+            return ConfigurationMissing<CancelTicketResponse>();
+        }
+
         var update = await arandaClient.UpdateTicketAsync(
             ticket.Id,
             new ArandaUpdateTicketRequest
@@ -271,6 +243,7 @@ public sealed class TicketService(
                 ItemVersion = ticket.ItemVersion,
                 ModelId = ticket.ModelId,
                 ProjectId = ticket.ProjectId,
+                RegistryTypeId = registryTypeId!.Value,
                 ServiceId = ticket.ServiceId,
                 StateId = cancellationStateId!.Value,
                 Commentary = HtmlEncoder.Default.Encode(
@@ -286,14 +259,13 @@ public sealed class TicketService(
 
         return Success(
             new CancelTicketResponse(
-                ticket.IdByProject ?? caseNumber.ToString(
-                    CultureInfo.InvariantCulture),
+                ticket.IdByProject ?? caseNumber.Trim(),
                 "Anulado"));
     }
 
     public async Task<TicketOperationResult<UploadAttachmentResponse>>
         UploadAttachmentAsync(
-            long caseNumber,
+            string caseNumber,
             TicketAttachment attachment,
             CancellationToken cancellationToken)
     {
@@ -319,7 +291,7 @@ public sealed class TicketService(
                 "El archivo supera el límite configurado.");
         }
 
-        var ticket = await GetOwnedTicketOrNullAsync(
+        var ticket = await ResolveOwnedTicketAsync(
             caseNumber,
             username,
             cancellationToken);
@@ -365,6 +337,81 @@ public sealed class TicketService(
         {
             return null;
         }
+    }
+
+    private ArandaSearchTicketsRequest BuildCollaboratorTicketsSearch(
+        long customerId) =>
+        new()
+        {
+            Criteria =
+            [
+                new ArandaSearchCriterion
+                {
+                    FieldName = "customerId",
+                    FieldValue = "customerId",
+                    OperatorName = "eq",
+                    OperatorValue = "==",
+                    Value = customerId,
+                    ValueName = customerId,
+                    Type = 6
+                }
+            ],
+            PageIndex = 0,
+            PageSize = arandaOptions.SearchPageSize,
+            Projects =
+            [
+                new ArandaProjectFilter(arandaOptions.ProjectId)
+            ],
+            Repository = 3,
+            Types =
+            [
+                new ArandaItemTypeFilter(1),
+                new ArandaItemTypeFilter(2),
+                new ArandaItemTypeFilter(3),
+                new ArandaItemTypeFilter(4)
+            ]
+        };
+
+    // El consumidor solo conoce el número de caso (idByProject). Aranda
+    // consulta el detalle por su identificador interno, así que el caso se
+    // resuelve dentro de los tickets del propio colaborador: eso traduce el
+    // identificador y confirma la propiedad en un solo paso.
+    private async Task<ArandaTicket?> ResolveOwnedTicketAsync(
+        string caseNumber,
+        string username,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(caseNumber))
+        {
+            return null;
+        }
+
+        var user = await ResolveActiveUserAsync(
+            username,
+            cancellationToken);
+        if (user is null)
+        {
+            return null;
+        }
+
+        var search = await arandaClient.SearchTicketsAsync(
+            BuildCollaboratorTicketsSearch(user.Id),
+            cancellationToken);
+
+        var match = search.Content.FirstOrDefault(ticket =>
+            string.Equals(
+                ticket.IdByProject?.Trim(),
+                caseNumber.Trim(),
+                StringComparison.OrdinalIgnoreCase));
+        if (match is null)
+        {
+            return null;
+        }
+
+        return await GetOwnedTicketOrNullAsync(
+            match.Id,
+            username,
+            cancellationToken);
     }
 
     private async Task<ArandaTicket?> GetOwnedTicketOrNullAsync(
@@ -437,7 +484,8 @@ public sealed class TicketService(
             !IsPositive(arandaOptions.ImpactId) ||
             !IsPositive(arandaOptions.UrgencyId) ||
             !IsPositive(arandaOptions.GroupId) ||
-            !IsPositive(arandaOptions.RegistryTypeId))
+            !IsPositive(arandaOptions.RegistryTypeId) ||
+            !IsPositive(arandaOptions.UnitId))
         {
             configuration = default;
             return false;
@@ -452,7 +500,8 @@ public sealed class TicketService(
             arandaOptions.ImpactId!.Value,
             arandaOptions.UrgencyId!.Value,
             arandaOptions.GroupId!.Value,
-            arandaOptions.RegistryTypeId!.Value);
+            arandaOptions.RegistryTypeId!.Value,
+            arandaOptions.UnitId!.Value);
         return true;
     }
 
@@ -487,5 +536,6 @@ public sealed class TicketService(
         long ImpactId,
         long UrgencyId,
         long GroupId,
-        long RegistryTypeId);
+        long RegistryTypeId,
+        long UnitId);
 }

@@ -47,6 +47,20 @@ Los IDs no sensibles se configuran en la sección `Aranda` de
 Creación y anulación responderán `503` mientras falten los IDs de catálogo,
 modelo y estados marcados con `null`.
 
+Los catálogos del requerimiento fijo se validaron contra Aranda el 1 de
+septiembre de 2026: servicio `Por categorizar` (`51`), categoría
+`Ticket creado por bot` (`988`), impacto `BAJO` (`1`), urgencia `BAJO` (`4`),
+grupo `Mesa de Ayuda` (`2`), modelo (`17`), estado inicial `Registrado` (`59`)
+y estado de cancelación `Cancelado` (`61`). Este servicio solo está disponible
+para requerimientos (`itemType = 4`), no para incidentes (`itemType = 1`).
+
+La creación exige `RegistryTypeId` y `UnitId`. Para QA se configuraron
+provisionalmente `Correo` (`4608`) y `Minsur Lima` (`5875`), validados mediante
+la prueba controlada `RF-56025`. Estos valores deben confirmarse con el equipo
+de Aranda antes de promover la solución a producción. En una actualización,
+Aranda exige `RegistryTypeId` y acepta `UnitId = 0` para conservar la sede
+existente.
+
 ### Ejecución y pruebas
 
 ```powershell

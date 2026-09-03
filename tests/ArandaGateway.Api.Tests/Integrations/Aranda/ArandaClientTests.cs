@@ -8,6 +8,33 @@ namespace ArandaGateway.Api.Tests.Integrations.Aranda;
 public sealed class ArandaClientTests
 {
     [Fact]
+    public async Task GetUserByUsernameAsync_UsesDetailEndpointAndReadsId()
+    {
+        var handler = new RecordingHandler(
+            """
+            {
+              "id": 15019,
+              "userName": "uebit20@minsur.com",
+              "email": "uebit20@minsur.com",
+              "name": "UE BIT 20",
+              "isActive": true
+            }
+            """);
+        using var httpClient = CreateHttpClient(handler);
+        var client = new ArandaClient(httpClient);
+
+        var user = await client.GetUserByUsernameAsync(
+            "uebit20@minsur.com",
+            CancellationToken.None);
+
+        Assert.Equal(HttpMethod.Get, handler.Method);
+        Assert.Equal(
+            "/api/v9/user/uebit20%40minsur.com/detail",
+            handler.RequestUri?.PathAndQuery);
+        Assert.Equal(15019, user.Id);
+    }
+
+    [Fact]
     public async Task GetTicketAsync_SendsConfiguredApiKeyUnchanged()
     {
         const string apiKey = "Bearer configured-value";
@@ -66,10 +93,10 @@ public sealed class ArandaClientTests
                     {
                         FieldName = "customerId",
                         FieldValue = "customerId",
-                        OperatorName = "equal",
-                        OperatorValue = "=",
-                        Value = "10",
-                        ValueName = "10",
+                        OperatorName = "eq",
+                        OperatorValue = "==",
+                        Value = 10,
+                        ValueName = 10,
                         Type = 6
                     }
                 ],
@@ -86,6 +113,7 @@ public sealed class ArandaClientTests
             "\"fieldName\":\"customerId\"",
             handler.RequestBody);
         Assert.Contains("\"type\":6", handler.RequestBody);
+        Assert.Contains("\"value\":10", handler.RequestBody);
     }
 
     [Fact]
@@ -107,6 +135,7 @@ public sealed class ArandaClientTests
             ModelId = 12,
             ProjectId = 1,
             RegistryTypeId = 8,
+            UnitId = 9,
             ServiceId = 4,
             StateId = 13,
             AuthorId = 2,
@@ -120,7 +149,10 @@ public sealed class ArandaClientTests
 
         Assert.Equal(200, result.Id);
         Assert.Equal("RF-200", result.IdByProject);
-        Assert.Contains("\"consoleType\":2", handler.RequestBody);
+        Assert.Contains(
+            "\"consoleType\":\"specialist\"",
+            handler.RequestBody);
+        Assert.Contains("\"unitId\":9", handler.RequestBody);
     }
 
     [Fact]

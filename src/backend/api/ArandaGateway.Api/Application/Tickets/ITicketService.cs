@@ -12,17 +12,17 @@ public interface ITicketService
         ListOpenTicketsAsync(CancellationToken cancellationToken);
 
     Task<TicketDetailResult> GetTicketDetailAsync(
-        long caseNumber,
+        string caseNumber,
         CancellationToken cancellationToken);
 
     Task<TicketOperationResult<CancelTicketResponse>> CancelTicketAsync(
-        long caseNumber,
+        string caseNumber,
         CancelTicketRequest request,
         CancellationToken cancellationToken);
 
     Task<TicketOperationResult<UploadAttachmentResponse>>
         UploadAttachmentAsync(
-            long caseNumber,
+            string caseNumber,
             TicketAttachment attachment,
             CancellationToken cancellationToken);
 }
