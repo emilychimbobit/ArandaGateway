@@ -70,7 +70,7 @@ dotnet test .\ArandaGateway.slnx
 
 Swagger UI está disponible en `http://localhost:5112/swagger`. Use
 **Authorize** para configurar `X-Api-Key`. Mientras se define SSO, las
-operaciones reciben el username en `X-Collaborator-Username`.
+operaciones reciben el username en `X-Collaborator-Username` que es su usuario o correo.
 
 Los contratos y reglas pueden probarse localmente. La validación end-to-end
 contra Aranda permanece pendiente hasta que Cloudflare permita solicitudes
