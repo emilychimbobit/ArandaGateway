@@ -560,5 +560,10 @@ public sealed class TicketServiceTests
                 UploadResult ??
                 throw new InvalidOperationException());
         }
+
+        public Task<ArandaPagedResponse<ArandaCiItem>> GetCisByUserAndProjectsAsync(
+            ArandaCiRequest request,
+            CancellationToken cancellationToken) =>
+            throw new NotImplementedException();
     }
 }

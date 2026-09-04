@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using ArandaGateway.Api.Application.Equipos;
 using ArandaGateway.Api.Application.Tickets;
 using ArandaGateway.Api.Authentication;
 using ArandaGateway.Api.Endpoints;
@@ -41,6 +42,7 @@ builder.Services.AddArandaIntegration(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentCollaborator, HeaderCurrentCollaborator>();
 builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddScoped<IEquipoService, EquipoService>();
 
 var app = builder.Build();
 
@@ -52,6 +54,7 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.MapTicketEndpoints();
+app.MapEquiposEndpoints();
 app.MapGet("/health", () => TypedResults.Ok(new { status = "Healthy" }))
     .WithName("Health")
     .WithTags("Health");

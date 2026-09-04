@@ -136,4 +136,12 @@ public sealed class ArandaClient(HttpClient httpClient) : IArandaClient
                 response.StatusCode,
                 "Aranda returned an empty response.");
     }
+
+    public Task<ArandaPagedResponse<ArandaCiItem>> GetCisByUserAndProjectsAsync(
+    ArandaCiRequest request,
+    CancellationToken cancellationToken) =>
+    PostAsync<ArandaCiRequest, ArandaPagedResponse<ArandaCiItem>>(
+        "api/v9/ci/cisbyuserandprojects",
+        request,
+        cancellationToken);
 }

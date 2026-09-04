@@ -28,4 +28,8 @@ public interface IArandaClient
     Task<IReadOnlyList<ArandaFileUploadResult>> UploadAttachmentAsync(
         ArandaAttachmentUpload request,
         CancellationToken cancellationToken);
+
+    Task<ArandaPagedResponse<ArandaCiItem>> GetCisByUserAndProjectsAsync(
+    ArandaCiRequest request,
+    CancellationToken cancellationToken);
 }
