@@ -4,23 +4,23 @@ namespace ArandaGateway.Api.Application.Tickets;
 
 public interface ITicketService
 {
-    Task<TicketOperationResult<CreateTicketResponse>> CreateTicketAsync(
-        CreateTicketRequest request,
+    Task<TicketOperationResult<RespuestaCrearTicket>> CreateTicketAsync(
+        SolicitudCrearTicket request,
         CancellationToken cancellationToken);
 
-    Task<TicketOperationResult<IReadOnlyList<TicketSummaryResponse>>>
+    Task<TicketOperationResult<IReadOnlyList<RespuestaResumenTicket>>>
         ListOpenTicketsAsync(CancellationToken cancellationToken);
 
     Task<TicketDetailResult> GetTicketDetailAsync(
         string caseNumber,
         CancellationToken cancellationToken);
 
-    Task<TicketOperationResult<CancelTicketResponse>> CancelTicketAsync(
+    Task<TicketOperationResult<RespuestaAnularTicket>> CancelTicketAsync(
         string caseNumber,
-        CancelTicketRequest request,
+        SolicitudAnularTicket request,
         CancellationToken cancellationToken);
 
-    Task<TicketOperationResult<UploadAttachmentResponse>>
+    Task<TicketOperationResult<RespuestaAdjuntarArchivo>>
         UploadAttachmentAsync(
             string caseNumber,
             TicketAttachment attachment,

@@ -1,6 +1,6 @@
 namespace ArandaGateway.Api.Contracts.Tickets;
 
-public sealed record TicketSummaryResponse(
+public sealed record RespuestaResumenTicket(
     string CaseNumber,
     string Subject,
     string Status,

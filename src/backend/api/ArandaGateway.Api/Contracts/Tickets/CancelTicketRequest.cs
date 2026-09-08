@@ -1,5 +1,5 @@
 namespace ArandaGateway.Api.Contracts.Tickets;
 
-public sealed record CancelTicketRequest(
+public sealed record SolicitudAnularTicket(
     string Reason,
     bool Confirmed);

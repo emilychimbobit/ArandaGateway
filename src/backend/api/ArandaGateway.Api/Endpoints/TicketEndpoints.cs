@@ -16,42 +16,42 @@ public static class TicketEndpoints
             .RequireAuthorization();
 
         group
-            .MapPost("/", CreateTicketAsync)
-            .WithName("CreateTicket")
+            .MapPost("/", CrearTicketAsync)
+            .WithName("CrearTicket")
             .WithSummary("Crea un incidente o requerimiento en Aranda")
-            .Produces<CreateTicketResponse>(
+            .Produces<RespuestaCrearTicket>(
                 StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable);
 
         group
-            .MapGet("/", ListOpenTicketsAsync)
-            .WithName("ListOpenTickets")
+            .MapGet("/", ListarTicketsAbiertosAsync)
+            .WithName("ListarTicketsAbiertos")
             .WithSummary("Lista los tickets abiertos del colaborador")
-            .Produces<IReadOnlyList<TicketSummaryResponse>>()
+            .Produces<IReadOnlyList<RespuestaResumenTicket>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound);
 
         group
-            .MapGet("/{caseNumber}", GetTicketDetailAsync)
-            .WithName("GetTicketDetail")
+            .MapGet("/{caseNumber}", ObtenerDetalleTicketAsync)
+            .WithName("ObtenerDetalleTicket")
             .WithSummary("Consulta el estado de un ticket propio")
             .WithDescription(
                 "Implementa REQ_07. Recibe el número de caso tal como lo " +
                 "devuelven la creación y el listado. Requiere " +
                 "temporalmente el username del propietario en " +
                 "X-Collaborator-Username.")
-            .Produces<TicketDetailResponse>()
+            .Produces<RespuestaDetalleTicket>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound);
 
         group
             .MapPost(
                 "/{caseNumber}/cancellation",
-                CancelTicketAsync)
-            .WithName("CancelTicket")
+                AnularTicketAsync)
+            .WithName("AnularTicket")
             .WithSummary("Anula un ticket propio")
-            .Produces<CancelTicketResponse>()
+            .Produces<RespuestaAnularTicket>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
@@ -60,11 +60,11 @@ public static class TicketEndpoints
         group
             .MapPost(
                 "/{caseNumber}/attachments",
-                UploadAttachmentAsync)
-            .WithName("UploadTicketAttachment")
+                AdjuntarArchivoAsync)
+            .WithName("AdjuntarArchivoTicket")
             .WithSummary("Adjunta un archivo a un ticket propio")
             .Accepts<IFormFile>("multipart/form-data")
-            .Produces<UploadAttachmentResponse>()
+            .Produces<RespuestaAdjuntarArchivo>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound)
             .DisableAntiforgery();
@@ -72,8 +72,8 @@ public static class TicketEndpoints
         return endpoints;
     }
 
-    private static async Task<IResult> CreateTicketAsync(
-        CreateTicketRequest request,
+    private static async Task<IResult> CrearTicketAsync(
+        SolicitudCrearTicket request,
         [FromHeader(Name = HeaderCurrentCollaborator.HeaderName)]
         string? collaboratorUsername,
         ITicketService ticketService,
@@ -90,7 +90,7 @@ public static class TicketEndpoints
                 statusCode: StatusCodes.Status201Created));
     }
 
-    private static async Task<IResult> ListOpenTicketsAsync(
+    private static async Task<IResult> ListarTicketsAbiertosAsync(
         [FromHeader(Name = HeaderCurrentCollaborator.HeaderName)]
         string? collaboratorUsername,
         ITicketService ticketService,
@@ -101,7 +101,7 @@ public static class TicketEndpoints
         return MapOperationResult(result, Results.Ok);
     }
 
-    private static async Task<IResult> GetTicketDetailAsync(
+    private static async Task<IResult> ObtenerDetalleTicketAsync(
         string caseNumber,
         [FromHeader(Name = HeaderCurrentCollaborator.HeaderName)]
         string? collaboratorUsername,
@@ -125,9 +125,9 @@ public static class TicketEndpoints
         };
     }
 
-    private static async Task<IResult> CancelTicketAsync(
+    private static async Task<IResult> AnularTicketAsync(
         string caseNumber,
-        CancelTicketRequest request,
+        SolicitudAnularTicket request,
         [FromHeader(Name = HeaderCurrentCollaborator.HeaderName)]
         string? collaboratorUsername,
         ITicketService ticketService,
@@ -140,7 +140,7 @@ public static class TicketEndpoints
         return MapOperationResult(result, Results.Ok);
     }
 
-    private static async Task<IResult> UploadAttachmentAsync(
+    private static async Task<IResult> AdjuntarArchivoAsync(
         string caseNumber,
         IFormFile file,
         [FromForm] string? description,
