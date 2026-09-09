@@ -4,7 +4,7 @@ namespace ArandaGateway.Api.Application.Tickets;
 
 public sealed record TicketDetailResult(
     TicketDetailResultStatus Status,
-    TicketDetailResponse? Ticket = null);
+    RespuestaDetalleTicket? Ticket = null);
 
 public enum TicketDetailResultStatus
 {

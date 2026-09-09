@@ -35,26 +35,26 @@ public sealed class TicketService(
 
     private readonly ArandaOptions arandaOptions = options.Value;
 
-    public async Task<TicketOperationResult<CreateTicketResponse>>
+    public async Task<TicketOperationResult<RespuestaCrearTicket>>
         CreateTicketAsync(
-            CreateTicketRequest request,
+            SolicitudCrearTicket request,
             CancellationToken cancellationToken)
     {
         if (currentCollaborator.Username is not { } username)
         {
-            return MissingCollaborator<CreateTicketResponse>();
+            return MissingCollaborator<RespuestaCrearTicket>();
         }
 
         if (string.IsNullOrWhiteSpace(request.Subject) ||
             string.IsNullOrWhiteSpace(request.Description))
         {
-            return Invalid<CreateTicketResponse>(
+            return Invalid<RespuestaCrearTicket>(
                 "El asunto y la descripción son obligatorios.");
         }
 
         if (!TryGetTypeConfiguration(request.Type, out var configuration))
         {
-            return ConfigurationMissing<CreateTicketResponse>();
+            return ConfigurationMissing<RespuestaCrearTicket>();
         }
 
         var user = await ResolveActiveUserAsync(
@@ -62,7 +62,7 @@ public sealed class TicketService(
             cancellationToken);
         if (user is null)
         {
-            return NotFoundOrNotOwned<CreateTicketResponse>();
+            return NotFoundOrNotOwned<RespuestaCrearTicket>();
         }
 
         var created = await arandaClient.CreateTicketAsync(
@@ -90,17 +90,17 @@ public sealed class TicketService(
             cancellationToken);
 
         return Success(
-            new CreateTicketResponse(created.IdByProject, "Creado"));
+            new RespuestaCrearTicket(created.IdByProject, "Creado"));
     }
 
     public async Task<
-        TicketOperationResult<IReadOnlyList<TicketSummaryResponse>>>
+        TicketOperationResult<IReadOnlyList<RespuestaResumenTicket>>>
         ListOpenTicketsAsync(CancellationToken cancellationToken)
     {
         if (currentCollaborator.Username is not { } username)
         {
             return MissingCollaborator<
-                IReadOnlyList<TicketSummaryResponse>>();
+                IReadOnlyList<RespuestaResumenTicket>>();
         }
 
         var user = await ResolveActiveUserAsync(
@@ -109,7 +109,7 @@ public sealed class TicketService(
         if (user is null)
         {
             return NotFoundOrNotOwned<
-                IReadOnlyList<TicketSummaryResponse>>();
+                IReadOnlyList<RespuestaResumenTicket>>();
         }
 
         var search = await arandaClient.SearchTicketsAsync(
@@ -125,7 +125,7 @@ public sealed class TicketService(
                 ticket.Subject is not null &&
                 ticket.StateName is not null &&
                 ticket.OpenedDate is not null)
-            .Select(ticket => new TicketSummaryResponse(
+            .Select(ticket => new RespuestaResumenTicket(
                 ticket.IdByProject!,
                 ticket.Subject!,
                 ticket.StateName!,
@@ -133,7 +133,7 @@ public sealed class TicketService(
                     ticket.OpenedDate!.Value)))
             .ToArray();
 
-        return Success<IReadOnlyList<TicketSummaryResponse>>(tickets);
+        return Success<IReadOnlyList<RespuestaResumenTicket>>(tickets);
     }
 
     public async Task<TicketDetailResult> GetTicketDetailAsync(
@@ -165,7 +165,7 @@ public sealed class TicketService(
 
         return new(
             TicketDetailResultStatus.Success,
-            new TicketDetailResponse(
+            new RespuestaDetalleTicket(
                 ticket.IdByProject,
                 ticket.StateName,
                 ticket.GroupName,
@@ -174,26 +174,26 @@ public sealed class TicketService(
                 null));
     }
 
-    public async Task<TicketOperationResult<CancelTicketResponse>>
+    public async Task<TicketOperationResult<RespuestaAnularTicket>>
         CancelTicketAsync(
             string caseNumber,
-            CancelTicketRequest request,
+            SolicitudAnularTicket request,
             CancellationToken cancellationToken)
     {
         if (currentCollaborator.Username is not { } username)
         {
-            return MissingCollaborator<CancelTicketResponse>();
+            return MissingCollaborator<RespuestaAnularTicket>();
         }
 
         if (!request.Confirmed)
         {
-            return Invalid<CancelTicketResponse>(
+            return Invalid<RespuestaAnularTicket>(
                 "La anulación requiere confirmación explícita.");
         }
 
         if (string.IsNullOrWhiteSpace(request.Reason))
         {
-            return Invalid<CancelTicketResponse>(
+            return Invalid<RespuestaAnularTicket>(
                 "El motivo de anulación es obligatorio.");
         }
 
@@ -203,7 +203,7 @@ public sealed class TicketService(
             cancellationToken);
         if (ticket is null)
         {
-            return NotFoundOrNotOwned<CancelTicketResponse>();
+            return NotFoundOrNotOwned<RespuestaAnularTicket>();
         }
 
         if (ticket.StateName is null ||
@@ -223,7 +223,7 @@ public sealed class TicketService(
         };
         if (!IsPositive(cancellationStateId))
         {
-            return ConfigurationMissing<CancelTicketResponse>();
+            return ConfigurationMissing<RespuestaAnularTicket>();
         }
 
         var registryTypeId = IsPositive(ticket.RegistryTypeId)
@@ -231,7 +231,7 @@ public sealed class TicketService(
             : arandaOptions.RegistryTypeId;
         if (!IsPositive(registryTypeId))
         {
-            return ConfigurationMissing<CancelTicketResponse>();
+            return ConfigurationMissing<RespuestaAnularTicket>();
         }
 
         var update = await arandaClient.UpdateTicketAsync(
@@ -258,12 +258,12 @@ public sealed class TicketService(
         }
 
         return Success(
-            new CancelTicketResponse(
+            new RespuestaAnularTicket(
                 ticket.IdByProject ?? caseNumber.Trim(),
                 "Anulado"));
     }
 
-    public async Task<TicketOperationResult<UploadAttachmentResponse>>
+    public async Task<TicketOperationResult<RespuestaAdjuntarArchivo>>
         UploadAttachmentAsync(
             string caseNumber,
             TicketAttachment attachment,
@@ -271,7 +271,7 @@ public sealed class TicketService(
     {
         if (currentCollaborator.Username is not { } username)
         {
-            return MissingCollaborator<UploadAttachmentResponse>();
+            return MissingCollaborator<RespuestaAdjuntarArchivo>();
         }
 
         var fileName = Path.GetFileName(attachment.FileName);
@@ -280,14 +280,14 @@ public sealed class TicketService(
             fileName.Any(char.IsControl) ||
             !AllowedExtensions.Contains(extension))
         {
-            return Invalid<UploadAttachmentResponse>(
+            return Invalid<RespuestaAdjuntarArchivo>(
                 "El formato del archivo no está permitido.");
         }
 
         if (attachment.Length is <= 0 ||
             attachment.Length > arandaOptions.MaxAttachmentBytes)
         {
-            return Invalid<UploadAttachmentResponse>(
+            return Invalid<RespuestaAdjuntarArchivo>(
                 "El archivo supera el límite configurado.");
         }
 
@@ -297,7 +297,7 @@ public sealed class TicketService(
             cancellationToken);
         if (ticket is null)
         {
-            return NotFoundOrNotOwned<UploadAttachmentResponse>();
+            return NotFoundOrNotOwned<RespuestaAdjuntarArchivo>();
         }
 
         var uploadResults = await arandaClient.UploadAttachmentAsync(
@@ -318,7 +318,7 @@ public sealed class TicketService(
         }
 
         return Success(
-            new UploadAttachmentResponse(result.FileName, true));
+            new RespuestaAdjuntarArchivo(result.FileName, true));
     }
 
     private async Task<ArandaUser?> ResolveActiveUserAsync(
