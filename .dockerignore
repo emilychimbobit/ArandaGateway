@@ -1,0 +1,15 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/.git/
+**/.github/
+**/*.user
+tests/
+docs/
+data/
+src/frontend/
+src/ia/
+src/integration/
+README.md
+DEF.md
