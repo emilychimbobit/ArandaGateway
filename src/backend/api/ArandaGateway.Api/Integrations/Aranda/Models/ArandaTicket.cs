@@ -26,7 +26,10 @@ public sealed record ArandaTicket
 
     public required bool IsClosed { get; init; }
 
-    public required long ItemVersion { get; init; }
+    /// <summary>
+    /// Aranda devuelve null en la búsqueda (api/v9/item/search).
+    /// </summary>
+    public long? ItemVersion { get; init; }
 
     public required long ModelId { get; init; }
 

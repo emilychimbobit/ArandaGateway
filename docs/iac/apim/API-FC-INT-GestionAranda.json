@@ -1,0 +1,504 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "API-FC-INT-GestionAranda (Backend Aranda v9)",
+    "description": "Definición de las operaciones del API externo de Aranda Service Management (Electrodata) que consume la gateway para el MVP: crear caso, buscar casos, obtener caso, adjuntar archivo y consultar los CI del inventario asignados a un usuario. Se registra en APIM como backend. Autenticación mediante el encabezado X-Authorization, cuyo valor ya incluye el prefijo Bearer. No exponer este API directamente al consumidor final.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://mesadeayuda.divisionminera.com/ASMSAPI",
+      "description": "Aranda Service Management API v9"
+    }
+  ],
+  "security": [
+    {
+      "arandaAuthorization": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Casos",
+      "description": "Operaciones sobre casos (items) de Aranda"
+    },
+    {
+      "name": "Archivos",
+      "description": "Adjuntos de casos"
+    },
+    {
+      "name": "CMDB",
+      "description": "Elementos de configuración (CI) del inventario"
+    }
+  ],
+  "paths": {
+    "/api/v9/item/": {
+      "post": {
+        "tags": ["Casos"],
+        "operationId": "CrearCaso",
+        "summary": "Crea un caso (incidente o requerimiento)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArandaCreateTicketRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Caso creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArandaCreatedTicket"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v9/item/search": {
+      "post": {
+        "tags": ["Casos"],
+        "operationId": "BuscarCasos",
+        "summary": "Busca casos según criterios",
+        "parameters": [
+          {
+            "name": "language",
+            "in": "query",
+            "required": false,
+            "description": "Identificador de idioma. La gateway usa 0.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArandaSearchTicketsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resultado paginado de casos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArandaPagedTicketResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v9/item/{id}": {
+      "get": {
+        "tags": ["Casos"],
+        "operationId": "ObtenerCaso",
+        "summary": "Obtiene un caso por identificador",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Identificador interno del caso en Aranda.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Caso encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArandaTicket"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v9/file/": {
+      "post": {
+        "tags": ["Archivos"],
+        "operationId": "AdjuntarArchivo",
+        "summary": "Adjunta un archivo a un caso",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["FileItemId", "FileItemType", "Data0"],
+                "properties": {
+                  "FileItemId": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "Identificador del caso al que se adjunta."
+                  },
+                  "FileItemType": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Tipo de item del caso."
+                  },
+                  "UploadType": {
+                    "type": "integer",
+                    "format": "int32",
+                    "default": 0
+                  },
+                  "Concept": {
+                    "type": "integer",
+                    "format": "int32",
+                    "default": 0
+                  },
+                  "Description": {
+                    "type": "string"
+                  },
+                  "Data0": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Contenido binario del archivo."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resultado del adjunto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ArandaFileUploadResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v9/ci/cisbyuserandprojects": {
+      "post": {
+        "tags": ["CMDB"],
+        "operationId": "ObtenerCisPorUsuarioYProyectos",
+        "summary": "Lista los CI (equipos) asignados a un usuario dentro de los proyectos indicados",
+        "description": "Consulta del inventario/CMDB usada por la gateway para REQ_10. Devuelve los elementos de configuración cuyo responsable es el usuario indicado.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArandaCisByUserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Listado de CI asignados al usuario",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArandaPagedCiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "arandaAuthorization": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Authorization",
+        "description": "Credencial de Aranda. El valor ya incluye el prefijo Bearer; no anteponer otro prefijo ni usar el encabezado Authorization estándar."
+      }
+    },
+    "schemas": {
+      "ArandaCreateTicketRequest": {
+        "type": "object",
+        "required": [
+          "categoryId",
+          "customerId",
+          "applicantId",
+          "description",
+          "itemType",
+          "impactId",
+          "urgencyId",
+          "modelId",
+          "projectId",
+          "registryTypeId",
+          "unitId",
+          "serviceId",
+          "stateId",
+          "authorId",
+          "groupId",
+          "subject"
+        ],
+        "properties": {
+          "categoryId": { "type": "integer", "format": "int64" },
+          "consoleType": { "type": "string", "default": "specialist" },
+          "customerId": { "type": "integer", "format": "int64" },
+          "applicantId": { "type": "integer", "format": "int64" },
+          "description": { "type": "string" },
+          "itemType": { "type": "integer", "format": "int64" },
+          "itemVersion": { "type": "integer", "format": "int32" },
+          "impactId": { "type": "integer", "format": "int64" },
+          "urgencyId": { "type": "integer", "format": "int64" },
+          "modelId": { "type": "integer", "format": "int64" },
+          "projectId": { "type": "integer", "format": "int64" },
+          "registryTypeId": { "type": "integer", "format": "int64" },
+          "unitId": { "type": "integer", "format": "int64" },
+          "serviceId": { "type": "integer", "format": "int64" },
+          "stateId": { "type": "integer", "format": "int64" },
+          "authorId": { "type": "integer", "format": "int64" },
+          "groupId": { "type": "integer", "format": "int64" },
+          "tempItemId": { "type": "integer", "format": "int32", "default": -2 },
+          "subject": { "type": "string" },
+          "listAdditionalField": {
+            "type": "array",
+            "items": { "type": "object" }
+          }
+        }
+      },
+      "ArandaCreatedTicket": {
+        "type": "object",
+        "required": ["id", "idByProject"],
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "idByProject": { "type": "string" }
+        }
+      },
+      "ArandaSearchTicketsRequest": {
+        "type": "object",
+        "required": ["criteria", "projects", "types"],
+        "properties": {
+          "criteria": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ArandaSearchCriterion" }
+          },
+          "level": { "type": "integer", "format": "int32" },
+          "orderField": { "type": "string", "default": "openedDate" },
+          "orderType": { "type": "string", "default": "desc" },
+          "pageIndex": { "type": "integer", "format": "int32" },
+          "pageSize": { "type": "integer", "format": "int32", "default": 50 },
+          "projects": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ArandaProjectFilter" }
+          },
+          "repository": { "type": "integer", "format": "int32", "default": 1 },
+          "types": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ArandaItemTypeFilter" }
+          },
+          "validate": { "type": "boolean", "default": true },
+          "viewId": { "type": "integer", "format": "int32", "default": -6 }
+        }
+      },
+      "ArandaSearchCriterion": {
+        "type": "object",
+        "required": [
+          "fieldName",
+          "fieldValue",
+          "operatorName",
+          "operatorValue",
+          "value",
+          "valueName",
+          "type"
+        ],
+        "properties": {
+          "fieldName": { "type": "string" },
+          "fieldValue": { "type": "string" },
+          "logicOperator": { "type": "string", "nullable": true },
+          "operatorName": { "type": "string" },
+          "operatorValue": { "type": "string" },
+          "value": { "type": "integer", "format": "int64" },
+          "valueName": { "type": "integer", "format": "int64" },
+          "type": { "type": "integer", "format": "int32" }
+        }
+      },
+      "ArandaProjectFilter": {
+        "type": "object",
+        "required": ["project"],
+        "properties": {
+          "project": { "type": "integer", "format": "int64" }
+        }
+      },
+      "ArandaItemTypeFilter": {
+        "type": "object",
+        "required": ["itemType"],
+        "properties": {
+          "itemType": { "type": "integer", "format": "int64" }
+        }
+      },
+      "ArandaPagedTicketResponse": {
+        "type": "object",
+        "required": ["content", "totalItems"],
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ArandaTicket" }
+          },
+          "totalItems": { "type": "integer", "format": "int64" },
+          "totalPage": { "type": "integer", "format": "int64", "nullable": true },
+          "additionalData": { "nullable": true }
+        }
+      },
+      "ArandaTicket": {
+        "type": "object",
+        "description": "Caso de Aranda. La respuesta real trae muchos más campos (datos de SLA, ubicación, prioridad, responsables); aquí solo se documentan los que consume la gateway.",
+        "required": [
+          "id",
+          "stateId",
+          "isClosed",
+          "modelId",
+          "projectId",
+          "serviceId",
+          "categoryId",
+          "itemType"
+        ],
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "idByProject": { "type": "string", "nullable": true },
+          "customerId": { "type": "integer", "format": "int64", "nullable": true },
+          "customerName": { "type": "string", "nullable": true },
+          "customerUserName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Presente en el detalle (item/{id}). La búsqueda devuelve customerName en su lugar."
+          },
+          "subject": { "type": "string", "nullable": true },
+          "stateId": { "type": "integer", "format": "int64" },
+          "stateName": { "type": "string", "nullable": true },
+          "openedDate": { "type": "integer", "format": "int64", "nullable": true },
+          "modifiedDate": { "type": "integer", "format": "int64", "nullable": true },
+          "closedDate": { "type": "integer", "format": "int64", "nullable": true },
+          "groupName": { "type": "string", "nullable": true },
+          "descriptionNoHtml": { "type": "string", "nullable": true },
+          "commentaryNoHtml": { "type": "string", "nullable": true },
+          "isClosed": { "type": "boolean" },
+          "itemVersion": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true,
+            "description": "La búsqueda lo devuelve como null."
+          },
+          "itemTypeName": { "type": "string", "nullable": true },
+          "modelId": { "type": "integer", "format": "int64" },
+          "projectId": { "type": "integer", "format": "int64" },
+          "registryTypeId": { "type": "integer", "format": "int64", "nullable": true },
+          "serviceId": { "type": "integer", "format": "int64" },
+          "categoryId": { "type": "integer", "format": "int64" },
+          "itemType": { "type": "integer", "format": "int64" }
+        }
+      },
+      "ArandaFileUploadResult": {
+        "type": "object",
+        "required": ["fileName", "result"],
+        "properties": {
+          "description": { "type": "string", "nullable": true },
+          "fileName": { "type": "string" },
+          "result": { "type": "boolean" },
+          "url": { "type": "string", "nullable": true }
+        }
+      },
+      "ArandaCisByUserRequest": {
+        "type": "object",
+        "required": ["projects", "userId"],
+        "properties": {
+          "projects": {
+            "type": "array",
+            "description": "Proyectos sobre los que se busca. Este endpoint espera la propiedad id, no project.",
+            "items": { "$ref": "#/components/schemas/ArandaCiProjectFilter" }
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identificador interno del usuario responsable de los CI."
+          }
+        },
+        "example": {
+          "projects": [{ "id": 1 }],
+          "userId": 1
+        }
+      },
+      "ArandaCiProjectFilter": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": { "type": "integer", "format": "int64" }
+        }
+      },
+      "ArandaPagedCiResponse": {
+        "type": "object",
+        "required": ["content", "totalItems"],
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ArandaCi" }
+          },
+          "totalItems": { "type": "integer", "format": "int64" }
+        }
+      },
+      "ArandaCi": {
+        "type": "object",
+        "description": "Elemento de configuración del inventario. El identificador viene con la primera letra en mayúscula (Id).",
+        "required": ["Id", "name", "categoryId", "stateId", "isClosed"],
+        "properties": {
+          "Id": { "type": "integer", "format": "int64" },
+          "name": {
+            "type": "string",
+            "description": "Nombre del CI; incluye la categoría y el código de serie, por ejemplo LAPTOP MARCOBRE PF47GX2H."
+          },
+          "categoryId": { "type": "integer", "format": "int64" },
+          "categoryName": { "type": "string", "nullable": true },
+          "description": { "type": "string", "nullable": true },
+          "licenseNumber": { "type": "string", "nullable": true },
+          "imageId": { "type": "integer", "format": "int64", "nullable": true },
+          "isClosed": { "type": "boolean" },
+          "stateId": { "type": "integer", "format": "int64" },
+          "stateName": { "type": "string", "nullable": true },
+          "stringStatusColor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Color RGB del estado en formato R.G.B, por ejemplo 153.126.194."
+          },
+          "acceptDate": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true,
+            "description": "Fecha de aceptación en milisegundos epoch."
+          },
+          "responsibleDate": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true,
+            "description": "Fecha de asignación al responsable en milisegundos epoch."
+          }
+        }
+      }
+    }
+  }
+}

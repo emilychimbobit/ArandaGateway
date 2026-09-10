@@ -107,13 +107,11 @@ La documentación oficial confirma que `repository = 1` representa casos abierto
 
 ## Seguridad y observabilidad
 
-Los endpoints bajo `/api/tickets` requieren una API key propia de la gateway:
+La gateway no autentica solicitudes entrantes:
 
-- recibirla exclusivamente en `X-Api-Key` y validarla contra `Gateway:ApiKey`;
-- APIM administra y envía esta credencial; nunca reutilizar `Aranda:ApiKey` como clave de entrada;
-- mantener `Gateway:ApiKey` y `Aranda:ApiKey` como secretos distintos y no registrarlos;
-- dejar Swagger y `/health` anónimos; Swagger debe permitir ingresar `X-Api-Key` mediante **Authorize**;
-- tener presente que esta API key autentica a APIM, no identifica al colaborador final;
+- todos los endpoints (`/api/tickets`, `/api/equipos`, Swagger y `/health`) son anónimos;
+- el control de acceso se delega a APIM y a la red del App Service; no agregar validación de `X-Api-Key` ni una sección `Gateway` en configuración;
+- `Aranda:ApiKey` es un secreto de salida hacia Aranda; nunca exponerlo ni exigirlo al consumidor;
 - aislar la obtención de la identidad actual detrás de una abstracción reemplazable para incorporar posteriormente Microsoft Entra ID;
 - obtener temporalmente el username mediante `X-Collaborator-Username` y resolverlo con `GET /api/v9/user/{username}/detail`; no incluir el username en DTOs públicos;
 - no considerar REQ_05, REQ_06 ni REQ_07 listos para producción mientras no exista una identidad autenticada y un mapeo confiable con Aranda;

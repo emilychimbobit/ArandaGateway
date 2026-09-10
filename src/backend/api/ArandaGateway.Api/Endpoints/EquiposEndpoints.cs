@@ -12,8 +12,7 @@ public static class EquiposEndpoints
     {
         var group = endpoints
             .MapGroup("/api/equipos")
-            .WithTags("Equipos")
-            .RequireAuthorization();
+            .WithTags("Equipos");
 
         group
             .MapGet("/", ListAssignedEquiposAsync)

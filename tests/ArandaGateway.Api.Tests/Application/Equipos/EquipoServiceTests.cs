@@ -31,8 +31,7 @@ public sealed class EquipoServiceTests
             CisResponse = new()
             {
                 Content = [],
-                TotalItems = 0,
-                TotalPage = 0
+                TotalItems = 0
             }
         };
         var service = CreateService(client);
@@ -54,15 +53,18 @@ public sealed class EquipoServiceTests
                 [
                     new()
                     {
-                        Id = 101,
-                        CiTypeName = "Laptop",
-                        ModelName = "ThinkPad T14",
-                        Code = "ACT-00982",
-                        StateName = "Asignado"
+                        Id = 7508,
+                        Name = "LAPTOP MARCOBRE PF47GX2H",
+                        CategoryId = 332,
+                        CategoryName = "LAPTOP MARCOBRE",
+                        LicenseNumber = "",
+                        IsClosed = false,
+                        StateId = 4002,
+                        StateName = "Asignado",
+                        StringStatusColor = "153.126.194"
                     }
                 ],
-                TotalItems = 1,
-                TotalPage = 1
+                TotalItems = 1
             }
         };
         var service = CreateService(client);
@@ -71,12 +73,55 @@ public sealed class EquipoServiceTests
 
         Assert.Equal(EquipoOperationResultStatus.Success, result.Status);
         var equipo = Assert.Single(result.Value!);
-        Assert.Equal("Laptop", equipo.Tipo);
-        Assert.Equal("ThinkPad T14", equipo.Modelo);
-        Assert.Equal("ACT-00982", equipo.Codigo);
+        Assert.Equal("LAPTOP MARCOBRE", equipo.Tipo);
+        Assert.Equal("LAPTOP MARCOBRE PF47GX2H", equipo.Modelo);
+        Assert.Equal("PF47GX2H", equipo.Codigo);
         Assert.Equal("Asignado", equipo.Estado);
-        Assert.Equal(10, client.LastCiRequest?.UserId); 
-        Assert.Equal(1, client.LastCiRequest?.Projects[0].Project);
+        Assert.Equal(10, client.LastCiRequest?.UserId);
+        Assert.Equal(1, client.LastCiRequest?.Projects[0].Id);
+    }
+
+    [Fact]
+    public async Task ListAssignedEquiposAsync_WhenNameHasNoSerial_FallsBackToIdentifiers()
+    {
+        var client = new StubArandaClient
+        {
+            User = CreateUser(),
+            CisResponse = new()
+            {
+                Content =
+                [
+                    new()
+                    {
+                        Id = 4850,
+                        Name = "LINEA MARCOBRE",
+                        CategoryName = "LINEA MARCOBRE",
+                        LicenseNumber = "914110128",
+                        StateName = "Asignado"
+                    },
+                    new()
+                    {
+                        Id = 9013,
+                        Name = null,
+                        CategoryName = null,
+                        LicenseNumber = "",
+                        StateName = null
+                    }
+                ],
+                TotalItems = 2
+            }
+        };
+        var service = CreateService(client);
+
+        var result = await service.ListAssignedEquiposAsync(CancellationToken.None);
+
+        Assert.Equal(EquipoOperationResultStatus.Success, result.Status);
+        var equipos = result.Value!;
+        Assert.Equal("914110128", equipos[0].Codigo);
+        Assert.Equal("9013", equipos[1].Codigo);
+        Assert.Equal("Sin tipo", equipos[1].Tipo);
+        Assert.Equal("Sin modelo", equipos[1].Modelo);
+        Assert.Equal("Sin estado", equipos[1].Estado);
     }
 
     [Fact]
