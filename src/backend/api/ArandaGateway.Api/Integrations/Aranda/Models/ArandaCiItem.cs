@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace ArandaGateway.Api.Integrations.Aranda.Models;
 
 /// <summary>
@@ -17,6 +19,11 @@ public sealed record ArandaCiItem
     public long? StateId { get; init; }
     public string? StateName { get; init; }
     public string? StringStatusColor { get; init; }
+    // El CMDB devuelve estas fechas en el formato heredado
+    // "/Date(1728432000000+0000)/", no como epoch numerico.
+    [JsonConverter(typeof(ArandaEpochMillisecondsConverter))]
     public long? AcceptDate { get; init; }
+
+    [JsonConverter(typeof(ArandaEpochMillisecondsConverter))]
     public long? ResponsibleDate { get; init; }
 }

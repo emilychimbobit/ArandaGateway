@@ -12,6 +12,23 @@ public sealed class ArandaOptions
     [Required]
     public required string ApiKey { get; init; }
 
+    /// <summary>
+    /// Clave de suscripción de Azure API Management, enviada en
+    /// <c>Ocp-Apim-Subscription-Key</c>. Solo es necesaria cuando
+    /// <see cref="BaseUrl"/> apunta a APIM y no directo a Aranda; sin ella
+    /// APIM responde 401 antes de llegar a Aranda.
+    /// </summary>
+    public string? SubscriptionKey { get; init; }
+
+    /// <summary>
+    /// Cookie de sesión de Aranda (<c>AuthCookieASMS=...</c>), enviada tal cual
+    /// en el encabezado <c>Cookie</c>. Aranda exige la cookie además del token
+    /// de <see cref="ApiKey"/>: sin ella responde 401 aunque el token sea
+    /// válido. Es una credencial de sesión y caduca, así que se configura por
+    /// secreto o variable de entorno, nunca en appsettings.json.
+    /// </summary>
+    public string? AuthCookie { get; init; }
+
     [Range(1, long.MaxValue)]
     public long ProjectId { get; init; }
 

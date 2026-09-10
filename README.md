@@ -33,7 +33,27 @@ Los secretos se administran con .NET User Secrets:
 dotnet user-secrets init --project .\src\backend\api\ArandaGateway.Api\ArandaGateway.Api.csproj
 dotnet user-secrets set "Aranda:BaseUrl" "https://HOST/ASMSAPI/" --project .\src\backend\api\ArandaGateway.Api\ArandaGateway.Api.csproj
 dotnet user-secrets set "Aranda:ApiKey" "Bearer API_KEY" --project .\src\backend\api\ArandaGateway.Api\ArandaGateway.Api.csproj
+dotnet user-secrets set "Aranda:SubscriptionKey" "SUBSCRIPTION_KEY" --project .\src\backend\api\ArandaGateway.Api\ArandaGateway.Api.csproj
+dotnet user-secrets set "Aranda:AuthCookie" "AuthCookieASMS=VALOR" --project .\src\backend\api\ArandaGateway.Api\ArandaGateway.Api.csproj
 ```
+
+La salida hacia Aranda necesita **tres** credenciales, no una. Faltando
+cualquiera la respuesta es `502` con `errorCode` `ARANDA_401`:
+
+| Secreto | Encabezado | Quién lo exige |
+| --- | --- | --- |
+| `Aranda:ApiKey` | `X-Authorization` | Aranda |
+| `Aranda:SubscriptionKey` | `Ocp-Apim-Subscription-Key` | Azure API Management |
+| `Aranda:AuthCookie` | `Cookie` | Aranda (sesión `AuthCookieASMS`) |
+
+`SubscriptionKey` solo hace falta cuando `Aranda:BaseUrl` apunta a APIM
+(`https://apim-servicios.azure-api.net/fcintgestionaranda/v1`) y no directo a
+Aranda; sin ella APIM responde 401 antes de enrutar.
+
+`AuthCookie` es una **cookie de sesión y caduca**. Aranda devuelve 401 con la
+página de IIS "You do not have permission to view this directory or page."
+cuando falta o venció, aunque el token de `ApiKey` siga vigente. Al vencer hay
+que renovarla; no se versiona en el repositorio.
 
 La gateway no valida credenciales de entrada: sus endpoints son anónimos y el
 control de acceso queda delegado a APIM y a la red del App Service.
