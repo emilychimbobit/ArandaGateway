@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "API-NE-GestionAranda (Gateway)",
-    "description": "Puerta de enlace de la aplicación (App Service .NET) para Aranda Service Management. Expone solo las capacidades del MVP: crear ticket, listar tickets abiertos, consultar detalle, anular y adjuntar archivos. Autenticación mediante API key propia de la gateway enviada por APIM en el encabezado X-Api-Key. La identidad del colaborador se envía temporalmente en X-Collaborator-Username hasta integrar Microsoft Entra ID.",
+    "description": "Puerta de enlace de la aplicación (App Service .NET) para Aranda Service Management. Expone solo las capacidades del MVP: crear ticket, listar tickets abiertos, consultar detalle, anular, adjuntar archivos y revisar los equipos asignados. Autenticación mediante API key propia de la gateway enviada por APIM en el encabezado X-Api-Key. La identidad del colaborador se envía temporalmente en X-Collaborator-Username hasta integrar Microsoft Entra ID.",
     "version": "1.0.0"
   },
   "servers": [
@@ -20,6 +20,10 @@
     {
       "name": "Tickets",
       "description": "Operaciones de tickets del colaborador"
+    },
+    {
+      "name": "Equipos",
+      "description": "Consulta de equipos asignados al colaborador"
     }
   ],
   "paths": {
@@ -245,6 +249,50 @@
           }
         }
       }
+    },
+    "/api/equipos": {
+      "get": {
+        "tags": ["Equipos"],
+        "operationId": "ListarEquiposAsignados",
+        "summary": "Revisión de equipos asignados al colaborador (REQ_10)",
+        "description": "Consulta en el inventario/CMDB de Aranda los equipos asociados al colaborador autenticado. Solo expone tipo, modelo, código y estado.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CollaboratorUsername"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado de equipos asignados, o el aviso de que no hay registros asociados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/RespuestaEquipo"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/RespuestaSinEquipos"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetails"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "503": {
+            "$ref": "#/components/responses/ProblemDetails"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -400,6 +448,50 @@
           },
           "uploaded": {
             "type": "boolean"
+          }
+        }
+      },
+      "RespuestaEquipo": {
+        "type": "object",
+        "required": ["tipo", "modelo", "codigo", "estado"],
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "description": "Categoría del equipo en la CMDB, por ejemplo LAPTOP MARCOBRE."
+          },
+          "modelo": {
+            "type": "string",
+            "description": "Nombre del elemento de configuración."
+          },
+          "codigo": {
+            "type": "string",
+            "description": "Código o serie del equipo."
+          },
+          "estado": {
+            "type": "string",
+            "description": "Estado del equipo en la CMDB, por ejemplo Asignado."
+          }
+        }
+      },
+      "RespuestaSinEquipos": {
+        "type": "object",
+        "description": "Respuesta cuando el colaborador no tiene equipos asociados.",
+        "required": ["mensaje", "total", "data"],
+        "properties": {
+          "mensaje": {
+            "type": "string",
+            "example": "Sin registros asociados"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32",
+            "example": 0
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RespuestaEquipo"
+            }
           }
         }
       },
