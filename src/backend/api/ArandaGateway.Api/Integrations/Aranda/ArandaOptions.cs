@@ -29,6 +29,16 @@ public sealed class ArandaOptions
     /// </summary>
     public string? AuthCookie { get; init; }
 
+    /// <summary>
+    /// Cada cuántos minutos se toca la sesión de Aranda para que no caduque
+    /// por inactividad. Debe quedar holgadamente por debajo del tiempo de
+    /// expiración de Aranda: se observó una sesión muerta tras unos 10 minutos
+    /// sin tráfico, de ahí el valor predeterminado de 5. Con <c>0</c> se
+    /// desactiva el latido.
+    /// </summary>
+    [Range(0, 60)]
+    public int SessionKeepAliveMinutes { get; init; } = 5;
+
     [Range(1, long.MaxValue)]
     public long ProjectId { get; init; }
 

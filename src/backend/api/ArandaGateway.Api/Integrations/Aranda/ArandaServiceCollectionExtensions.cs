@@ -50,20 +50,21 @@ public static class ArandaServiceCollectionExtensions
                         options.SubscriptionKey);
                 }
 
-                // Aranda exige la cookie de sesión ademas del token de
+                // Aranda exige una cookie de sesión ademas del token de
                 // X-Authorization; sin ella responde 401 aunque el token sea
-                // valido.
-                if (!string.IsNullOrWhiteSpace(options.AuthCookie))
-                {
-                    client.DefaultRequestHeaders.TryAddWithoutValidation(
-                        "Cookie",
-                        options.AuthCookie);
-                }
+                // valido. La cookie no se fija aqui porque cambia en cada
+                // respuesta: la pone ArandaSessionCookieHandler.
             })
+            .AddHttpMessageHandler<ArandaSessionCookieHandler>()
             // El manejo automatico de cookies pisaria el encabezado Cookie que
-            // se fija arriba; la sesion de Aranda se envia explicitamente.
+            // fija el handler; la sesion de Aranda se envia explicitamente.
             .ConfigurePrimaryHttpMessageHandler(() =>
                 new HttpClientHandler { UseCookies = false });
+
+        // Singleton: la sesion viva es una sola para todo el proceso.
+        services.AddSingleton<ArandaSessionCookie>();
+        services.AddTransient<ArandaSessionCookieHandler>();
+        services.AddHostedService<ArandaSessionKeepAliveService>();
 
         return services;
     }

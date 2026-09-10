@@ -52,8 +52,29 @@ Aranda; sin ella APIM responde 401 antes de enrutar.
 
 `AuthCookie` es una **cookie de sesión y caduca**. Aranda devuelve 401 con la
 página de IIS "You do not have permission to view this directory or page."
-cuando falta o venció, aunque el token de `ApiKey` siga vigente. Al vencer hay
-que renovarla; no se versiona en el repositorio.
+cuando falta o venció, aunque el token de `ApiKey` siga vigente. No se versiona
+en el repositorio.
+
+#### Cómo se mantiene viva la sesión
+
+Aranda usa expiración deslizante: devuelve un `Set-Cookie` renovado en cada
+respuesta y lo que mata la sesión es la **inactividad**, no el tiempo
+transcurrido. Se midió una sesión muerta tras unos 10 minutos sin tráfico.
+
+El gateway hace dos cosas para que no caduque:
+
+- `ArandaSessionCookieHandler` guarda la cookie de cada respuesta y la usa en
+  la siguiente. `Aranda:AuthCookie` es solo la **semilla** del primer request.
+- `ArandaSessionKeepAliveService` consulta Aranda cada
+  `Aranda:SessionKeepAliveMinutes` minutos (5 por omisión, `0` desactiva) para
+  reiniciar el contador aunque no haya tráfico de usuarios.
+
+Con eso la sesión no caduca mientras el gateway esté arriba. Sigue haciendo
+falta una cookie **válida** en dos casos: al arrancar el proceso, y tras una
+parada larga. Renovarla es manual: sacarla de una petición autenticada (por
+ejemplo desde Postman) y actualizar el secreto. La solución definitiva es que
+el gateway inicie sesión por su cuenta, y eso requiere que publiquen la
+operación de autenticación de Aranda en APIM, hoy ausente del spec.
 
 La gateway no valida credenciales de entrada: sus endpoints son anónimos y el
 control de acceso queda delegado a APIM y a la red del App Service.

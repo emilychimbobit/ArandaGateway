@@ -127,7 +127,12 @@ public sealed class ArandaClient(HttpClient httpClient) : IArandaClient
     {
         if (!response.IsSuccessStatusCode)
         {
-            throw new ArandaApiException(response.StatusCode);
+            throw new ArandaApiException(
+                response.StatusCode,
+                requestUri: response.RequestMessage?.RequestUri?.ToString(),
+                responseBody: await ReadErrorBodyAsync(
+                    response,
+                    cancellationToken));
         }
 
         return await response.Content.ReadFromJsonAsync<TResponse>(
@@ -135,6 +140,36 @@ public sealed class ArandaClient(HttpClient httpClient) : IArandaClient
             ?? throw new ArandaApiException(
                 response.StatusCode,
                 "Aranda returned an empty response.");
+    }
+
+    /// <summary>
+    /// Recorta el cuerpo del error: las páginas de bloqueo (IIS, Cloudflare)
+    /// llegan como HTML de varios KB y solo interesa el inicio.
+    /// </summary>
+    private static async Task<string?> ReadErrorBodyAsync(
+        HttpResponseMessage response,
+        CancellationToken cancellationToken)
+    {
+        const int maxLength = 300;
+
+        try
+        {
+            var body = await response.Content.ReadAsStringAsync(
+                cancellationToken);
+
+            if (string.IsNullOrWhiteSpace(body))
+            {
+                return null;
+            }
+
+            body = body.Trim();
+            return body.Length <= maxLength ? body : body[..maxLength] + "…";
+        }
+        catch
+        {
+            // El diagnóstico no debe cambiar el error que se propaga.
+            return null;
+        }
     }
 
     public Task<ArandaPagedResponse<ArandaCiItem>> GetCisByUserAndProjectsAsync(
