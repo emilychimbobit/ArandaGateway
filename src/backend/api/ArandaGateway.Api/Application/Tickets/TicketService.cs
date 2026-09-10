@@ -11,7 +11,8 @@ namespace ArandaGateway.Api.Application.Tickets;
 public sealed class TicketService(
     ICurrentCollaborator currentCollaborator,
     IArandaClient arandaClient,
-    IOptions<ArandaOptions> options) : ITicketService
+    IOptions<ArandaOptions> options,
+    ILogger<TicketService>? logger = null) : ITicketService
 {
     private static readonly HashSet<string> AllowedCancellationStates =
         new(StringComparer.OrdinalIgnoreCase)
@@ -325,6 +326,21 @@ public sealed class TicketService(
         string username,
         CancellationToken cancellationToken)
     {
+        // PARCHE TEMPORAL: la API de usuarios de Aranda no está disponible,
+        // así que todas las operaciones de tickets se ejecutan con un usuario
+        // fijo. Se retira poniendo Aranda:UserOverride:Enabled en false.
+        if (arandaOptions.UserOverride is
+            { Enabled: true, Tickets: { IsUsable: true } tickets })
+        {
+            logger?.LogWarning(
+                "PARCHE TEMPORAL: se ignora el colaborador {Username} y se usa el usuario fijo {OverrideUserName} ({OverrideUserId}) para tickets.",
+                username,
+                tickets.UserName,
+                tickets.Id);
+
+            return tickets.ToArandaUser();
+        }
+
         try
         {
             var user = await arandaClient.GetUserByUsernameAsync(
@@ -408,22 +424,25 @@ public sealed class TicketService(
             return null;
         }
 
+        // La propiedad se verifica contra el usuario resuelto en Aranda, no
+        // contra la cabecera: así el chequeo sigue siendo coherente cuando el
+        // PARCHE TEMPORAL de usuario fijo está activo.
         return await GetOwnedTicketOrNullAsync(
             match.Id,
-            username,
+            user.UserName,
             cancellationToken);
     }
 
     private async Task<ArandaTicket?> GetOwnedTicketOrNullAsync(
         long caseNumber,
-        string username,
+        string ownerUserName,
         CancellationToken cancellationToken)
     {
         try
         {
             return await GetOwnedTicketAsync(
                 caseNumber,
-                username,
+                ownerUserName,
                 cancellationToken);
         }
         catch (ArandaApiException exception)
@@ -435,7 +454,7 @@ public sealed class TicketService(
 
     private async Task<ArandaTicket?> GetOwnedTicketAsync(
         long caseNumber,
-        string username,
+        string ownerUserName,
         CancellationToken cancellationToken)
     {
         var ticket = await arandaClient.GetTicketAsync(
@@ -444,7 +463,7 @@ public sealed class TicketService(
 
         return string.Equals(
             ticket.CustomerUserName,
-            username,
+            ownerUserName,
             StringComparison.OrdinalIgnoreCase)
             ? ticket
             : null;

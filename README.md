@@ -60,6 +60,30 @@ de Aranda antes de promover la solución a producción. En una actualización,
 Aranda exige `RegistryTypeId` y acepta `UnitId = 0` para conservar la sede
 existente.
 
+#### Parche temporal: usuario fijo (`Aranda:UserOverride`)
+
+La API de usuarios de Aranda todavía no es accesible desde el gateway, así que
+la resolución del colaborador está reemplazada por un usuario fijo por dominio,
+configurado en la sección `Aranda:UserOverride` de `appsettings.json`:
+
+| Dominio | Id | Usuario |
+| --- | --- | --- |
+| Equipos (CMDB) | `1562` | `evelyn.nunez@minsur.com` |
+| Tickets | `15019` | `uebit20@minsur.com` |
+
+Mientras `Aranda:UserOverride:Enabled` sea `true`, el valor de
+`X-Collaborator-Username` se registra en el log pero se ignora para resolver al
+usuario, y no se llama a `GET /users`. La verificación de propiedad de tickets
+se hace contra el usuario resuelto, por lo que sigue siendo coherente con el
+usuario fijo.
+
+Para volver a la validación real basta con poner
+`Aranda:UserOverride:Enabled` en `false` (o eliminar la sección completa); no
+hay que tocar código. Al retirar el parche de forma definitiva se borran
+`ArandaUserOverrideOptions.cs`, la propiedad `ArandaOptions.UserOverride`, los
+bloques marcados con `PARCHE TEMPORAL` en `EquipoService` y `TicketService`, y
+sus pruebas asociadas.
+
 ### Ejecución y pruebas
 
 ```powershell

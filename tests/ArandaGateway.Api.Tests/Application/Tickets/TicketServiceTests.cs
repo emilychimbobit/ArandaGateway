@@ -364,6 +364,78 @@ public sealed class TicketServiceTests
         Assert.Equal(154, client.LastUploadRequest?.TicketId);
     }
 
+    // PARCHE TEMPORAL: mientras la API de usuarios de Aranda no responda, los
+    // tickets se operan con un usuario fijo. Al retirar el parche estos tests
+    // se eliminan junto con la sección Aranda:UserOverride.
+    [Fact]
+    public async Task GetTicketDetailAsync_WhenUserOverrideEnabled_UsesFixedUserWithoutCallingUsersApi()
+    {
+        var ticket = CreateTicket("uebit20@minsur.com");
+        var client = new StubArandaClient
+        {
+            // Sin User: si el servicio llamara a la API de usuarios,
+            // el stub lanzaría y la prueba fallaría.
+            SearchResult = SearchResultWith(ticket),
+            Ticket = ticket
+        };
+        var service = CreateService(
+            client,
+            username: "otro.colaborador@minsur.com",
+            options: CreateOptions(CreateUserOverride()));
+
+        var result = await service.GetTicketDetailAsync(
+            "CASE-154",
+            CancellationToken.None);
+
+        Assert.Equal(TicketDetailResultStatus.Success, result.Status);
+        Assert.Equal(
+            15019L,
+            client.LastSearchRequest?.Criteria[0].Value);
+    }
+
+    [Fact]
+    public async Task CreateTicketAsync_WhenUserOverrideEnabled_RegistersTicketForFixedUser()
+    {
+        var client = new StubArandaClient
+        {
+            CreatedTicket = new()
+            {
+                Id = 154,
+                IdByProject = "CASE-154"
+            }
+        };
+        var service = CreateService(
+            client,
+            username: "otro.colaborador@minsur.com",
+            options: CreateOptions(CreateUserOverride()));
+
+        var result = await service.CreateTicketAsync(
+            new(TicketKind.ServiceRequest, "Asunto", "Descripción"),
+            CancellationToken.None);
+
+        Assert.Equal(TicketOperationResultStatus.Success, result.Status);
+        Assert.Equal(15019, client.LastCreateRequest?.CustomerId);
+        Assert.Equal(15019, client.LastCreateRequest?.ApplicantId);
+    }
+
+    private static ArandaUserOverrideOptions CreateUserOverride() =>
+        new()
+        {
+            Enabled = true,
+            Equipos = new()
+            {
+                Id = 1562,
+                UserName = "evelyn.nunez@minsur.com",
+                Name = "Evelyn del Carmen Nuñez Girao"
+            },
+            Tickets = new()
+            {
+                Id = 15019,
+                UserName = "uebit20@minsur.com",
+                Name = "UE BIT 20"
+            }
+        };
+
     private static TicketService CreateService(
         StubArandaClient client,
         string? username = "collaborator",
@@ -373,9 +445,11 @@ public sealed class TicketServiceTests
             client,
             Options.Create(options ?? CreateOptions()));
 
-    private static ArandaOptions CreateOptions() =>
+    private static ArandaOptions CreateOptions(
+        ArandaUserOverrideOptions? userOverride = null) =>
         new()
         {
+            UserOverride = userOverride,
             BaseUrl = new("https://aranda.example/"),
             ApiKey = "Bearer test",
             ProjectId = 1,

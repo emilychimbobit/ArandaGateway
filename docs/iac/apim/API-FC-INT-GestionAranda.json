@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "API-FC-INT-GestionAranda (Backend Aranda v9)",
-    "description": "Definición de las operaciones del API externo de Aranda Service Management (Electrodata) que consume la gateway para el MVP: crear caso, buscar casos, obtener caso, adjuntar archivo y consultar los CI del inventario asignados a un usuario. Se registra en APIM como backend. Autenticación mediante el encabezado X-Authorization, cuyo valor ya incluye el prefijo Bearer. No exponer este API directamente al consumidor final.",
+    "description": "Definición de las operaciones del API externo de Aranda Service Management (Electrodata) que consume la gateway para el MVP: obtener el detalle del usuario, crear caso, buscar casos, obtener caso, adjuntar archivo y consultar los CI del inventario asignados a un usuario. Se registra en APIM como backend. Autenticación mediante el encabezado X-Authorization, cuyo valor ya incluye el prefijo Bearer. No exponer este API directamente al consumidor final.",
     "version": "1.0.0"
   },
   "servers": [
@@ -18,6 +18,10 @@
   ],
   "tags": [
     {
+      "name": "Usuarios",
+      "description": "Resolución del colaborador en Aranda"
+    },
+    {
       "name": "Casos",
       "description": "Operaciones sobre casos (items) de Aranda"
     },
@@ -31,6 +35,42 @@
     }
   ],
   "paths": {
+    "/api/v9/user/{username}/detail": {
+      "get": {
+        "tags": ["Usuarios"],
+        "operationId": "ObtenerDetalleUsuario",
+        "summary": "Obtiene el detalle de un usuario por su nombre de usuario",
+        "description": "Primer paso de todos los flujos de la gateway: traduce el nombre de usuario del colaborador al identificador interno de Aranda y confirma que la cuenta esté activa. Ese identificador alimenta customerId/applicantId al crear un caso, el filtro de la búsqueda de casos propios y userId en la consulta de CI.",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "description": "Nombre de usuario del colaborador en Aranda, que corresponde a su correo corporativo. Debe enviarse codificado en la URL (la arroba viaja como %40).",
+            "schema": {
+              "type": "string",
+              "format": "email"
+            },
+            "example": "uebit20@minsur.com"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuario encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArandaUser"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No existe un usuario con ese nombre de usuario. La gateway lo traduce a un error de colaborador no identificado."
+          }
+        }
+      }
+    },
     "/api/v9/item/": {
       "post": {
         "tags": ["Casos"],
@@ -237,6 +277,35 @@
       }
     },
     "schemas": {
+      "ArandaUser": {
+        "type": "object",
+        "description": "Detalle del usuario en Aranda. La respuesta real trae muchos más campos (perfil, proyectos, datos de contacto); aquí solo se documentan los que consume la gateway.",
+        "required": ["id", "userName", "name", "isActive"],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identificador interno del usuario en Aranda."
+          },
+          "userName": {
+            "type": "string",
+            "description": "Nombre de usuario, que corresponde al correo corporativo."
+          },
+          "email": { "type": "string", "nullable": true },
+          "name": { "type": "string" },
+          "isActive": {
+            "type": "boolean",
+            "description": "La gateway rechaza la operación cuando es false."
+          }
+        },
+        "example": {
+          "id": 15019,
+          "userName": "uebit20@minsur.com",
+          "email": "uebit20@minsur.com",
+          "name": "UE BIT 20",
+          "isActive": true
+        }
+      },
       "ArandaCreateTicketRequest": {
         "type": "object",
         "required": [
