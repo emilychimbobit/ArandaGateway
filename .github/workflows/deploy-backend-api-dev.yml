@@ -3,6 +3,7 @@ name: Deploy Backend API - Dev
 on:
   push:
     branches:
+      - main
       - develop
     paths:
       - 'src/backend/api/**'
@@ -15,7 +16,7 @@ permissions:
   contents: read
 
 env:
-  AZURE_WEBAPP_NAME: app-agenteminsurout-dev
+  AZURE_WEBAPP_NAME: ase-gestionaranda-dev
   AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
   DOTNET_VERSION: '10.0.x'
   API_PROJECT_PATH: src/backend/api/ArandaGateway.Api/ArandaGateway.Api.csproj
