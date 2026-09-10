@@ -1,0 +1,120 @@
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+      - qa
+  paths:
+    include:
+      - src/backend/api/**
+      - tests/ArandaGateway.Api.Tests/**
+      - ArandaGateway.slnx
+      - azure-pipeline.yml
+
+pr: none
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+- ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/develop') }}:
+  - group: vg-iac-dev
+- ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/qa') }}:
+  - group: vg-iac-qa
+- ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+  - group: vg-iac-prd
+- name: dotnetVersion
+  value: '10.0.x'
+- name: solution
+  value: 'ArandaGateway.slnx'
+- name: apiProject
+  value: 'src/backend/api/ArandaGateway.Api/ArandaGateway.Api.csproj'
+- ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/develop') }}:
+  - name: webAppName
+    value: 'ase-gestionaranda-dev'
+- ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/qa') }}:
+  - name: webAppName
+    value: 'ase-gestionaranda-qa'
+- ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+  - name: webAppName
+    value: 'ase-gestionaranda-prd'
+- name: resourceGroup
+  value: 'rg-agenteminsur'
+- name: publishDirectory
+  value: '$(Build.ArtifactStagingDirectory)/publish'
+- name: packagePath
+  value: '$(Build.ArtifactStagingDirectory)/aranda-gateway-api.zip'
+
+steps:
+  - checkout: self
+    clean: true
+
+  - task: UseDotNet@2
+    displayName: 'Instalar .NET SDK'
+    inputs:
+      packageType: sdk
+      version: '$(dotnetVersion)'
+
+  - script: dotnet restore '$(solution)'
+    displayName: 'Restaurar solución'
+
+  - script: dotnet build '$(solution)' --no-restore --configuration Release
+    displayName: 'Compilar solución'
+
+  - script: dotnet test '$(solution)' --no-build --configuration Release --logger "trx;LogFileName=$(Agent.TempDirectory)/aranda-gateway-tests.trx"
+    displayName: 'Ejecutar pruebas'
+
+  - script: >-
+      dotnet publish '$(apiProject)'
+      --no-build
+      --configuration Release
+      --output '$(publishDirectory)'
+    displayName: 'Publicar API'
+
+  - task: ArchiveFiles@2
+    displayName: 'Empaquetar API'
+    inputs:
+      rootFolderOrFile: '$(publishDirectory)'
+      includeRootFolder: false
+      archiveType: zip
+      archiveFile: '$(packagePath)'
+      replaceExistingArchive: true
+
+  - task: Bash@3
+    displayName: 'Desplegar API en Azure App Service'
+    inputs:
+      targetType: inline
+      script: |
+        set -euo pipefail
+
+        az login \
+          --service-principal \
+          --username "$ARM_CLIENT_ID" \
+          --password "$ARM_CLIENT_SECRET" \
+          --tenant "$ARM_TENANT_ID" \
+          --output none
+
+        az account set --subscription "$ARM_SUBSCRIPTION_ID"
+
+        az webapp deploy \
+          --resource-group "$AZURE_RESOURCE_GROUP" \
+          --name "$AZURE_WEBAPP_NAME" \
+          --src-path "$PACKAGE_PATH" \
+          --type zip \
+          --async false
+    env:
+      ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+      ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+      ARM_TENANT_ID: $(ARM_TENANT_ID)
+      ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+      AZURE_RESOURCE_GROUP: $(resourceGroup)
+      AZURE_WEBAPP_NAME: $(webAppName)
+      PACKAGE_PATH: $(packagePath)
+
+  - task: PublishTestResults@2
+    displayName: 'Publicar resultados de pruebas'
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: '$(Agent.TempDirectory)/aranda-gateway-tests.trx'
+      failTaskOnFailedTests: true
