@@ -6,5 +6,8 @@ public sealed record ArandaPagedResponse<T>
 
     public required long TotalItems { get; init; }
 
-    public required long TotalPage { get; init; }
+    /// <summary>
+    /// Opcional: el endpoint de CMDB no devuelve este campo.
+    /// </summary>
+    public long? TotalPage { get; init; }
 }

@@ -240,7 +240,7 @@ public sealed class TicketService(
             {
                 CategoryId = ticket.CategoryId,
                 ItemType = ticket.ItemType,
-                ItemVersion = ticket.ItemVersion,
+                ItemVersion = ticket.ItemVersion ?? 0,
                 ModelId = ticket.ModelId,
                 ProjectId = ticket.ProjectId,
                 RegistryTypeId = registryTypeId!.Value,

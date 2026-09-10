@@ -199,6 +199,111 @@ public sealed class ArandaClientTests
         Assert.DoesNotContain("provider detail", exception.Message);
     }
 
+    [Fact]
+    public async Task SearchTicketsAsync_ReadsResponseWithNullItemVersion()
+    {
+        var handler = new RecordingHandler(
+            """
+            {
+              "content": [
+                {
+                  "id": 56025,
+                  "idByProject": "RF-56025",
+                  "customerId": 15019,
+                  "customerName": "UE BIT 20",
+                  "subject": "[PRUEBA BOT] Validación de creación por API",
+                  "stateId": 61,
+                  "stateName": "Cancelado",
+                  "openedDate": 1788303708077,
+                  "modifiedDate": 1788304097200,
+                  "groupName": "Mesa de Ayuda",
+                  "isClosed": true,
+                  "itemVersion": null,
+                  "modelId": 17,
+                  "projectId": 1,
+                  "registryTypeId": 4608,
+                  "serviceId": 51,
+                  "categoryId": 988,
+                  "itemType": 4
+                }
+              ],
+              "totalItems": 1,
+              "additionalData": null,
+              "totalPage": 1
+            }
+            """);
+        using var httpClient = CreateHttpClient(handler);
+        var client = new ArandaClient(httpClient);
+
+        var response = await client.SearchTicketsAsync(
+            new()
+            {
+                Criteria = [],
+                Projects = [new(1)],
+                Types = [new(4)]
+            },
+            CancellationToken.None);
+
+        Assert.Equal(1, response.TotalItems);
+        var ticket = Assert.Single(response.Content);
+        Assert.Equal(56025, ticket.Id);
+        Assert.Equal("RF-56025", ticket.IdByProject);
+        Assert.Null(ticket.ItemVersion);
+    }
+
+    [Fact]
+    public async Task GetCisByUserAndProjectsAsync_ReadsCmdbContract()
+    {
+        var handler = new RecordingHandler(
+            """
+            {
+              "content": [
+                {
+                  "Id": 7508,
+                  "acceptDate": null,
+                  "categoryId": 332,
+                  "categoryName": "LAPTOP MARCOBRE",
+                  "description": "",
+                  "imageId": null,
+                  "isClosed": false,
+                  "licenseNumber": "",
+                  "name": "LAPTOP MARCOBRE PF47GX2H",
+                  "responsibleDate": null,
+                  "stateId": 4002,
+                  "stateName": "Asignado",
+                  "stringStatusColor": "153.126.194"
+                }
+              ],
+              "totalItems": 1
+            }
+            """);
+        using var httpClient = CreateHttpClient(handler);
+        var client = new ArandaClient(httpClient);
+
+        var response = await client.GetCisByUserAndProjectsAsync(
+            new()
+            {
+                Projects = [new(1)],
+                UserId = 15019
+            },
+            CancellationToken.None);
+
+        Assert.Equal(HttpMethod.Post, handler.Method);
+        Assert.Equal(
+            "/api/v9/ci/cisbyuserandprojects",
+            handler.RequestUri?.PathAndQuery);
+        Assert.Contains("\"projects\":[{\"id\":1}]", handler.RequestBody);
+        Assert.Contains("\"userId\":15019", handler.RequestBody);
+
+        Assert.Equal(1, response.TotalItems);
+        var ci = Assert.Single(response.Content);
+        Assert.Equal(7508, ci.Id);
+        Assert.Equal("LAPTOP MARCOBRE PF47GX2H", ci.Name);
+        Assert.Equal("LAPTOP MARCOBRE", ci.CategoryName);
+        Assert.Equal("Asignado", ci.StateName);
+        Assert.Null(ci.AcceptDate);
+    }
+
     private static HttpClient CreateHttpClient(
         HttpMessageHandler handler) =>
         new(handler)

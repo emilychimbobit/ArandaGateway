@@ -35,7 +35,7 @@ public sealed class EquipoService(
 
             var request = new ArandaCiRequest
             {
-                Projects = [new ArandaProjectFilter(arandaOptions.ProjectId)],
+                Projects = [new ArandaCiProjectFilter(arandaOptions.ProjectId)],
                 UserId = user.Id
             };
 
@@ -47,10 +47,10 @@ public sealed class EquipoService(
             }
 
             var equipos = response.Content.Select(ci => new EquipoResponse(
-                ci.CiTypeName ?? "Dispositivo",
-                ci.ModelName ?? ci.Name ?? "Sin modelo",
-                ci.Code ?? ci.Id.ToString(),
-                ci.StateName ?? "Asignado"
+                Display(ci.CategoryName, "Sin tipo"),
+                Display(ci.Name, "Sin modelo"),
+                ResolveCodigo(ci),
+                Display(ci.StateName, "Sin estado")
             )).ToArray();
 
             return EquipoOperationResult<IReadOnlyList<EquipoResponse>>.Success(equipos);
@@ -61,6 +61,35 @@ public sealed class EquipoService(
             return EquipoOperationResult<IReadOnlyList<EquipoResponse>>.SourceUnavailable(
                 "La fuente de inventario/CMDB no está disponible, se informa la imposibilidad de completar la consulta.");
         }
+    }
+
+    private static string Display(string? value, string fallback) =>
+        string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
+
+    /// <summary>
+    /// El CI no expone un campo de código; Aranda lo incluye al final del
+    /// nombre, después de la categoría (por ejemplo
+    /// "LAPTOP MARCOBRE PF47GX2H" con categoría "LAPTOP MARCOBRE").
+    /// </summary>
+    private static string ResolveCodigo(ArandaCiItem ci)
+    {
+        var name = ci.Name?.Trim();
+        var categoria = ci.CategoryName?.Trim();
+
+        if (!string.IsNullOrEmpty(name) &&
+            !string.IsNullOrEmpty(categoria) &&
+            name.StartsWith(categoria, StringComparison.OrdinalIgnoreCase))
+        {
+            var codigo = name[categoria.Length..].Trim();
+            if (codigo.Length > 0)
+            {
+                return codigo;
+            }
+        }
+
+        return string.IsNullOrWhiteSpace(ci.LicenseNumber)
+            ? ci.Id.ToString()
+            : ci.LicenseNumber.Trim();
     }
 
     private async Task<ArandaUser?> ResolveActiveUserAsync(
