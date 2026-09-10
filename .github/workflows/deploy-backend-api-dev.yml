@@ -3,7 +3,6 @@ name: Deploy Backend API - Dev
 on:
   push:
     branches:
-      - main
       - develop
     paths:
       - 'src/backend/api/**'
