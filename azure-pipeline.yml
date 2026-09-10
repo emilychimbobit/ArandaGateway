@@ -32,12 +32,18 @@ variables:
 - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/develop') }}:
   - name: webAppName
     value: 'ase-gestionaranda-dev'
+  - name: deploymentEnvironment
+    value: 'DEV'
 - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/qa') }}:
   - name: webAppName
     value: 'ase-gestionaranda-qa'
+  - name: deploymentEnvironment
+    value: 'QA'
 - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
   - name: webAppName
     value: 'ase-gestionaranda-prd'
+  - name: deploymentEnvironment
+    value: 'PRD'
 - name: resourceGroup
   value: 'rg-agenteminsur'
 - name: publishDirectory
@@ -86,6 +92,12 @@ steps:
       targetType: inline
       script: |
         set -euo pipefail
+
+        echo "=============================================="
+        echo "Ambiente de despliegue: $(deploymentEnvironment)"
+        echo "App Service: $AZURE_WEBAPP_NAME"
+        echo "Grupo de recursos: $AZURE_RESOURCE_GROUP"
+        echo "=============================================="
 
         az login \
           --service-principal \
