@@ -139,6 +139,48 @@ public sealed class EquipoServiceTests
         Assert.Equal(EquipoOperationResultStatus.SourceUnavailable, result.Status);
     }
 
+    // PARCHE TEMPORAL: mientras la API de usuarios de Aranda no responda, el
+    // inventario se consulta con un usuario fijo. Al retirar el parche este
+    // test se elimina junto con la sección Aranda:UserOverride.
+    [Fact]
+    public async Task ListAssignedEquiposAsync_WhenUserOverrideEnabled_UsesFixedUserWithoutCallingUsersApi()
+    {
+        var client = new StubArandaClient
+        {
+            // Sin User: si el servicio llamara a la API de usuarios,
+            // el stub lanzaría y la prueba fallaría.
+            CisResponse = new()
+            {
+                Content = [],
+                TotalItems = 0
+            }
+        };
+        var service = CreateService(
+            client,
+            username: "otro.colaborador@minsur.com",
+            options: CreateOptions(new()
+            {
+                Enabled = true,
+                Equipos = new()
+                {
+                    Id = 1562,
+                    UserName = "evelyn.nunez@minsur.com",
+                    Name = "Evelyn del Carmen Nuñez Girao"
+                },
+                Tickets = new()
+                {
+                    Id = 15019,
+                    UserName = "uebit20@minsur.com",
+                    Name = "UE BIT 20"
+                }
+            }));
+
+        var result = await service.ListAssignedEquiposAsync(CancellationToken.None);
+
+        Assert.Equal(EquipoOperationResultStatus.NoRecordsFound, result.Status);
+        Assert.Equal(1562, client.LastCiRequest?.UserId);
+    }
+
     private static EquipoService CreateService(
         StubArandaClient client,
         string? username = "collaborator",
@@ -149,9 +191,11 @@ public sealed class EquipoServiceTests
             Options.Create(options ?? CreateOptions()),
             NullLogger<EquipoService>.Instance);
 
-    private static ArandaOptions CreateOptions() =>
+    private static ArandaOptions CreateOptions(
+        ArandaUserOverrideOptions? userOverride = null) =>
         new()
         {
+            UserOverride = userOverride,
             BaseUrl = new("https://aranda.example/"),
             ApiKey = "Bearer test",
             ProjectId = 1,

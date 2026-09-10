@@ -52,4 +52,12 @@ public sealed class ArandaOptions
 
     [Range(1, 120)]
     public int TimeoutSeconds { get; init; } = 30;
+
+    /// <summary>
+    /// PARCHE TEMPORAL: usuario fijo por dominio mientras la API de usuarios
+    /// de Aranda no esté disponible. Ver <see cref="ArandaUserOverrideOptions"/>.
+    /// Con <c>Enabled = false</c> o sin la sección, el gateway vuelve a
+    /// resolver el colaborador contra Aranda.
+    /// </summary>
+    public ArandaUserOverrideOptions? UserOverride { get; init; }
 }

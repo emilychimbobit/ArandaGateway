@@ -96,6 +96,20 @@ public sealed class EquipoService(
         string username,
         CancellationToken cancellationToken)
     {
+        // PARCHE TEMPORAL: la API de usuarios de Aranda no está disponible,
+        // así que el inventario se consulta siempre con un usuario fijo.
+        // Se retira poniendo Aranda:UserOverride:Enabled en false.
+        if (arandaOptions.UserOverride is { Enabled: true, Equipos: { IsUsable: true } equipos })
+        {
+            logger.LogWarning(
+                "PARCHE TEMPORAL: se ignora el colaborador {Username} y se usa el usuario fijo {OverrideUserName} ({OverrideUserId}) para el inventario.",
+                username,
+                equipos.UserName,
+                equipos.Id);
+
+            return equipos.ToArandaUser();
+        }
+
         try
         {
             var user = await arandaClient.GetUserByUsernameAsync(username, cancellationToken);
