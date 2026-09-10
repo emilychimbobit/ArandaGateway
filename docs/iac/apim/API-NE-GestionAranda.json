@@ -1,0 +1,429 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "API-NE-GestionAranda (Gateway)",
+    "description": "Puerta de enlace de la aplicación (App Service .NET) para Aranda Service Management. Expone solo las capacidades del MVP: crear ticket, listar tickets abiertos, consultar detalle, anular y adjuntar archivos. Autenticación mediante API key propia de la gateway enviada por APIM en el encabezado X-Api-Key. La identidad del colaborador se envía temporalmente en X-Collaborator-Username hasta integrar Microsoft Entra ID.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://ase-gestionaranda-dev.azurewebsites.net",
+      "description": "App Service - ambiente DEV"
+    }
+  ],
+  "security": [
+    {
+      "gatewayApiKey": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Tickets",
+      "description": "Operaciones de tickets del colaborador"
+    }
+  ],
+  "paths": {
+    "/api/tickets": {
+      "post": {
+        "tags": ["Tickets"],
+        "operationId": "CrearTicket",
+        "summary": "Crea un incidente o requerimiento en Aranda (REQ_04)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CollaboratorUsername"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SolicitudCrearTicket"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ticket creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RespuestaCrearTicket"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetails"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "503": {
+            "$ref": "#/components/responses/ProblemDetails"
+          }
+        }
+      },
+      "get": {
+        "tags": ["Tickets"],
+        "operationId": "ListarTicketsAbiertos",
+        "summary": "Lista los tickets abiertos del colaborador (REQ_05)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CollaboratorUsername"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado de tickets abiertos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RespuestaResumenTicket"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetails"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "No se pudo identificar al colaborador"
+          }
+        }
+      }
+    },
+    "/api/tickets/{caseNumber}": {
+      "get": {
+        "tags": ["Tickets"],
+        "operationId": "ObtenerDetalleTicket",
+        "summary": "Consulta el estado de un ticket propio (REQ_07)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CaseNumber"
+          },
+          {
+            "$ref": "#/components/parameters/CollaboratorUsername"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del ticket",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RespuestaDetalleTicket"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetails"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Ticket inexistente o no propio"
+          }
+        }
+      }
+    },
+    "/api/tickets/{caseNumber}/cancellation": {
+      "post": {
+        "tags": ["Tickets"],
+        "operationId": "AnularTicket",
+        "summary": "Anula un ticket propio (REQ_06)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CaseNumber"
+          },
+          {
+            "$ref": "#/components/parameters/CollaboratorUsername"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SolicitudAnularTicket"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ticket anulado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RespuestaAnularTicket"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetails"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Ticket inexistente o no propio"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetails"
+          },
+          "503": {
+            "$ref": "#/components/responses/ProblemDetails"
+          }
+        }
+      }
+    },
+    "/api/tickets/{caseNumber}/attachments": {
+      "post": {
+        "tags": ["Tickets"],
+        "operationId": "AdjuntarArchivoTicket",
+        "summary": "Adjunta un archivo a un ticket propio (REQ_04)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CaseNumber"
+          },
+          {
+            "$ref": "#/components/parameters/CollaboratorUsername"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["file"],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Archivo permitido: xlsx, docx, ppt, pdf, png, jpg"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Descripción opcional del adjunto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resultado del adjunto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RespuestaAdjuntarArchivo"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetails"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Ticket inexistente o no propio"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "gatewayApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Api-Key",
+        "description": "API key propia de la gateway administrada por APIM. No corresponde a la credencial de Aranda."
+      }
+    },
+    "parameters": {
+      "CollaboratorUsername": {
+        "name": "X-Collaborator-Username",
+        "in": "header",
+        "required": true,
+        "description": "Identidad temporal del colaborador mientras se integra Microsoft Entra ID.",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "CaseNumber": {
+        "name": "caseNumber",
+        "in": "path",
+        "required": true,
+        "description": "Número de caso tal como lo devuelven la creación y el listado.",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "ProblemDetails": {
+        "description": "Error con formato ProblemDetails",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/ProblemDetails"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "API key ausente o inválida"
+      }
+    },
+    "schemas": {
+      "TicketKind": {
+        "type": "string",
+        "enum": ["Incident", "ServiceRequest"],
+        "description": "Tipo de ticket: incidente o requerimiento."
+      },
+      "SolicitudCrearTicket": {
+        "type": "object",
+        "required": ["type", "subject", "description"],
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/TicketKind"
+          },
+          "subject": {
+            "type": "string",
+            "description": "Asunto del ticket"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descripción del ticket"
+          }
+        }
+      },
+      "RespuestaCrearTicket": {
+        "type": "object",
+        "properties": {
+          "caseNumber": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "RespuestaResumenTicket": {
+        "type": "object",
+        "properties": {
+          "caseNumber": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "openedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "RespuestaDetalleTicket": {
+        "type": "object",
+        "properties": {
+          "caseNumber": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "resolverGroup": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastUpdatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "solution": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "SolicitudAnularTicket": {
+        "type": "object",
+        "required": ["reason", "confirmed"],
+        "properties": {
+          "reason": {
+            "type": "string",
+            "description": "Motivo de anulación (no vacío)"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "description": "Confirmación explícita del colaborador"
+          }
+        }
+      },
+      "RespuestaAnularTicket": {
+        "type": "object",
+        "properties": {
+          "caseNumber": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "RespuestaAdjuntarArchivo": {
+        "type": "object",
+        "properties": {
+          "fileName": {
+            "type": "string"
+          },
+          "uploaded": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
