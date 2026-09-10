@@ -2,18 +2,13 @@
   "openapi": "3.0.3",
   "info": {
     "title": "API-NE-GestionAranda (Gateway)",
-    "description": "Puerta de enlace de la aplicación (App Service .NET) para Aranda Service Management. Expone solo las capacidades del MVP: crear ticket, listar tickets abiertos, consultar detalle, anular, adjuntar archivos y revisar los equipos asignados. Autenticación mediante API key propia de la gateway enviada por APIM en el encabezado X-Api-Key. La identidad del colaborador se envía temporalmente en X-Collaborator-Username hasta integrar Microsoft Entra ID.",
+    "description": "Puerta de enlace de la aplicación (App Service .NET) para Aranda Service Management. Expone solo las capacidades del MVP: crear ticket, listar tickets abiertos, consultar detalle, anular, adjuntar archivos y revisar los equipos asignados. La identidad del colaborador se envía temporalmente en X-Collaborator-Username hasta integrar Microsoft Entra ID.",
     "version": "1.0.0"
   },
   "servers": [
     {
       "url": "https://ase-gestionaranda-dev.azurewebsites.net",
       "description": "App Service - ambiente DEV"
-    }
-  ],
-  "security": [
-    {
-      "gatewayApiKey": []
     }
   ],
   "tags": [
@@ -61,9 +56,6 @@
           "400": {
             "$ref": "#/components/responses/ProblemDetails"
           },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
           "503": {
             "$ref": "#/components/responses/ProblemDetails"
           }
@@ -94,9 +86,6 @@
           },
           "400": {
             "$ref": "#/components/responses/ProblemDetails"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
           },
           "404": {
             "description": "No se pudo identificar al colaborador"
@@ -130,9 +119,6 @@
           },
           "400": {
             "$ref": "#/components/responses/ProblemDetails"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
           },
           "404": {
             "description": "Ticket inexistente o no propio"
@@ -176,9 +162,6 @@
           },
           "400": {
             "$ref": "#/components/responses/ProblemDetails"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
           },
           "404": {
             "description": "Ticket inexistente o no propio"
@@ -241,9 +224,6 @@
           "400": {
             "$ref": "#/components/responses/ProblemDetails"
           },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
           "404": {
             "description": "Ticket inexistente o no propio"
           }
@@ -285,9 +265,6 @@
           "400": {
             "$ref": "#/components/responses/ProblemDetails"
           },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
           "503": {
             "$ref": "#/components/responses/ProblemDetails"
           }
@@ -296,14 +273,6 @@
     }
   },
   "components": {
-    "securitySchemes": {
-      "gatewayApiKey": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "X-Api-Key",
-        "description": "API key propia de la gateway administrada por APIM. No corresponde a la credencial de Aranda."
-      }
-    },
     "parameters": {
       "CollaboratorUsername": {
         "name": "X-Collaborator-Username",
@@ -334,9 +303,6 @@
             }
           }
         }
-      },
-      "Unauthorized": {
-        "description": "API key ausente o inválida"
       }
     },
     "schemas": {

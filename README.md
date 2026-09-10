@@ -31,13 +31,12 @@ Los secretos se administran con .NET User Secrets:
 
 ```powershell
 dotnet user-secrets init --project .\src\backend\api\ArandaGateway.Api\ArandaGateway.Api.csproj
-dotnet user-secrets set "Gateway:ApiKey" "API_KEY_EXCLUSIVA_DE_LA_GATEWAY" --project .\src\backend\api\ArandaGateway.Api\ArandaGateway.Api.csproj
 dotnet user-secrets set "Aranda:BaseUrl" "https://HOST/ASMSAPI/" --project .\src\backend\api\ArandaGateway.Api\ArandaGateway.Api.csproj
 dotnet user-secrets set "Aranda:ApiKey" "Bearer API_KEY" --project .\src\backend\api\ArandaGateway.Api\ArandaGateway.Api.csproj
 ```
 
-`Gateway:ApiKey` es la credencial independiente que APIM envía a la gateway
-en `X-Api-Key`.
+La gateway no valida credenciales de entrada: sus endpoints son anónimos y el
+control de acceso queda delegado a APIM y a la red del App Service.
 
 `Aranda:ApiKey` debe contener el valor completo enviado en
 `X-Authorization`, incluido `Bearer`.
@@ -68,9 +67,9 @@ dotnet run --project .\src\backend\api\ArandaGateway.Api\ArandaGateway.Api.cspro
 dotnet test .\ArandaGateway.slnx
 ```
 
-Swagger UI está disponible en `http://localhost:5112/swagger`. Use
-**Authorize** para configurar `X-Api-Key`. Mientras se define SSO, las
-operaciones reciben el username en `X-Collaborator-Username` que es su usuario o correo.
+Swagger UI está disponible en `http://localhost:5112/swagger`. Mientras se
+define SSO, las operaciones reciben el username en `X-Collaborator-Username`
+que es su usuario o correo.
 
 Los contratos y reglas pueden probarse localmente. La validación end-to-end
 contra Aranda permanece pendiente hasta que Cloudflare permita solicitudes

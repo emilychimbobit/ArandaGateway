@@ -12,8 +12,7 @@ public static class TicketEndpoints
     {
         var group = endpoints
             .MapGroup("/api/tickets")
-            .WithTags("Tickets")
-            .RequireAuthorization();
+            .WithTags("Tickets");
 
         group
             .MapPost("/", CrearTicketAsync)

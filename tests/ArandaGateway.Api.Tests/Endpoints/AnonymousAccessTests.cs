@@ -3,57 +3,37 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 
-namespace ArandaGateway.Api.Tests.Authentication;
+namespace ArandaGateway.Api.Tests.Endpoints;
 
-public sealed class ApiKeyAuthenticationTests
-    : IClassFixture<ApiKeyAuthenticationTests.GatewayFactory>
+public sealed class AnonymousAccessTests
+    : IClassFixture<AnonymousAccessTests.GatewayFactory>
 {
-    private const string ApiKey = "gateway-test-api-key";
     private readonly HttpClient client;
 
-    public ApiKeyAuthenticationTests(GatewayFactory factory)
+    public AnonymousAccessTests(GatewayFactory factory)
     {
         client = factory.CreateClient();
     }
 
     [Fact]
-    public async Task TicketEndpoint_RejectsMissingApiKey()
+    public async Task TicketEndpoint_AllowsAnonymousRequests()
     {
         using var response = await client.GetAsync(
             "/api/tickets/154",
             CancellationToken.None);
 
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task TicketEndpoint_RejectsInvalidApiKey()
-    {
-        using var request = new HttpRequestMessage(
-            HttpMethod.Get,
-            "/api/tickets/154");
-        request.Headers.Add("X-Api-Key", "invalid");
-
-        using var response = await client.SendAsync(
-            request,
-            CancellationToken.None);
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task TicketEndpoint_AcceptsValidApiKey()
-    {
-        using var request = new HttpRequestMessage(
-            HttpMethod.Get,
-            "/api/tickets/154");
-        request.Headers.Add("X-Api-Key", ApiKey);
-
-        using var response = await client.SendAsync(
-            request,
-            CancellationToken.None);
-
+        Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task EquiposEndpoint_AllowsAnonymousRequests()
+    {
+        using var response = await client.GetAsync(
+            "/api/equipos",
+            CancellationToken.None);
+
+        Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]
@@ -76,7 +56,6 @@ public sealed class ApiKeyAuthenticationTests
                 configuration.AddInMemoryCollection(
                     new Dictionary<string, string?>
                     {
-                        ["Gateway:ApiKey"] = ApiKey,
                         ["Aranda:BaseUrl"] =
                             "https://aranda.example/",
                         ["Aranda:ApiKey"] = "Bearer test",
