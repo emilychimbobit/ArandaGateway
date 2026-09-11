@@ -69,6 +69,34 @@ El gateway hace dos cosas para que no caduque:
   `Aranda:SessionKeepAliveMinutes` minutos (5 por omisión, `0` desactiva) para
   reiniciar el contador aunque no haya tráfico de usuarios.
 
+#### Renovar la sesión sin reiniciar (`/admin/aranda-session`)
+
+La cookie caduca en pocos minutos y un despliegue completo tarda más que eso,
+así que renovarla por configuración obliga a coordinar el cambio en una ventana
+muy corta. Para soporte hay una ruta que la instala en caliente:
+
+```bash
+curl -X PUT "https://HOST/admin/aranda-session" \
+  -H "X-Admin-Key: CLAVE" \
+  -H "Content-Type: application/json" \
+  -d '{"cookie":"AuthCookieASMS=VALOR"}'
+
+curl "https://HOST/admin/aranda-session" -H "X-Admin-Key: CLAVE"
+```
+
+El `PUT` reemplaza la sesión en memoria y el `GET` informa si hay sesión y
+cuándo se renovó, sin devolver nunca el valor de la cookie. Tras instalarla, el
+latido la mantiene viva mientras el proceso siga arriba.
+
+La ruta **solo existe si `Admin:ApiKey` está configurada** (variable
+`Admin__ApiKey`). Sin ella no se publica: el resto de la gateway es anónima, y
+un endpoint abierto que instala una sesión dejaría a cualquiera con la URL
+suplantarla. La clave se compara en tiempo constante y debe ser larga y
+aleatoria, tratada como cualquier otro secreto.
+
+Esto no reemplaza a `Aranda:AuthCookie`, que sigue siendo la semilla del
+arranque; evita el redespliegue cuando la sesión muere en caliente.
+
 #### Reintentos y el desafío de Cloudflare
 
 Aranda está detrás de Cloudflare, que de forma intermitente responde `403` con

@@ -53,7 +53,17 @@ publiquen, credenciales de un usuario de servicio de Aranda y el valor real de
 Al resolverse desaparece `Aranda:AuthCookie` y con ella
 `ArandaSessionKeepAliveService`.
 
-**Paliativo intermedio,** si el login tarda: persistir la cookie rotada fuera
+**Paliativo en uso.** `PUT /admin/aranda-session` instala la cookie en caliente,
+sin reiniciar ni redesplegar. Nació de un problema concreto: el despliegue tarda
+unos 7 minutos, más que la vida de la cookie, así que pasarla por configuración
+obliga a coordinar el cambio en una ventana que casi nunca se alcanza. Con esta
+ruta la cookie se instala cuando la aplicación ya está arriba.
+
+No elimina la deuda: sigue siendo una credencial renovada a mano, y con varias
+instancias hay que instalarla en cada una, porque la sesión vive en la memoria
+de cada proceso.
+
+**Otro paliativo posible,** si el login tarda: persistir la cookie rotada fuera
 del proceso (archivo en almacenamiento persistente, o Redis/Blob con varias
 instancias) para que un reinicio corto la recupere en vez de caer a la semilla.
 No cubre paradas largas.
