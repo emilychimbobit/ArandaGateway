@@ -77,25 +77,30 @@ muy corta. Para soporte hay una ruta que la instala en caliente:
 
 ```bash
 curl -X PUT "https://HOST/admin/aranda-session" \
-  -H "X-Admin-Key: CLAVE" \
   -H "Content-Type: application/json" \
   -d '{"cookie":"AuthCookieASMS=VALOR"}'
 
-curl "https://HOST/admin/aranda-session" -H "X-Admin-Key: CLAVE"
+curl "https://HOST/admin/aranda-session"
 ```
 
 El `PUT` reemplaza la sesión en memoria y el `GET` informa si hay sesión y
 cuándo se renovó, sin devolver nunca el valor de la cookie. Tras instalarla, el
 latido la mantiene viva mientras el proceso siga arriba.
 
-La ruta **solo existe si `Admin:ApiKey` está configurada** (variable
-`Admin__ApiKey`). Sin ella no se publica: el resto de la gateway es anónima, y
-un endpoint abierto que instala una sesión dejaría a cualquiera con la URL
-suplantarla. La clave se compara en tiempo constante y debe ser larga y
-aleatoria, tratada como cualquier otro secreto.
-
 Esto no reemplaza a `Aranda:AuthCookie`, que sigue siendo la semilla del
 arranque; evita el redespliegue cuando la sesión muere en caliente.
+
+**Riesgo asumido.** Estas rutas son anónimas, igual que el resto de la gateway,
+y el App Service responde desde internet: se comprobó llamando a
+`https://ase-gestionaranda-dev.azurewebsites.net/health` sin pasar por APIM. En
+consecuencia, cualquiera que conozca la URL puede instalar la cookie con la que
+la gateway opera contra Aranda, o dejarla inoperativa enviando una inválida. Es
+distinto del resto de los endpoints anónimos, que solo leen con una credencial
+fija: esta ruta **cambia con qué credencial actúa el servicio**.
+
+La mitigación pendiente es restringir `/admin/*` por IP con las reglas de acceso
+del App Service, o reponer una clave de autorización. Ver
+[docs/deuda-tecnica.md](docs/deuda-tecnica.md).
 
 #### Reintentos y el desafío de Cloudflare
 
