@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using ArandaGateway.Api.Administration;
 using ArandaGateway.Api.Application.Equipos;
 using ArandaGateway.Api.Application.Tickets;
 using ArandaGateway.Api.Endpoints;
@@ -15,9 +14,6 @@ builder.Services.AddExceptionHandler<GatewayExceptionHandler>();
 builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(
         new JsonStringEnumConverter()));
-builder.Services
-    .AddOptions<AdminOptions>()
-    .Bind(builder.Configuration.GetSection(AdminOptions.SectionName));
 builder.Services.AddArandaIntegration(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentCollaborator, HeaderCurrentCollaborator>();
