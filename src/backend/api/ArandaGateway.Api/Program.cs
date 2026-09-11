@@ -8,6 +8,9 @@ using ArandaGateway.Api.Integrations.Aranda;
 using ArandaGateway.Api.Observability;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddGatewayTelemetry(
+    builder.Configuration,
+    builder.Environment.EnvironmentName);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddProblemDetails();

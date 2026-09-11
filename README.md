@@ -182,6 +182,30 @@ hay que tocar código. Al retirar el parche de forma definitiva se borran
 bloques marcados con `PARCHE TEMPORAL` en `EquipoService` y `TicketService`, y
 sus pruebas asociadas.
 
+### Observabilidad (Application Insights)
+
+La telemetría se activa **solo si hay cadena de conexión**. Se lee de
+`ApplicationInsights:ConnectionString` o de
+`APPLICATIONINSIGHTS_CONNECTION_STRING`, que es la que inyecta Azure App
+Service al vincular el recurso. Sin ella no se registra nada: el SDK arrancaría
+igual y se quedaría reintentando envíos que nadie recibe, así que en local y en
+las pruebas queda inactiva.
+
+La gateway aparece como `aranda-gateway` en el mapa de aplicaciones, con el
+atributo `deployment.environment` para separar dev de producción cuando ambos
+comparten recurso.
+
+Desde la versión 3 el SDK de Application Insights se apoya en OpenTelemetry, de
+modo que el nombre del servicio y el entorno se declaran como atributos de
+recurso; la API clásica de `ITelemetryInitializer` ya no existe.
+
+Qué llega a la telemetría y qué no: las peticiones entrantes, las dependencias
+salientes hacia Aranda y las trazas del log, incluido el cuerpo recortado de
+los errores de Aranda, que es lo que distingue un `401` de APIM de una sesión
+caducada. **No** se registran encabezados ni cuerpos de las peticiones, así que
+ni el token de `X-Authorization`, ni la cookie de sesión, ni la clave de
+`X-Admin-Key` salen en la telemetría.
+
 ### Ejecución y pruebas
 
 ```powershell
