@@ -85,23 +85,38 @@ exigen.
 
 ---
 
-## 3. API de usuarios: funciona directo, falta en APIM
+## 3. Tres operaciones faltan en APIM y funcionan directo contra Aranda
 
-**Hallazgo del 11 de septiembre de 2026.**
-`GET /ASMSAPI/api/v9/user/{username}/detail` **responde 200 llamando directo a
-Aranda**, con la misma credencial y cookie que ya usa el gateway. Devuelve el
-usuario completo, incluidos `companyId` y `cityId`.
+**Hallazgo del 11 de septiembre de 2026.** Tres operaciones responden `404` de
+APIM (`{ "statusCode": 404, "message": "Resource not found" }`, formato de
+APIM, no de Aranda) y sin embargo funcionan llamando directo a
+`https://mesadeayuda.divisionminera.com/ASMSAPI`, con la misma credencial y
+cookie que ya usa el gateway:
 
-Lo que falla es exclusivamente la publicación en APIM, que responde `404`.
+| Operación | Para qué sirve | APIM | Directo a Aranda |
+| --- | --- | --- | --- |
+| `PUT /api/v9/item/{id}` | Anular un ticket | `404` | `200` |
+| `GET /api/v9/user/{username}/detail` | Resolver al colaborador | `404` | `200` |
+| `POST /api/v9/authentication/` | Iniciar sesión | `404` | responde `400 ValidationError` con credenciales vacías, es decir opera |
 
-Eso abre una alternativa al parche de usuario fijo que no depende de que
-publiquen nada: apuntar esa única operación directo a Aranda en lugar de a
-APIM. Queda por decidir si es aceptable para la política de red y seguridad,
-porque saltarse APIM para una operación contradice el diseño actual.
+En el spec del repositorio `/api/v9/item/{id}` figura **solo con GET**, por eso
+la anulación falla: `POST /api/tickets/{caseNumber}/cancellation` devuelve `502`
+con `ARANDA_404`. El código del gateway es correcto; se verificó anulando
+RF-58496 y RF-58497 directo contra Aranda, donde el `PUT` respondió `200`.
 
-El endpoint de login (`POST /api/v9/authentication/`) también responde directo:
-devuelve `400 ValidationError` con credenciales vacías, es decir, el servicio
-está operativo. Misma consideración.
+**Las dos salidas.**
+
+1. **Publicar las tres en APIM.** Mantiene el diseño actual, con todo el
+   tráfico por la puerta de entrada. Depende de quien administra APIM.
+2. **Apuntar el gateway directo a Aranda.** Resolvería de golpe la anulación,
+   el parche de usuario fijo y la cookie manual, sin pedir nada a nadie. A
+   cambio, saltarse APIM contradice el diseño: se pierde la puerta única, su
+   control de acceso por suscripción y su telemetría.
+
+La segunda es una decisión de arquitectura y seguridad, no técnica: conviene
+resolverla con quien definió que la salida fuera por APIM. Una variante
+intermedia es una segunda URL base solo para las operaciones ausentes, pero
+deja el sistema con dos caminos de salida y dos juegos de reglas.
 
 ---
 
@@ -122,7 +137,8 @@ código.
 
 **Bloqueo.** La operación existe en el spec del repositorio
 (`docs/iac/apim/API-FC-INT-GestionAranda.json`) pero no está publicada en el
-producto `fcintgestionaranda/v1`: responde `404` de APIM.
+producto `fcintgestionaranda/v1`: responde `404` de APIM. Ver el punto 3: la
+operación sí funciona llamando directo a Aranda.
 
 Al retirarse se borran `ArandaUserOverrideOptions.cs`, la propiedad
 `ArandaOptions.UserOverride`, los bloques marcados `PARCHE TEMPORAL` en
