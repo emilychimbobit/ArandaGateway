@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace ArandaGateway.Api.Integrations.Aranda.Models;
 
 public sealed record ArandaCreateTicketRequest
@@ -26,7 +28,14 @@ public sealed record ArandaCreateTicketRequest
 
     public required long RegistryTypeId { get; init; }
 
-    public required long UnitId { get; init; }
+    /// <summary>
+    /// Unidad organizacional. Es opcional: Aranda responde
+    /// <c>InvalidOrganizationArea</c> cuando recibe una unidad que no
+    /// corresponde al cliente, así que sin un valor válido configurado se omite
+    /// del cuerpo y Aranda resuelve el área por su cuenta.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public long? UnitId { get; init; }
 
     public required long ServiceId { get; init; }
 

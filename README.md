@@ -173,6 +173,11 @@ desafío de Cloudflare ya no bloquea la operación: se reintenta.
 ### Deuda técnica
 
 Las soluciones temporales vigentes y lo que hace falta para retirarlas están en
-[docs/deuda-tecnica.md](docs/deuda-tecnica.md): la cookie de sesión manual, el
-usuario fijo por dominio y el desafío de Cloudflare. Las tres dependen de que
-se publiquen operaciones en APIM, no de código del gateway.
+[docs/deuda-tecnica.md](docs/deuda-tecnica.md): la cookie de sesión manual, la
+creación de tickets bloqueada por la Sede, la API de usuarios ausente en APIM,
+el usuario fijo por dominio y el desafío de Cloudflare. Ninguno se resuelve con
+código del gateway: dependen de datos de catálogo de Aranda o de que se
+publiquen operaciones en APIM.
+
+`POST /api/tickets` responde hoy `502` con `ARANDA_400`: falta el `Aranda:UnitId`
+(Sede) válido para la categoría del bot. Las tres consultas sí operan.

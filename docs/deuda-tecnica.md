@@ -1,8 +1,8 @@
 # Deuda técnica
 
-Soluciones temporales en producción y qué hace falta para retirarlas. Cada
-punto indica el bloqueo concreto: los tres dependen de que se publiquen
-operaciones en APIM, no de código del gateway.
+Soluciones temporales y bloqueos abiertos, con lo que hace falta para
+resolverlos. Ninguno se arregla con código del gateway: dependen de datos de
+catálogo de Aranda o de que se publiquen operaciones en APIM.
 
 Estado al 11 de septiembre de 2026.
 
@@ -60,7 +60,71 @@ No cubre paradas largas.
 
 ---
 
-## 2. Usuario fijo por dominio (`Aranda:UserOverride`)
+## 2. Creación de tickets bloqueada: falta la Sede válida
+
+**Qué pasa.** `POST /api/tickets` responde `502` con `ARANDA_400`. Aranda
+rechaza la creación con `InvalidOrganizationArea` en `AddItem`.
+
+**Diagnóstico.** El campo obligatorio es `unitId`, que Aranda expone como
+recurso `BusinessArea` con etiqueta "Sedes" y `mandatory: true` en el modelo
+17. Lo verificado el 11 de septiembre de 2026:
+
+| Intento | Resultado |
+| --- | --- |
+| `unitId` omitido | `UnitId IsRequired` |
+| `unitId: 0` | `InvalidOrganizationArea` |
+| `unitId: 5875` + categoría 988 / servicio 51 (la del bot) | `InvalidOrganizationArea` |
+| `unitId: 5875` + categoría 775 / servicio 8 (de un ticket real) | Pasa el área y pide el campo adicional `'Sede'` |
+
+O sea: **5875 (Minsur Lima) es válida, pero no para la categoría y el servicio
+que usa el bot.** No depende del usuario: falla igual con uebit20 (sin área
+organizacional) y con Evelyn (`companyId` 5007, `cityId` 6135). Tampoco del
+autor: falla con `authorId` 2 y con 15036.
+
+La categoría 988 + servicio 51 está bien elegida por otro motivo: es la única
+de las probadas **sin campos adicionales obligatorios** (la 775 + 8 exige
+`Sede`, `Pais`, `Fecha de Inicio`, `Fecha de termino` y `Sedes`).
+
+El README daba esta combinación por validada el 1 de septiembre de 2026 con la
+prueba RF-56025. Ese ticket existe y se creó con `unitId = null`, lo que hoy
+Aranda ya no acepta: la regla cambió entre esa fecha y el 11 de septiembre.
+
+**Qué falta.** El `unitId` (Sede/BusinessArea) válido para la categoría 988 y
+el servicio 51. Es un dato de catálogo: no se puede listar desde fuera porque
+las rutas de catálogo de áreas de negocio no responden
+(`/api/v9/businessarea`, `/api/v9/project/1/units` y variantes dan 404, y
+`/api/v9/project/1/locations` da 500 por un error interno de Aranda).
+
+**A quién preguntar.** Al equipo de Aranda: qué Sede corresponde a la categoría
+"Ticket creado por bot" (988) con el servicio "Por categorizar" (51). Con ese
+número se cambia `Aranda:UnitId` y la creación queda validada, sin desarrollo.
+
+El gateway ya admite `UnitId` nulo (se omite del cuerpo) por si en algún
+momento Aranda vuelve a resolver el área por su cuenta.
+
+---
+
+## 3. API de usuarios: funciona directo, falta en APIM
+
+**Hallazgo del 11 de septiembre de 2026.**
+`GET /ASMSAPI/api/v9/user/{username}/detail` **responde 200 llamando directo a
+Aranda**, con la misma credencial y cookie que ya usa el gateway. Devuelve el
+usuario completo, incluidos `companyId` y `cityId`.
+
+Lo que falla es exclusivamente la publicación en APIM, que responde `404`.
+
+Eso abre una alternativa al parche de usuario fijo que no depende de que
+publiquen nada: apuntar esa única operación directo a Aranda en lugar de a
+APIM. Queda por decidir si es aceptable para la política de red y seguridad,
+porque saltarse APIM para una operación contradice el diseño actual.
+
+El endpoint de login (`POST /api/v9/authentication/`) también responde directo:
+devuelve `400 ValidationError` con credenciales vacías, es decir, el servicio
+está operativo. Misma consideración.
+
+---
+
+## 4. Usuario fijo por dominio (`Aranda:UserOverride`)
 
 **Qué hay hoy.** La resolución del colaborador está reemplazada por un usuario
 fijo: `1562` (`evelyn.nunez@minsur.com`) para equipos y `15019`
@@ -69,7 +133,7 @@ fijo: `1562` (`evelyn.nunez@minsur.com`) para equipos y `15019`
 
 **Riesgo.** Cualquier colaborador ve los equipos de Evelyn y opera los tickets
 de uebit20. **No debe llegar a producción con usuarios reales.** Es el punto
-más delicado de los tres.
+más delicado de esta lista.
 
 **Solución permanente.** Publicar `GET /api/v9/user/{username}/detail` en APIM
 y poner `Aranda:UserOverride:Enabled` en `false`. No requiere cambios de
@@ -85,7 +149,7 @@ Al retirarse se borran `ArandaUserOverrideOptions.cs`, la propiedad
 
 ---
 
-## 3. Desafío de Cloudflare
+## 5. Desafío de Cloudflare
 
 **Qué hay hoy.** Cloudflare, delante de Aranda, responde `403` con
 `Cf-Mitigated: challenge` de forma intermitente, incluso a peticiones
@@ -101,6 +165,6 @@ duplicar tickets.
 hacia el backend y que se excluya del desafío la ruta `/ASMSAPI/api/v9/*` para
 el origen de APIM.
 
-**Prioridad.** La más baja de las tres: el reintento ya lo hace invisible. Vale
+**Prioridad.** La más baja de la lista: el reintento ya lo hace invisible. Vale
 retomarla si el `403` aparece en los logs de producción con frecuencia, porque
 cada reintento consume el presupuesto de `Aranda:TimeoutSeconds`.

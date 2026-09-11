@@ -519,8 +519,7 @@ public sealed class TicketService(
             !IsPositive(arandaOptions.ImpactId) ||
             !IsPositive(arandaOptions.UrgencyId) ||
             !IsPositive(arandaOptions.GroupId) ||
-            !IsPositive(arandaOptions.RegistryTypeId) ||
-            !IsPositive(arandaOptions.UnitId))
+            !IsPositive(arandaOptions.RegistryTypeId))
         {
             configuration = default;
             return false;
@@ -536,7 +535,10 @@ public sealed class TicketService(
             arandaOptions.UrgencyId!.Value,
             arandaOptions.GroupId!.Value,
             arandaOptions.RegistryTypeId!.Value,
-            arandaOptions.UnitId!.Value);
+            // La unidad organizacional es opcional: Aranda rechaza con
+            // InvalidOrganizationArea una unidad que no corresponde al
+            // cliente, y sin el dato resuelve el área por su cuenta.
+            IsPositive(arandaOptions.UnitId) ? arandaOptions.UnitId : null);
         return true;
     }
 
@@ -583,5 +585,5 @@ public sealed class TicketService(
         long UrgencyId,
         long GroupId,
         long RegistryTypeId,
-        long UnitId);
+        long? UnitId);
 }
