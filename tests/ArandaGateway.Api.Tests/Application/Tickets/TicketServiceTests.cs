@@ -221,8 +221,8 @@ public sealed class TicketServiceTests
                         IdByProject = "RF-50518",
                         CustomerId = null,
                         Subject = "Solicitud de acceso a Microsoft Teams",
-                        StateId = 66,
-                        StateName = "Resuelto",
+                        StateId = 59,
+                        StateName = "En proceso",
                         OpenedDate = 1786568146563
                     }
                 ],
@@ -240,7 +240,62 @@ public sealed class TicketServiceTests
         Assert.Equal(
             "Solicitud de acceso a Microsoft Teams",
             ticket.Subject);
-        Assert.Equal("Resuelto", ticket.Status);
+        Assert.Equal("En proceso", ticket.Status);
+    }
+
+    /// <summary>
+    /// Aranda solo marca isClosed al cancelar: un ticket "Resuelto" llega con
+    /// isClosed = false. El listado se filtra por estado para no mostrar como
+    /// abierto algo que ya terminó.
+    /// </summary>
+    [Theory]
+    [InlineData("Resuelto")]
+    [InlineData("Solucionado")]
+    [InlineData("Cerrado")]
+    [InlineData("Cancelado")]
+    [InlineData("Anulado")]
+    public async Task ListOpenTicketsAsync_ExcludesFinishedStates(
+        string stateName)
+    {
+        var client = new StubArandaClient
+        {
+            User = CreateUser(),
+            SearchResult = SearchResultWith(
+                CreateTicket("collaborator") with
+                {
+                    IsClosed = false,
+                    StateName = stateName
+                })
+        };
+        var service = CreateService(client);
+
+        var result = await service.ListOpenTicketsAsync(
+            CancellationToken.None);
+
+        Assert.Equal(TicketOperationResultStatus.Success, result.Status);
+        Assert.Empty(result.Value!);
+    }
+
+    [Fact]
+    public async Task ListOpenTicketsAsync_KeepsTicketsStillInProgress()
+    {
+        var client = new StubArandaClient
+        {
+            User = CreateUser(),
+            SearchResult = SearchResultWith(
+                CreateTicket("collaborator") with
+                {
+                    IsClosed = false,
+                    StateName = "Registrado"
+                })
+        };
+        var service = CreateService(client);
+
+        var result = await service.ListOpenTicketsAsync(
+            CancellationToken.None);
+
+        var ticket = Assert.Single(result.Value!);
+        Assert.Equal("Registrado", ticket.Status);
     }
 
     [Fact]

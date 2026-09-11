@@ -43,7 +43,20 @@ public sealed class ArandaSessionCookieHandler(
             return;
         }
 
+        // La primera renovación se registra en Information: confirma que el
+        // mecanismo funciona contra este entorno. Las siguientes van en Debug
+        // para no dejar una línea por petición.
+        var isFirstRenewal = sessionCookie.RenewedAt is null;
+
         sessionCookie.Renew(renewed);
+
+        if (isFirstRenewal)
+        {
+            logger.LogInformation(
+                "Sesión de Aranda renovada desde Set-Cookie; a partir de ahora se usa la cookie que devuelve Aranda.");
+            return;
+        }
+
         logger.LogDebug("Sesión de Aranda renovada desde Set-Cookie.");
     }
 }

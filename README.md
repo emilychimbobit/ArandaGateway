@@ -69,7 +69,36 @@ El gateway hace dos cosas para que no caduque:
   `Aranda:SessionKeepAliveMinutes` minutos (5 por omisión, `0` desactiva) para
   reiniciar el contador aunque no haya tráfico de usuarios.
 
-Con eso la sesión no caduca mientras el gateway esté arriba. Sigue haciendo
+#### Reintentos y el desafío de Cloudflare
+
+Aranda está detrás de Cloudflare, que de forma intermitente responde `403` con
+`Cf-Mitigated: challenge` incluso a peticiones idénticas que funcionaron un
+momento antes. APIM no lo evita: reenvía los encabezados del cliente al
+backend, así que Cloudflare sigue evaluando la petición. Se observó el desafío
+con el `User-Agent` de curl y también, esporádicamente, con el del gateway.
+
+`ArandaRetryHandler` lo absorbe con hasta tres intentos (esperas de 500 ms y
+1500 ms). Qué se reintenta depende de la operación, para no crear duplicados:
+
+| Operación | Se reintenta ante |
+| --- | --- |
+| Consultas (usuario, ticket, búsqueda, CMDB) | Desafío, `429`, `5xx` y fallos de red |
+| Crear, actualizar, adjuntar | Solo desafío y `429` |
+
+La diferencia importa: el desafío y el `429` se resuelven **en el borde**, sin
+llegar a Aranda, así que repetir una creación no duplica nada. Un `5xx` o un
+tiempo de espera agotado pudieron ejecutarse en Aranda, de modo que ahí las
+escrituras no se repiten y el error se propaga.
+
+El reintento consume el tiempo de `Aranda:TimeoutSeconds`, que acota el total.
+
+Lo definitivo para el desafío está del lado de la plataforma, no del gateway:
+que la política de APIM normalice el `User-Agent` hacia el backend y que se
+excluya del desafío la ruta `/ASMSAPI/api/v9/*` para el origen de APIM.
+
+#### Resumen
+
+Con lo anterior la sesión no caduca mientras el gateway esté arriba. Sigue haciendo
 falta una cookie **válida** en dos casos: al arrancar el proceso, y tras una
 parada larga. Renovarla es manual: sacarla de una petición autenticada (por
 ejemplo desde Postman) y actualizar el secreto. La solución definitiva es que
@@ -137,5 +166,13 @@ define SSO, las operaciones reciben el username en `X-Collaborator-Username`
 que es su usuario o correo.
 
 Los contratos y reglas pueden probarse localmente. La validación end-to-end
-contra Aranda permanece pendiente hasta que Cloudflare permita solicitudes
-server-to-server desde la gateway.
+contra Aranda real está hecha para las tres consultas: `GET /api/equipos`,
+`GET /api/tickets` y `GET /api/tickets/{caseNumber}` responden `200`. El
+desafío de Cloudflare ya no bloquea la operación: se reintenta.
+
+### Deuda técnica
+
+Las soluciones temporales vigentes y lo que hace falta para retirarlas están en
+[docs/deuda-tecnica.md](docs/deuda-tecnica.md): la cookie de sesión manual, el
+usuario fijo por dominio y el desafío de Cloudflare. Las tres dependen de que
+se publiquen operaciones en APIM, no de código del gateway.

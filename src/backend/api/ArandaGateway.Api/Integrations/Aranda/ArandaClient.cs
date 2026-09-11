@@ -26,14 +26,18 @@ public sealed class ArandaClient(HttpClient httpClient) : IArandaClient
         PostAsync<ArandaSearchTicketsRequest, ArandaPagedResponse<ArandaTicket>>(
             "api/v9/item/search?language=0",
             request,
+            ArandaRetryPolicy.Reads,
             cancellationToken);
 
     public Task<ArandaCreatedTicket> CreateTicketAsync(
         ArandaCreateTicketRequest request,
         CancellationToken cancellationToken) =>
+        // Crear solo se repite ante un rechazo del borde, donde Aranda no
+        // llego a registrar nada: reintentar un 5xx podria duplicar el ticket.
         PostAsync<ArandaCreateTicketRequest, ArandaCreatedTicket>(
             "api/v9/item/",
             request,
+            ArandaRetryPolicy.EdgeRejectionsOnly,
             cancellationToken);
 
     public Task<ArandaUpdateTicketResult> UpdateTicketAsync(
@@ -76,45 +80,74 @@ public sealed class ArandaClient(HttpClient httpClient) : IArandaClient
                 : new("application/octet-stream");
         content.Add(fileContent, "Data0", request.FileName);
 
-        using var response = await httpClient.PostAsync(
-            "api/v9/file/",
-            content,
-            cancellationToken);
+        using var uploadRequest = new HttpRequestMessage(
+            HttpMethod.Post,
+            "api/v9/file/")
+        {
+            Content = content
+        };
 
-        return await ReadResponseAsync<
-            IReadOnlyList<ArandaFileUploadResult>>(
-                response,
-                cancellationToken);
+        // Adjuntar tampoco es una lectura: mismo criterio que crear.
+        return await SendAsync<IReadOnlyList<ArandaFileUploadResult>>(
+            uploadRequest,
+            ArandaRetryPolicy.EdgeRejectionsOnly,
+            cancellationToken);
     }
 
     private async Task<TResponse> GetAsync<TResponse>(
         string requestUri,
         CancellationToken cancellationToken)
     {
-        using var response = await httpClient.GetAsync(requestUri, cancellationToken);
-        return await ReadResponseAsync<TResponse>(response, cancellationToken);
+        using var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
+        return await SendAsync<TResponse>(
+            request,
+            ArandaRetryPolicy.Reads,
+            cancellationToken);
     }
 
     private async Task<TResponse> PostAsync<TRequest, TResponse>(
         string requestUri,
-        TRequest request,
+        TRequest body,
+        ArandaRetryPolicy retryPolicy,
         CancellationToken cancellationToken)
     {
-        using var response = await httpClient.PostAsJsonAsync(
-            requestUri,
-            request,
-            cancellationToken);
+        using var request = new HttpRequestMessage(HttpMethod.Post, requestUri)
+        {
+            Content = JsonContent.Create(body)
+        };
 
-        return await ReadResponseAsync<TResponse>(response, cancellationToken);
+        return await SendAsync<TResponse>(
+            request,
+            retryPolicy,
+            cancellationToken);
     }
 
     private async Task<TResponse> PutAsync<TRequest, TResponse>(
         string requestUri,
-        TRequest request,
+        TRequest body,
         CancellationToken cancellationToken)
     {
-        using var response = await httpClient.PutAsJsonAsync(
-            requestUri,
+        using var request = new HttpRequestMessage(HttpMethod.Put, requestUri)
+        {
+            Content = JsonContent.Create(body)
+        };
+
+        // Actualizar no es una lectura: solo se repite si el borde rechazó la
+        // llamada antes de que Aranda la ejecutara.
+        return await SendAsync<TResponse>(
+            request,
+            ArandaRetryPolicy.EdgeRejectionsOnly,
+            cancellationToken);
+    }
+
+    private async Task<TResponse> SendAsync<TResponse>(
+        HttpRequestMessage request,
+        ArandaRetryPolicy retryPolicy,
+        CancellationToken cancellationToken)
+    {
+        request.Options.Set(ArandaRetryHandler.PolicyKey, retryPolicy);
+
+        using var response = await httpClient.SendAsync(
             request,
             cancellationToken);
 
@@ -178,5 +211,6 @@ public sealed class ArandaClient(HttpClient httpClient) : IArandaClient
     PostAsync<ArandaCiRequest, ArandaPagedResponse<ArandaCiItem>>(
         "api/v9/ci/cisbyuserandprojects",
         request,
+        ArandaRetryPolicy.Reads,
         cancellationToken);
 }

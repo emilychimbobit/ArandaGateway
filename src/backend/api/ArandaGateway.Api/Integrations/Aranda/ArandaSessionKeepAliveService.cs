@@ -42,6 +42,10 @@ public sealed class ArandaSessionKeepAliveService(
             return;
         }
 
+        logger.LogInformation(
+            "Latido de sesión de Aranda activo cada {Minutes} minuto(s).",
+            arandaOptions.SessionKeepAliveMinutes);
+
         using var timer = new PeriodicTimer(period);
 
         while (await timer.WaitForNextTickAsync(stoppingToken))

@@ -55,6 +55,9 @@ public static class ArandaServiceCollectionExtensions
                 // valido. La cookie no se fija aqui porque cambia en cada
                 // respuesta: la pone ArandaSessionCookieHandler.
             })
+            // El reintento va por fuera de la cookie para que cada intento
+            // salga con la sesión vigente.
+            .AddHttpMessageHandler<ArandaRetryHandler>()
             .AddHttpMessageHandler<ArandaSessionCookieHandler>()
             // El manejo automatico de cookies pisaria el encabezado Cookie que
             // fija el handler; la sesion de Aranda se envia explicitamente.
@@ -64,6 +67,7 @@ public static class ArandaServiceCollectionExtensions
         // Singleton: la sesion viva es una sola para todo el proceso.
         services.AddSingleton<ArandaSessionCookie>();
         services.AddTransient<ArandaSessionCookieHandler>();
+        services.AddTransient<ArandaRetryHandler>();
         services.AddHostedService<ArandaSessionKeepAliveService>();
 
         return services;
