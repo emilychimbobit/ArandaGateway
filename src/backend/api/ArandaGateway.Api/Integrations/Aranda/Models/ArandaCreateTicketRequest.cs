@@ -50,4 +50,13 @@ public sealed record ArandaCreateTicketRequest
     public required string Subject { get; init; }
 
     public IReadOnlyList<object> ListAdditionalField { get; init; } = [];
+
+    /// <summary>
+    /// Sin este indicador Aranda rechaza la creación con
+    /// <c>InvalidOrganizationArea</c>, incluso con una unidad válida: es lo que
+    /// hace que resuelva el área organizacional en lugar de exigirla ya
+    /// resuelta. Verificado el 11 de septiembre de 2026 comparando con una
+    /// creación correcta: era la única diferencia del cuerpo.
+    /// </summary>
+    public bool Validate { get; init; } = true;
 }

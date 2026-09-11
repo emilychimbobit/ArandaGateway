@@ -166,9 +166,9 @@ define SSO, las operaciones reciben el username en `X-Collaborator-Username`
 que es su usuario o correo.
 
 Los contratos y reglas pueden probarse localmente. La validación end-to-end
-contra Aranda real está hecha para las tres consultas: `GET /api/equipos`,
-`GET /api/tickets` y `GET /api/tickets/{caseNumber}` responden `200`. El
-desafío de Cloudflare ya no bloquea la operación: se reintenta.
+contra Aranda real está hecha: `GET /api/equipos`, `GET /api/tickets` y
+`GET /api/tickets/{caseNumber}` responden `200`, y `POST /api/tickets` responde
+`201`. El desafío de Cloudflare ya no bloquea la operación: se reintenta.
 
 ### Deuda técnica
 
@@ -179,5 +179,6 @@ el usuario fijo por dominio y el desafío de Cloudflare. Ninguno se resuelve con
 código del gateway: dependen de datos de catálogo de Aranda o de que se
 publiquen operaciones en APIM.
 
-`POST /api/tickets` responde hoy `502` con `ARANDA_400`: falta el `Aranda:UnitId`
-(Sede) válido para la categoría del bot. Las tres consultas sí operan.
+Las cuatro operaciones están validadas contra Aranda real: las tres consultas y
+la creación, que devolvió `201` con el caso RF-58501 el 11 de septiembre de
+2026.

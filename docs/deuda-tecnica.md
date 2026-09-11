@@ -60,47 +60,28 @@ No cubre paradas largas.
 
 ---
 
-## 2. Creación de tickets bloqueada: falta la Sede válida
+## 2. Una cookie vencida es peor que ninguna
 
-**Qué pasa.** `POST /api/tickets` responde `502` con `ARANDA_400`. Aranda
-rechaza la creación con `InvalidOrganizationArea` en `AddItem`.
+**Resuelto lo principal.** La creación de tickets funciona: `POST /api/tickets`
+devolvió `201` con RF-58501 el 11 de septiembre de 2026. Faltaba el indicador
+`validate: true` en el cuerpo, sin el cual Aranda responde `400`
+`InvalidOrganizationArea` aunque la Sede sea válida. `Aranda:UnitId` queda en
+5875 (Minsur Lima), que sí es correcta.
 
-**Diagnóstico.** El campo obligatorio es `unitId`, que Aranda expone como
-recurso `BusinessArea` con etiqueta "Sedes" y `mandatory: true` en el modelo
-17. Lo verificado el 11 de septiembre de 2026:
+**Lo que queda como riesgo.** Durante el diagnóstico se observó que una
+petición **sin** cookie puede funcionar mientras la misma petición **con una
+cookie vencida** falla con `401`. La creación por APIM funciona sin cookie; el
+gateway, al arrancar con la semilla caducada, la envía y recibe `401`.
 
-| Intento | Resultado |
-| --- | --- |
-| `unitId` omitido | `UnitId IsRequired` |
-| `unitId: 0` | `InvalidOrganizationArea` |
-| `unitId: 5875` + categoría 988 / servicio 51 (la del bot) | `InvalidOrganizationArea` |
-| `unitId: 5875` + categoría 775 / servicio 8 (de un ticket real) | Pasa el área y pide el campo adicional `'Sede'` |
+O sea: el gateway arrastra la cookie vencida y rompe operaciones que sin ella
+habrían funcionado. Agrava el problema del punto 1, porque el arranque con
+semilla caducada no degrada parcialmente, sino que tumba todo.
 
-O sea: **5875 (Minsur Lima) es válida, pero no para la categoría y el servicio
-que usa el bot.** No depende del usuario: falla igual con uebit20 (sin área
-organizacional) y con Evelyn (`companyId` 5007, `cityId` 6135). Tampoco del
-autor: falla con `authorId` 2 y con 15036.
-
-La categoría 988 + servicio 51 está bien elegida por otro motivo: es la única
-de las probadas **sin campos adicionales obligatorios** (la 775 + 8 exige
-`Sede`, `Pais`, `Fecha de Inicio`, `Fecha de termino` y `Sedes`).
-
-El README daba esta combinación por validada el 1 de septiembre de 2026 con la
-prueba RF-56025. Ese ticket existe y se creó con `unitId = null`, lo que hoy
-Aranda ya no acepta: la regla cambió entre esa fecha y el 11 de septiembre.
-
-**Qué falta.** El `unitId` (Sede/BusinessArea) válido para la categoría 988 y
-el servicio 51. Es un dato de catálogo: no se puede listar desde fuera porque
-las rutas de catálogo de áreas de negocio no responden
-(`/api/v9/businessarea`, `/api/v9/project/1/units` y variantes dan 404, y
-`/api/v9/project/1/locations` da 500 por un error interno de Aranda).
-
-**A quién preguntar.** Al equipo de Aranda: qué Sede corresponde a la categoría
-"Ticket creado por bot" (988) con el servicio "Por categorizar" (51). Con ese
-número se cambia `Aranda:UnitId` y la creación queda validada, sin desarrollo.
-
-El gateway ya admite `UnitId` nulo (se omite del cuerpo) por si en algún
-momento Aranda vuelve a resolver el área por su cuenta.
+**Posible mejora.** Detectar el `401` de sesión, descartar la cookie en memoria
+y reintentar una vez sin ella. Recuperaría las operaciones que no necesitan
+sesión en lugar de fallar en bloque. No está implementado: conviene medir antes
+qué operaciones realmente funcionan sin cookie, porque las consultas sí la
+exigen.
 
 ---
 
