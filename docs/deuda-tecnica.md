@@ -53,7 +53,43 @@ publiquen, credenciales de un usuario de servicio de Aranda y el valor real de
 Al resolverse desaparece `Aranda:AuthCookie` y con ella
 `ArandaSessionKeepAliveService`.
 
-**Paliativo intermedio,** si el login tarda: persistir la cookie rotada fuera
+**Paliativo en uso.** `PUT /admin/aranda-session` instala la cookie en caliente,
+sin reiniciar ni redesplegar. Nació de un problema concreto: el despliegue tarda
+unos 7 minutos, más que la vida de la cookie, así que pasarla por configuración
+obliga a coordinar el cambio en una ventana que casi nunca se alcanza. Con esta
+ruta la cookie se instala cuando la aplicación ya está arriba.
+
+No elimina la deuda: sigue siendo una credencial renovada a mano, y con varias
+instancias hay que instalarla en cada una, porque la sesión vive en la memoria
+de cada proceso.
+
+### Riesgo abierto: `/admin/aranda-session` es anónimo
+
+La ruta se implementó primero con una clave de autorización (`X-Admin-Key`) y
+esa protección **se retiró por decisión del equipo** el 11 de septiembre de
+2026. Queda registrado aquí porque cambia la superficie de ataque del servicio.
+
+El App Service responde desde internet: se comprobó llamando a
+`https://ase-gestionaranda-dev.azurewebsites.net/health` sin VPN y sin pasar por
+APIM. Con la ruta abierta, cualquiera que conozca la URL puede:
+
+- instalar la cookie con la que la gateway opera contra Aranda, de modo que el
+  servicio pase a actuar con la sesión de un tercero;
+- dejarla inoperativa instalando una cookie inválida.
+
+Es distinto del resto de los endpoints anónimos, que solo leen con una
+credencial fija y no pueden alterarla.
+
+**Mitigaciones posibles,** por orden de menor fricción:
+
+1. Restringir `/admin/*` por IP con las reglas de acceso del App Service. No
+   requiere código ni recordar ningún encabezado.
+2. Reponer la clave de autorización. El código está en el historial:
+   `git show ed32658 -- src/backend/api/ArandaGateway.Api/Endpoints/AdminEndpoints.cs`.
+
+**No debe llegar así a producción con usuarios reales.**
+
+**Otro paliativo posible,** si el login tarda: persistir la cookie rotada fuera
 del proceso (archivo en almacenamiento persistente, o Redis/Blob con varias
 instancias) para que un reinicio corto la recupere en vez de caer a la semilla.
 No cubre paradas largas.

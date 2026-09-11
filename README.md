@@ -69,6 +69,39 @@ El gateway hace dos cosas para que no caduque:
   `Aranda:SessionKeepAliveMinutes` minutos (5 por omisión, `0` desactiva) para
   reiniciar el contador aunque no haya tráfico de usuarios.
 
+#### Renovar la sesión sin reiniciar (`/admin/aranda-session`)
+
+La cookie caduca en pocos minutos y un despliegue completo tarda más que eso,
+así que renovarla por configuración obliga a coordinar el cambio en una ventana
+muy corta. Para soporte hay una ruta que la instala en caliente:
+
+```bash
+curl -X PUT "https://HOST/admin/aranda-session" \
+  -H "Content-Type: application/json" \
+  -d '{"cookie":"AuthCookieASMS=VALOR"}'
+
+curl "https://HOST/admin/aranda-session"
+```
+
+El `PUT` reemplaza la sesión en memoria y el `GET` informa si hay sesión y
+cuándo se renovó, sin devolver nunca el valor de la cookie. Tras instalarla, el
+latido la mantiene viva mientras el proceso siga arriba.
+
+Esto no reemplaza a `Aranda:AuthCookie`, que sigue siendo la semilla del
+arranque; evita el redespliegue cuando la sesión muere en caliente.
+
+**Riesgo asumido.** Estas rutas son anónimas, igual que el resto de la gateway,
+y el App Service responde desde internet: se comprobó llamando a
+`https://ase-gestionaranda-dev.azurewebsites.net/health` sin pasar por APIM. En
+consecuencia, cualquiera que conozca la URL puede instalar la cookie con la que
+la gateway opera contra Aranda, o dejarla inoperativa enviando una inválida. Es
+distinto del resto de los endpoints anónimos, que solo leen con una credencial
+fija: esta ruta **cambia con qué credencial actúa el servicio**.
+
+La mitigación pendiente es restringir `/admin/*` por IP con las reglas de acceso
+del App Service, o reponer una clave de autorización. Ver
+[docs/deuda-tecnica.md](docs/deuda-tecnica.md).
+
 #### Reintentos y el desafío de Cloudflare
 
 Aranda está detrás de Cloudflare, que de forma intermitente responde `403` con
@@ -153,6 +186,30 @@ hay que tocar código. Al retirar el parche de forma definitiva se borran
 `ArandaUserOverrideOptions.cs`, la propiedad `ArandaOptions.UserOverride`, los
 bloques marcados con `PARCHE TEMPORAL` en `EquipoService` y `TicketService`, y
 sus pruebas asociadas.
+
+### Observabilidad (Application Insights)
+
+La telemetría se activa **solo si hay cadena de conexión**. Se lee de
+`ApplicationInsights:ConnectionString` o de
+`APPLICATIONINSIGHTS_CONNECTION_STRING`, que es la que inyecta Azure App
+Service al vincular el recurso. Sin ella no se registra nada: el SDK arrancaría
+igual y se quedaría reintentando envíos que nadie recibe, así que en local y en
+las pruebas queda inactiva.
+
+La gateway aparece como `aranda-gateway` en el mapa de aplicaciones, con el
+atributo `deployment.environment` para separar dev de producción cuando ambos
+comparten recurso.
+
+Desde la versión 3 el SDK de Application Insights se apoya en OpenTelemetry, de
+modo que el nombre del servicio y el entorno se declaran como atributos de
+recurso; la API clásica de `ITelemetryInitializer` ya no existe.
+
+Qué llega a la telemetría y qué no: las peticiones entrantes, las dependencias
+salientes hacia Aranda y las trazas del log, incluido el cuerpo recortado de
+los errores de Aranda, que es lo que distingue un `401` de APIM de una sesión
+caducada. **No** se registran encabezados ni cuerpos de las peticiones, así que
+ni el token de `X-Authorization`, ni la cookie de sesión, ni la clave de
+`X-Admin-Key` salen en la telemetría.
 
 ### Ejecución y pruebas
 

@@ -7,6 +7,9 @@ using ArandaGateway.Api.Integrations.Aranda;
 using ArandaGateway.Api.Observability;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddGatewayTelemetry(
+    builder.Configuration,
+    builder.Environment.EnvironmentName);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddProblemDetails();
@@ -29,6 +32,7 @@ app.UseSwaggerUI();
 
 app.MapTicketEndpoints();
 app.MapEquiposEndpoints();
+app.MapAdminEndpoints();
 app.MapGet("/health", () => TypedResults.Ok(new { status = "Healthy" }))
     .WithName("Health")
     .WithTags("Health");
