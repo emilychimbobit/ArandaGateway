@@ -5,6 +5,8 @@ namespace ArandaGateway.Api.Integrations.Aranda;
 
 public static class ArandaServiceCollectionExtensions
 {
+    public const string SubscriptionKeyHeaderName = "Ocp-Apim-Subscription-Key";
+
     public static IServiceCollection AddArandaIntegration(
         this IServiceCollection services,
         IConfiguration configuration)
@@ -36,7 +38,37 @@ public static class ArandaServiceCollectionExtensions
                 client.DefaultRequestHeaders.TryAddWithoutValidation(
                     "X-Authorization",
                     options.ApiKey);
-            });
+
+                // Cuando la salida va por Azure API Management y no directo a
+                // Aranda, APIM exige su propia clave de suscripción y responde
+                // 401 sin ella. Va aparte de X-Authorization, que es la
+                // credencial de Aranda.
+                if (!string.IsNullOrWhiteSpace(options.SubscriptionKey))
+                {
+                    client.DefaultRequestHeaders.TryAddWithoutValidation(
+                        SubscriptionKeyHeaderName,
+                        options.SubscriptionKey);
+                }
+
+                // Aranda exige una cookie de sesión ademas del token de
+                // X-Authorization; sin ella responde 401 aunque el token sea
+                // valido. La cookie no se fija aqui porque cambia en cada
+                // respuesta: la pone ArandaSessionCookieHandler.
+            })
+            // El reintento va por fuera de la cookie para que cada intento
+            // salga con la sesión vigente.
+            .AddHttpMessageHandler<ArandaRetryHandler>()
+            .AddHttpMessageHandler<ArandaSessionCookieHandler>()
+            // El manejo automatico de cookies pisaria el encabezado Cookie que
+            // fija el handler; la sesion de Aranda se envia explicitamente.
+            .ConfigurePrimaryHttpMessageHandler(() =>
+                new HttpClientHandler { UseCookies = false });
+
+        // Singleton: la sesion viva es una sola para todo el proceso.
+        services.AddSingleton<ArandaSessionCookie>();
+        services.AddTransient<ArandaSessionCookieHandler>();
+        services.AddTransient<ArandaRetryHandler>();
+        services.AddHostedService<ArandaSessionKeepAliveService>();
 
         return services;
     }

@@ -23,6 +23,22 @@ public sealed class TicketService(
             "En proceso"
         };
 
+    /// <summary>
+    /// Estados en los que un ticket ya terminó. Aranda solo marca
+    /// <c>isClosed</c> al cancelar: un ticket "Resuelto" llega con
+    /// <c>isClosed = false</c>, así que filtrar por esa bandera dejaba pasar
+    /// los resueltos como si siguieran abiertos.
+    /// </summary>
+    private static readonly HashSet<string> ClosedStates =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            "Resuelto",
+            "Solucionado",
+            "Cerrado",
+            "Cancelado",
+            "Anulado"
+        };
+
     private static readonly HashSet<string> AllowedExtensions =
         new(StringComparer.OrdinalIgnoreCase)
         {
@@ -121,7 +137,7 @@ public sealed class TicketService(
             .Where(ticket =>
                 (ticket.CustomerId is null ||
                     ticket.CustomerId == user.Id) &&
-                !ticket.IsClosed &&
+                IsOpen(ticket) &&
                 ticket.IdByProject is not null &&
                 ticket.Subject is not null &&
                 ticket.StateName is not null &&
@@ -503,8 +519,7 @@ public sealed class TicketService(
             !IsPositive(arandaOptions.ImpactId) ||
             !IsPositive(arandaOptions.UrgencyId) ||
             !IsPositive(arandaOptions.GroupId) ||
-            !IsPositive(arandaOptions.RegistryTypeId) ||
-            !IsPositive(arandaOptions.UnitId))
+            !IsPositive(arandaOptions.RegistryTypeId))
         {
             configuration = default;
             return false;
@@ -520,9 +535,23 @@ public sealed class TicketService(
             arandaOptions.UrgencyId!.Value,
             arandaOptions.GroupId!.Value,
             arandaOptions.RegistryTypeId!.Value,
-            arandaOptions.UnitId!.Value);
+            // La unidad organizacional es opcional: Aranda rechaza con
+            // InvalidOrganizationArea una unidad que no corresponde al
+            // cliente, y sin el dato resuelve el área por su cuenta.
+            IsPositive(arandaOptions.UnitId) ? arandaOptions.UnitId : null);
         return true;
     }
+
+    /// <summary>
+    /// Un ticket sigue abierto si Aranda no lo cerró y su estado no es
+    /// terminal. Se excluye por lista de estados terminados en lugar de
+    /// aceptar una lista de estados en curso: así un estado nuevo de Aranda
+    /// aparece en el listado en vez de desaparecer sin aviso.
+    /// </summary>
+    private static bool IsOpen(ArandaTicket ticket) =>
+        !ticket.IsClosed &&
+        (ticket.StateName is null ||
+            !ClosedStates.Contains(ticket.StateName.Trim()));
 
     private static bool IsPositive(long? value) => value is > 0;
 
@@ -556,5 +585,5 @@ public sealed class TicketService(
         long UrgencyId,
         long GroupId,
         long RegistryTypeId,
-        long UnitId);
+        long? UnitId);
 }

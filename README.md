@@ -33,7 +33,77 @@ Los secretos se administran con .NET User Secrets:
 dotnet user-secrets init --project .\src\backend\api\ArandaGateway.Api\ArandaGateway.Api.csproj
 dotnet user-secrets set "Aranda:BaseUrl" "https://HOST/ASMSAPI/" --project .\src\backend\api\ArandaGateway.Api\ArandaGateway.Api.csproj
 dotnet user-secrets set "Aranda:ApiKey" "Bearer API_KEY" --project .\src\backend\api\ArandaGateway.Api\ArandaGateway.Api.csproj
+dotnet user-secrets set "Aranda:SubscriptionKey" "SUBSCRIPTION_KEY" --project .\src\backend\api\ArandaGateway.Api\ArandaGateway.Api.csproj
+dotnet user-secrets set "Aranda:AuthCookie" "AuthCookieASMS=VALOR" --project .\src\backend\api\ArandaGateway.Api\ArandaGateway.Api.csproj
 ```
+
+La salida hacia Aranda necesita **tres** credenciales, no una. Faltando
+cualquiera la respuesta es `502` con `errorCode` `ARANDA_401`:
+
+| Secreto | Encabezado | Quién lo exige |
+| --- | --- | --- |
+| `Aranda:ApiKey` | `X-Authorization` | Aranda |
+| `Aranda:SubscriptionKey` | `Ocp-Apim-Subscription-Key` | Azure API Management |
+| `Aranda:AuthCookie` | `Cookie` | Aranda (sesión `AuthCookieASMS`) |
+
+`SubscriptionKey` solo hace falta cuando `Aranda:BaseUrl` apunta a APIM
+(`https://apim-servicios.azure-api.net/fcintgestionaranda/v1`) y no directo a
+Aranda; sin ella APIM responde 401 antes de enrutar.
+
+`AuthCookie` es una **cookie de sesión y caduca**. Aranda devuelve 401 con la
+página de IIS "You do not have permission to view this directory or page."
+cuando falta o venció, aunque el token de `ApiKey` siga vigente. No se versiona
+en el repositorio.
+
+#### Cómo se mantiene viva la sesión
+
+Aranda usa expiración deslizante: devuelve un `Set-Cookie` renovado en cada
+respuesta y lo que mata la sesión es la **inactividad**, no el tiempo
+transcurrido. Se midió una sesión muerta tras unos 10 minutos sin tráfico.
+
+El gateway hace dos cosas para que no caduque:
+
+- `ArandaSessionCookieHandler` guarda la cookie de cada respuesta y la usa en
+  la siguiente. `Aranda:AuthCookie` es solo la **semilla** del primer request.
+- `ArandaSessionKeepAliveService` consulta Aranda cada
+  `Aranda:SessionKeepAliveMinutes` minutos (5 por omisión, `0` desactiva) para
+  reiniciar el contador aunque no haya tráfico de usuarios.
+
+#### Reintentos y el desafío de Cloudflare
+
+Aranda está detrás de Cloudflare, que de forma intermitente responde `403` con
+`Cf-Mitigated: challenge` incluso a peticiones idénticas que funcionaron un
+momento antes. APIM no lo evita: reenvía los encabezados del cliente al
+backend, así que Cloudflare sigue evaluando la petición. Se observó el desafío
+con el `User-Agent` de curl y también, esporádicamente, con el del gateway.
+
+`ArandaRetryHandler` lo absorbe con hasta tres intentos (esperas de 500 ms y
+1500 ms). Qué se reintenta depende de la operación, para no crear duplicados:
+
+| Operación | Se reintenta ante |
+| --- | --- |
+| Consultas (usuario, ticket, búsqueda, CMDB) | Desafío, `429`, `5xx` y fallos de red |
+| Crear, actualizar, adjuntar | Solo desafío y `429` |
+
+La diferencia importa: el desafío y el `429` se resuelven **en el borde**, sin
+llegar a Aranda, así que repetir una creación no duplica nada. Un `5xx` o un
+tiempo de espera agotado pudieron ejecutarse en Aranda, de modo que ahí las
+escrituras no se repiten y el error se propaga.
+
+El reintento consume el tiempo de `Aranda:TimeoutSeconds`, que acota el total.
+
+Lo definitivo para el desafío está del lado de la plataforma, no del gateway:
+que la política de APIM normalice el `User-Agent` hacia el backend y que se
+excluya del desafío la ruta `/ASMSAPI/api/v9/*` para el origen de APIM.
+
+#### Resumen
+
+Con lo anterior la sesión no caduca mientras el gateway esté arriba. Sigue haciendo
+falta una cookie **válida** en dos casos: al arrancar el proceso, y tras una
+parada larga. Renovarla es manual: sacarla de una petición autenticada (por
+ejemplo desde Postman) y actualizar el secreto. La solución definitiva es que
+el gateway inicie sesión por su cuenta, y eso requiere que publiquen la
+operación de autenticación de Aranda en APIM, hoy ausente del spec.
 
 La gateway no valida credenciales de entrada: sus endpoints son anónimos y el
 control de acceso queda delegado a APIM y a la red del App Service.
@@ -96,5 +166,22 @@ define SSO, las operaciones reciben el username en `X-Collaborator-Username`
 que es su usuario o correo.
 
 Los contratos y reglas pueden probarse localmente. La validación end-to-end
-contra Aranda permanece pendiente hasta que Cloudflare permita solicitudes
-server-to-server desde la gateway.
+contra Aranda real está hecha: `GET /api/equipos`, `GET /api/tickets` y
+`GET /api/tickets/{caseNumber}` responden `200`, y `POST /api/tickets` responde
+`201`. La anulación está bloqueada en APIM (ver deuda técnica). El desafío de
+Cloudflare ya no bloquea la operación: se reintenta.
+
+### Deuda técnica
+
+Las soluciones temporales vigentes y lo que hace falta para retirarlas están en
+[docs/deuda-tecnica.md](docs/deuda-tecnica.md): la cookie de sesión manual, la
+creación de tickets bloqueada por la Sede, la API de usuarios ausente en APIM,
+el usuario fijo por dominio y el desafío de Cloudflare. Ninguno se resuelve con
+código del gateway: dependen de datos de catálogo de Aranda o de que se
+publiquen operaciones en APIM.
+
+Cuatro de las cinco operaciones están validadas contra Aranda real: las tres
+consultas y la creación, que devolvió `201` con el caso RF-58501 el 11 de
+septiembre de 2026. **La anulación devuelve `502` con `ARANDA_404`**: APIM no
+publica `PUT /api/v9/item/{id}`, aunque la operación funciona llamando directo
+a Aranda.

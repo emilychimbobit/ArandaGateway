@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace ArandaGateway.Api.Integrations.Aranda.Models;
 
 public sealed record ArandaCreateTicketRequest
@@ -26,7 +28,14 @@ public sealed record ArandaCreateTicketRequest
 
     public required long RegistryTypeId { get; init; }
 
-    public required long UnitId { get; init; }
+    /// <summary>
+    /// Unidad organizacional. Es opcional: Aranda responde
+    /// <c>InvalidOrganizationArea</c> cuando recibe una unidad que no
+    /// corresponde al cliente, así que sin un valor válido configurado se omite
+    /// del cuerpo y Aranda resuelve el área por su cuenta.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public long? UnitId { get; init; }
 
     public required long ServiceId { get; init; }
 
@@ -41,4 +50,13 @@ public sealed record ArandaCreateTicketRequest
     public required string Subject { get; init; }
 
     public IReadOnlyList<object> ListAdditionalField { get; init; } = [];
+
+    /// <summary>
+    /// Sin este indicador Aranda rechaza la creación con
+    /// <c>InvalidOrganizationArea</c>, incluso con una unidad válida: es lo que
+    /// hace que resuelva el área organizacional en lugar de exigirla ya
+    /// resuelta. Verificado el 11 de septiembre de 2026 comparando con una
+    /// creación correcta: era la única diferencia del cuerpo.
+    /// </summary>
+    public bool Validate { get; init; } = true;
 }

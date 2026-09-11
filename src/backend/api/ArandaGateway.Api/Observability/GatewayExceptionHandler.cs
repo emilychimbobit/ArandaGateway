@@ -41,7 +41,23 @@ public sealed class GatewayExceptionHandler(
                     "UNEXPECTED_ERROR")
         };
 
+        // La respuesta de Aranda solo se registra en el log del servidor, nunca
+        // se devuelve al consumidor: distingue un 401 de APIM por falta de
+        // clave de suscripción de uno de Aranda por sesión caducada.
+        if (exception is ArandaApiException
+            {
+                ResponseBody: { } responseBody
+            } arandaError)
+        {
+            logger.LogError(
+                "Aranda respondió {StatusCode} en {RequestUri}. Respuesta: {ResponseBody}",
+                (int)arandaError.StatusCode,
+                arandaError.RequestUri,
+                responseBody);
+        }
+
         logger.LogError(
+            exception,
             "Gateway request failed. TraceId: {TraceId}, " +
             "ErrorCode: {ErrorCode}, ExceptionType: {ExceptionType}",
             httpContext.TraceIdentifier,
