@@ -299,14 +299,13 @@ public sealed class TicketServiceTests
     /// <summary>
     /// Aranda solo marca isClosed al cancelar: un ticket "Resuelto" llega con
     /// isClosed = false. El listado se filtra por estado para no mostrar como
-    /// abierto algo que ya terminó.
+    /// abierto algo que ya terminó. Los nombres salen del flujo real del
+    /// modelo 17, leído de api/v9/model/17/4/states.
     /// </summary>
     [Theory]
     [InlineData("Resuelto")]
-    [InlineData("Solucionado")]
     [InlineData("Cerrado")]
     [InlineData("Cancelado")]
-    [InlineData("Anulado")]
     public async Task ListOpenTicketsAsync_ExcludesFinishedStates(
         string stateName)
     {
@@ -327,6 +326,40 @@ public sealed class TicketServiceTests
 
         Assert.Equal(TicketOperationResultStatus.Success, result.Status);
         Assert.Empty(result.Value!);
+    }
+
+    /// <summary>
+    /// Los estados en pausa del modelo 17 (En Aprobacion, Pendiente usuario y
+    /// Pendiente proveedor) siguen siendo casos vivos: el colaborador debe
+    /// verlos en su listado.
+    /// </summary>
+    [Theory]
+    [InlineData("Registrado")]
+    [InlineData("Asignado")]
+    [InlineData("En Aprobacion")]
+    [InlineData("Pendiente usuario")]
+    [InlineData("Pendiente proveedor")]
+    [InlineData("En Proceso")]
+    public async Task ListOpenTicketsAsync_KeepsUnfinishedStates(
+        string stateName)
+    {
+        var client = new StubArandaClient
+        {
+            User = CreateUser(),
+            SearchResult = SearchResultWith(
+                CreateTicket("collaborator") with
+                {
+                    IsClosed = false,
+                    StateName = stateName
+                })
+        };
+        var service = CreateService(client);
+
+        var result = await service.ListOpenTicketsAsync(
+            CancellationToken.None);
+
+        Assert.Equal(TicketOperationResultStatus.Success, result.Status);
+        Assert.Single(result.Value!);
     }
 
     [Fact]
@@ -368,12 +401,21 @@ public sealed class TicketServiceTests
         Assert.Null(client.LastUpdateRequest);
     }
 
-    [Fact]
-    public async Task CancelTicketAsync_RejectsNonCancellableState()
+    /// <summary>
+    /// Estados no anulables segun el DEF, con los nombres reales del modelo 17.
+    /// </summary>
+    [Theory]
+    [InlineData("Resuelto")]
+    [InlineData("Cerrado")]
+    [InlineData("En Aprobacion")]
+    [InlineData("Pendiente usuario")]
+    [InlineData("Pendiente proveedor")]
+    public async Task CancelTicketAsync_RejectsNonCancellableState(
+        string stateName)
     {
         var ticket = CreateTicket("collaborator") with
         {
-            StateName = "Resuelto"
+            StateName = stateName
         };
         var client = new StubArandaClient
         {

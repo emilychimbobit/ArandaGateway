@@ -14,29 +14,37 @@ public sealed class TicketService(
     IOptions<ArandaOptions> options,
     ILogger<TicketService>? logger = null) : ITicketService
 {
+    /// <summary>
+    /// Estados anulables del DEF, con los nombres reales del modelo 17 leídos
+    /// de <c>api/v9/model/17/4/states</c>: Registrado (59), Asignado (60) y
+    /// En Proceso (65). El DEF los enuncia como "Registrado/Asignado" y
+    /// "En proceso", pero en Aranda los dos primeros son estados separados.
+    /// Los tres estados en pausa —En Aprobacion (62), Pendiente usuario (63) y
+    /// Pendiente proveedor (64)— quedan fuera porque el DEF los declara no
+    /// anulables.
+    /// </summary>
     private static readonly HashSet<string> AllowedCancellationStates =
         new(StringComparer.OrdinalIgnoreCase)
         {
             "Registrado",
             "Asignado",
-            "Registrado/Asignado",
-            "En proceso"
+            "En Proceso"
         };
 
     /// <summary>
-    /// Estados en los que un ticket ya terminó. Aranda solo marca
-    /// <c>isClosed</c> al cancelar: un ticket "Resuelto" llega con
-    /// <c>isClosed = false</c>, así que filtrar por esa bandera dejaba pasar
-    /// los resueltos como si siguieran abiertos.
+    /// Estados en los que un ticket ya terminó: Cancelado (61), Cerrado (67) y
+    /// Resuelto (66). No sirve ninguna bandera de Aranda para deducirlos:
+    /// Resuelto llega con <c>isClosed = false</c> y también con
+    /// <c>isFinal = false</c>, porque desde ahí se puede volver a En Proceso.
+    /// Pendiente de confirmación del cliente si Resuelto debe seguir visible
+    /// para el colaborador.
     /// </summary>
     private static readonly HashSet<string> ClosedStates =
         new(StringComparer.OrdinalIgnoreCase)
         {
             "Resuelto",
-            "Solucionado",
             "Cerrado",
-            "Cancelado",
-            "Anulado"
+            "Cancelado"
         };
 
     private static readonly HashSet<string> AllowedExtensions =

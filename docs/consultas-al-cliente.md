@@ -7,7 +7,7 @@ esperan una publicación, una credencial, un dato de catálogo o una decisión.
 Lo que sí depende del equipo de desarrollo está en
 [`deuda-tecnica.md`](deuda-tecnica.md).
 
-Estado al 11 de septiembre de 2026.
+Estado al 14 de septiembre de 2026.
 
 ## Resumen
 
@@ -22,6 +22,8 @@ Estado al 11 de septiembre de 2026.
 | 7 | Política de APIM para el desafío de Cloudflare | Admin de APIM | Nada (paliado) |
 | 8 | Catálogo oficial de errores de Aranda | Minsur | Mensajes al usuario |
 | 9 | Ventana y marcado de tickets de prueba | Mesa de Ayuda | Pruebas en QA |
+| 10 | Confirmar el flujo de estados y publicar `states` en APIM | Minsur / Admin de APIM | Criterio de abiertos y anulables |
+| 11 | `ModelId` del modelo de incidentes (IM) y la regla para elegir el tipo | Minsur | Creación de incidentes |
 
 Los puntos 1 y 2 son los críticos: mientras sigan abiertos, la solución **no
 debe llegar a producción con usuarios reales**.
@@ -230,6 +232,77 @@ parecidos a su bandeja.
 del gateway —un prefijo de asunto, una categoría dedicada o una ventana horaria
 convenida— para que las pruebas de integración no generen ruido ni consuman su
 tiempo.
+
+**Parcialmente resuelto.** Mesa de Ayuda pidió que todo ticket del bot lleve el
+prefijo en el asunto, así que se agregó `Aranda:SubjectPrefix`, hoy en
+`[PRUEBA BOT]`. Es el interruptor de la marca: en `null` o vacío el asunto va
+tal cual lo escribió el colaborador, sin tocar código. Queda por acordar la
+ventana de pruebas.
+
+---
+
+## 10. Flujo de estados: confirmarlo y publicar `states` en APIM
+
+**Hallazgo del 14 de septiembre de 2026.** Aranda expone el flujo de estados de
+cada modelo en `GET /api/v9/model/{modelId}/{itemType}/states`. Llamando directo
+a Aranda (la ruta **no está publicada en APIM**) se levantó el flujo completo
+del modelo 17 / itemType 4, que es el de las solicitudes de servicio:
+
+| ID | Nombre | `stageName` | `isFinal` | Transiciones |
+| --- | --- | --- | --- | --- |
+| 59 | Registrado | — | false | 60, 61 |
+| 60 | Asignado | InProgress | false | 61, 62, 63, 64, 65 |
+| 61 | Cancelado | — | **true** | — |
+| 62 | En Aprobacion | OnHold | false | por levantar |
+| 63 | Pendiente usuario | OnHold | false | por levantar |
+| 64 | Pendiente proveedor | OnHold | false | por levantar |
+| 65 | En Proceso | InProgress | false | 60, 61, 63, 64, 66 |
+| 66 | Resuelto | Solved | false | 65, 67 |
+| 67 | Cerrado | ClosedByDefault | **true** | — |
+
+Sin `stateId` en la consulta, la operación devuelve el estado inicial (59). Con
+`?stateId=N` devuelve los estados alcanzables desde N, así que el flujo se
+recorre saltando de estado en estado.
+
+**Qué corrigió esto en el gateway.** Las listas de estados de `TicketService`
+tenían tres nombres que no existen en el modelo: `Solucionado`, `Anulado` y
+`Registrado/Asignado` (este último es la forma en que el DEF enuncia dos estados
+distintos, 59 y 60). Ya están corregidas con los nombres reales.
+
+**Qué no se puede deducir de las banderas.** Ni `isClosed` ni `isFinal` sirven
+para saber si un ticket terminó: **Resuelto (66) llega con las dos en falso**,
+porque desde ahí Aranda permite volver a En Proceso (65). El criterio queda por
+nombre de estado, apoyado en `stageName`.
+
+**Qué pedir.**
+
+1. Confirmar que este flujo es el de producción y no solo el del ambiente
+   consultado.
+2. Decidir si un ticket **Resuelto (66)** debe seguir visible en el listado del
+   colaborador, dado que es reabrible.
+3. Publicar `GET /api/v9/model/{modelId}/{itemType}/states` en el producto
+   `fcintgestionaranda/v1`. Con ella el gateway lee el flujo desde Aranda en vez
+   de llevar los estados escritos en su configuración, y un cambio de flujo deja
+   de requerir despliegue.
+
+---
+
+## 11. Modelo de incidentes (IM) y regla para elegir el tipo
+
+Hoy el gateway solo crea solicitudes de servicio: `ModelId` 17, `itemType` 4,
+estado inicial 59, estado de anulación 61. `IncidentModelId`,
+`IncidentInitialStateId` e `IncidentCancellationStateId` están en `null`, así que
+el tipo incidente está deshabilitado.
+
+**Qué pedir.**
+
+1. El `ModelId` del modelo de incidentes. Con él se levanta su flujo de estados
+   igual que el del punto 10, sin necesidad de que dicten los IDs de estado.
+2. Si `CategoryId`, `ServiceId`, `ImpactId`, `UrgencyId` y `GroupId` cambian para
+   incidentes o se mantienen los de RF.
+3. La regla de negocio para elegir entre RF e IM: si el colaborador lo indica en
+   la conversación, si se deriva de la categoría o el servicio, o si siempre es
+   uno de los dos. El gateway ya soporta ambos tipos; falta la regla.
 
 ---
 
