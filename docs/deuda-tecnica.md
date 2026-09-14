@@ -1,73 +1,36 @@
 # Deuda técnica
 
-Soluciones temporales y bloqueos abiertos, con lo que hace falta para
-resolverlos. Ninguno se arregla con código del gateway: dependen de datos de
-catálogo de Aranda o de que se publiquen operaciones en APIM.
+Trabajo pendiente que se resuelve con código de este repositorio, sin depender
+de terceros. Cada punto puede tomarse y cerrarse hoy.
+
+Lo que está bloqueado en el cliente —publicaciones en APIM, credenciales, datos
+de catálogo, decisiones de arquitectura— está en
+[`consultas-al-cliente.md`](consultas-al-cliente.md).
 
 Estado al 11 de septiembre de 2026.
 
+## Resumen
+
+| # | Pendiente | Tipo | Prioridad |
+| --- | --- | --- | --- |
+| 1 | `/admin/aranda-session` sin protección | Seguridad | Bloquea producción |
+| 2 | `solution` nunca se llena (REQ_07 incompleto) | Requisito | Alta |
+| 3 | La anulación no deja rastro en el log | Trazabilidad | Alta |
+| 4 | Una cookie vencida tumba operaciones que funcionarían sin ella | Robustez | Media |
+| 5 | `subject` ausente en el detalle del ticket | Contrato | Media |
+| 6 | `Trim()` inconsistente entre filtros de estado | Corrección | Baja |
+| 7 | La cookie viva no sobrevive al reinicio | Robustez | Baja |
+| 8 | Un test fija un valor que Aranda ignora | Pruebas | Baja |
+
+Los puntos 9 y 10 son trabajo preparado que arranca cuando el cliente
+desbloquee lo suyo.
+
 ---
 
-## 1. Sesión de Aranda por cookie manual
+## 1. `/admin/aranda-session` es anónimo
 
-**Qué hay hoy.** La salida hacia Aranda necesita la cookie de sesión
-`AuthCookieASMS` además del token de `X-Authorization`. Se configura a mano en
-`Aranda:AuthCookie` (variable de entorno `Aranda__AuthCookie`, nunca en
-`appsettings.json`: es una credencial).
-
-El gateway la sostiene por su cuenta mientras el proceso viva:
-`ArandaSessionCookieHandler` adopta la cookie que Aranda renueva en cada
-respuesta y `ArandaSessionKeepAliveService` la toca cada 5 minutos para que no
-caduque por inactividad. Verificado: la sesión sobrevivió 15 minutos sin
-tráfico de usuarios, y el gateway seguía respondiendo 200 con una cookie
-rotada cuando la semilla de configuración ya daba 401.
-
-**Qué falta.** La cookie viva está solo en memoria. En cada arranque de proceso
-se vuelve a leer la semilla de configuración, que a los ~10 minutos sin uso ya
-está vencida. Afecta a cada despliegue, reinicio o reciclaje del App Service,
-y a cada instancia nueva si se escala horizontalmente.
-
-**Solución permanente.** Que el gateway inicie sesión solo. Aranda expone el
-endpoint y el contrato está en `API-V9.postman_collection_2508`:
-
-```
-POST /api/v9/authentication/
-  X-Authorization: Bearer <token de integración>    <- el que ya se usa
-  x-aranda-tenant-alias: <alias del tenant>
-  { "consoleType": 1, "providerId": 0, "userName": "...", "password": "..." }
-
-POST /api/v9/authentication/renewtoken
-  Authorization: <token de sesión>
-  "<token de sesión>"
-```
-
-El login se autentica con el token de integración que ya está configurado más
-usuario y contraseña, así que el gateway podría obtener y renovar su sesión sin
-intervención.
-
-**Bloqueo.** Ninguna de las dos rutas está publicada en APIM: responden
-`404 { "statusCode": 404, "message": "Resource not found" }`. Hace falta que se
-publiquen, credenciales de un usuario de servicio de Aranda y el valor real de
-`x-aranda-tenant-alias` (en la colección aparece `qextreme`, del entorno demo).
-
-Al resolverse desaparece `Aranda:AuthCookie` y con ella
-`ArandaSessionKeepAliveService`.
-
-**Paliativo en uso.** `PUT /admin/aranda-session` instala la cookie en caliente,
-sin reiniciar ni redesplegar. Nació de un problema concreto: el despliegue tarda
-unos 7 minutos, más que la vida de la cookie, así que pasarla por configuración
-obliga a coordinar el cambio en una ventana que casi nunca se alcanza. Con esta
-ruta la cookie se instala cuando la aplicación ya está arriba.
-
-No elimina la deuda: sigue siendo una credencial renovada a mano, y con varias
-instancias hay que instalarla en cada una, porque la sesión vive en la memoria
-de cada proceso.
-
-### Riesgo abierto: `/admin/aranda-session` es anónimo
-
-La ruta se implementó primero con una clave de autorización (`X-Admin-Key`) y
-esa protección **se retiró por decisión del equipo** el 11 de septiembre de
-2026. Queda registrado aquí porque cambia la superficie de ataque del servicio.
+La ruta se implementó con una clave de autorización (`X-Admin-Key`) y esa
+protección **se retiró por decisión del equipo** el 11 de septiembre de 2026.
 
 El App Service responde desde internet: se comprobó llamando a
 `https://ase-gestionaranda-dev.azurewebsites.net/health` sin VPN y sin pasar por
@@ -80,124 +43,170 @@ APIM. Con la ruta abierta, cualquiera que conozca la URL puede:
 Es distinto del resto de los endpoints anónimos, que solo leen con una
 credencial fija y no pueden alterarla.
 
-**Mitigaciones posibles,** por orden de menor fricción:
+**Mitigaciones,** por orden de menor fricción:
 
 1. Restringir `/admin/*` por IP con las reglas de acceso del App Service. No
-   requiere código ni recordar ningún encabezado.
+   requiere código ni recordar ningún encabezado. Depende de quien administra el
+   App Service.
 2. Reponer la clave de autorización. El código está en el historial:
    `git show ed32658 -- src/backend/api/ArandaGateway.Api/Endpoints/AdminEndpoints.cs`.
 
 **No debe llegar así a producción con usuarios reales.**
 
-**Otro paliativo posible,** si el login tarda: persistir la cookie rotada fuera
-del proceso (archivo en almacenamiento persistente, o Redis/Blob con varias
-instancias) para que un reinicio corto la recupere en vez de caer a la semilla.
-No cubre paradas largas.
+---
+
+## 2. `solution` nunca se llena
+
+`RespuestaDetalleTicket` expone `Solution`, pero `GetTicketDetailAsync` lo pasa
+como `null` fijo (`TicketService.cs:191`). `TicketServiceTests.cs:24` congela ese
+comportamiento con `Assert.Null`.
+
+REQ_07 pide mostrar la solución cuando esté disponible, así que el requisito
+está incompleto.
+
+**Qué hace falta.** `ArandaTicket` ya deserializa `CommentaryNoHtml`
+(`ArandaTicket.cs:25`) y hoy nadie lo lee. Falta confirmar contra un ticket
+resuelto real que ese sea el campo donde Aranda deja la solución —en `RF-58501`
+llegó vacío, pero fue cancelado, no resuelto— y luego mapearlo, ajustando el
+test.
 
 ---
 
-## 2. Una cookie vencida es peor que ninguna
+## 3. La anulación no deja rastro en el log
 
-**Resuelto lo principal.** La creación de tickets funciona: `POST /api/tickets`
-devolvió `201` con RF-58501 el 11 de septiembre de 2026. Faltaba el indicador
-`validate: true` en el cuerpo, sin el cual Aranda responde `400`
-`InvalidOrganizationArea` aunque la Sede sea válida. `Aranda:UnitId` queda en
-5875 (Minsur Lima), que sí es correcta.
+`CancelTicketAsync` (`TicketService.cs:194-281`) no escribe ninguna entrada de
+log. El único log del servicio es el aviso del parche de usuario fijo
+(`TicketService.cs:351`).
 
-**Lo que queda como riesgo.** Durante el diagnóstico se observó que una
-petición **sin** cookie puede funcionar mientras la misma petición **con una
-cookie vencida** falla con `401`. La creación por APIM funciona sin cookie; el
-gateway, al arrancar con la semilla caducada, la envía y recibe `401`.
+Application Insights registra la petición HTTP automáticamente, así que quedan
+el momento, el código de respuesta y la IP de origen, pero no quién pidió la
+anulación: el encabezado `X-Collaborator-Username` no se registra.
+
+Esto salió a la luz investigando quién había cancelado `RF-58501`. Se pudo
+responder solo porque Aranda guarda `modifierName`; desde los logs del gateway
+era imposible.
+
+**Qué hace falta.** Un `LogInformation` en el camino de cancelación con número
+de caso, colaborador del encabezado y usuario efectivo en Aranda. Media hora de
+trabajo. Conviene extenderlo a creación y adjuntos por el mismo motivo.
+
+---
+
+## 4. Una cookie vencida es peor que ninguna
+
+Durante el diagnóstico se observó que una petición **sin** cookie puede
+funcionar mientras la misma petición **con una cookie vencida** falla con `401`.
+La creación por APIM funciona sin cookie; el gateway, al arrancar con la semilla
+caducada, la envía y recibe `401`.
 
 O sea: el gateway arrastra la cookie vencida y rompe operaciones que sin ella
-habrían funcionado. Agrava el problema del punto 1, porque el arranque con
-semilla caducada no degrada parcialmente, sino que tumba todo.
+habrían funcionado. El arranque con semilla caducada no degrada parcialmente,
+sino que tumba todo.
 
-**Posible mejora.** Detectar el `401` de sesión, descartar la cookie en memoria
-y reintentar una vez sin ella. Recuperaría las operaciones que no necesitan
-sesión en lugar de fallar en bloque. No está implementado: conviene medir antes
-qué operaciones realmente funcionan sin cookie, porque las consultas sí la
-exigen.
+**Qué hace falta.** Detectar el `401` de sesión, descartar la cookie en memoria
+y reintentar una vez sin ella. Antes conviene medir qué operaciones realmente
+funcionan sin cookie, porque las consultas sí la exigen.
 
 ---
 
-## 3. Tres operaciones faltan en APIM y funcionan directo contra Aranda
+## 5. `subject` ausente en el detalle del ticket
 
-**Hallazgo del 11 de septiembre de 2026.** Tres operaciones responden `404` de
-APIM (`{ "statusCode": 404, "message": "Resource not found" }`, formato de
-APIM, no de Aranda) y sin embargo funcionan llamando directo a
-`https://mesadeayuda.divisionminera.com/ASMSAPI`, con la misma credencial y
-cookie que ya usa el gateway:
+`RespuestaResumenTicket` incluye el asunto; `RespuestaDetalleTicket` no. Quien
+consulta un caso por su número no recibe de qué trata.
 
-| Operación | Para qué sirve | APIM | Directo a Aranda |
-| --- | --- | --- | --- |
-| `PUT /api/v9/item/{id}` | Anular un ticket | `404` | `200` |
-| `GET /api/v9/user/{username}/detail` | Resolver al colaborador | `404` | `200` |
-| `POST /api/v9/authentication/` | Iniciar sesión | `404` | responde `400 ValidationError` con credenciales vacías, es decir opera |
+Aranda ya lo devuelve y `ArandaTicket.Subject` ya lo deserializa: es agregar la
+propiedad al record y al mapeo.
 
-En el spec del repositorio `/api/v9/item/{id}` figura **solo con GET**, por eso
-la anulación falla: `POST /api/tickets/{caseNumber}/cancellation` devuelve `502`
-con `ARANDA_404`. El código del gateway es correcto; se verificó anulando
-RF-58496 y RF-58497 directo contra Aranda, donde el `PUT` respondió `200`.
-
-**Las dos salidas.**
-
-1. **Publicar las tres en APIM.** Mantiene el diseño actual, con todo el
-   tráfico por la puerta de entrada. Depende de quien administra APIM.
-2. **Apuntar el gateway directo a Aranda.** Resolvería de golpe la anulación,
-   el parche de usuario fijo y la cookie manual, sin pedir nada a nadie. A
-   cambio, saltarse APIM contradice el diseño: se pierde la puerta única, su
-   control de acceso por suscripción y su telemetría.
-
-La segunda es una decisión de arquitectura y seguridad, no técnica: conviene
-resolverla con quien definió que la salida fuera por APIM. Una variante
-intermedia es una segunda URL base solo para las operaciones ausentes, pero
-deja el sistema con dos caminos de salida y dos juegos de reglas.
+Conviene confirmar con el cliente si REQ_07 lo admite, ya que la lista de campos
+del DEF no lo nombra.
 
 ---
 
-## 4. Usuario fijo por dominio (`Aranda:UserOverride`)
+## 6. `Trim()` inconsistente entre filtros de estado
 
-**Qué hay hoy.** La resolución del colaborador está reemplazada por un usuario
-fijo: `1562` (`evelyn.nunez@minsur.com`) para equipos y `15019`
-(`uebit20@minsur.com`) para tickets. El encabezado
-`X-Collaborator-Username` se registra en el log pero se ignora.
+El filtro de tickets abiertos normaliza con `Trim()` antes de comparar
+(`TicketService.cs:554`). La validación de estados anulables no lo hace
+(`TicketService.cs:227`).
+
+Un `"En proceso "` con espacio final devuelto por Aranda pasaría como abierto y
+fallaría como no anulable, con un `409` inexplicable para el usuario.
+
+No se ha observado en la práctica. Arreglo de una línea.
+
+---
+
+## 7. La cookie viva no sobrevive al reinicio
+
+`ArandaSessionCookieHandler` adopta la cookie que Aranda renueva en cada
+respuesta y `ArandaSessionKeepAliveService` la toca cada 5 minutos para que no
+caduque por inactividad. Verificado: la sesión sobrevivió 15 minutos sin tráfico
+de usuarios, y el gateway seguía respondiendo `200` con una cookie rotada cuando
+la semilla de configuración ya daba `401`.
+
+Pero la cookie viva está solo en memoria. En cada arranque se vuelve a leer la
+semilla de configuración, que a los ~10 minutos sin uso ya está vencida. Afecta
+a cada despliegue, reinicio o reciclaje del App Service, y a cada instancia
+nueva si se escala horizontalmente.
+
+**Paliativo en uso.** `PUT /admin/aranda-session` instala la cookie en caliente,
+sin reiniciar ni redesplegar. Nació de un problema concreto: el despliegue tarda
+unos 7 minutos, más que la vida de la cookie, así que pasarla por configuración
+obliga a coordinar el cambio en una ventana que casi nunca se alcanza.
+
+**Mejora posible.** Persistir la cookie rotada fuera del proceso —archivo en
+almacenamiento persistente, o Redis/Blob con varias instancias— para que un
+reinicio corto la recupere en vez de caer a la semilla. No cubre paradas largas.
+
+**Ojo.** Esto desaparece por completo cuando el cliente entregue las
+credenciales del punto 2 de `consultas-al-cliente.md`. Vale medir cuánto
+invertir acá antes de que llegue esa respuesta.
+
+---
+
+## 8. Un test fija un valor que Aranda ignora
+
+`TicketServiceTests.cs:139` asegura `Assert.Equal(2, client.LastCreateRequest?.AuthorId)`
+y `README.md:148` describe `AuthorId = 2` como "confirmado".
+
+Aranda descarta ese campo y usa el dueño de la sesión: `RF-58501` volvió con
+`authorId: 15036` (`Especialistatoken`). El detalle está en el punto 4 de
+`consultas-al-cliente.md`.
+
+El test es verde y correcto —el gateway sí envía lo configurado— pero da la
+impresión de que el valor controla al autor real. Conviene un comentario en el
+test y una nota en el README que digan que el campo es inerte, para que nadie
+vuelva a perder tiempo persiguiéndolo.
+
+---
+
+## 9. Retiro del parche de usuario fijo
+
+*Arranca cuando se resuelva el punto 1 de `consultas-al-cliente.md`.*
+
+La resolución del colaborador está reemplazada por un usuario fijo: `1562`
+(`evelyn.nunez@minsur.com`) para equipos y `15019` (`uebit20@minsur.com`) para
+tickets. El encabezado `X-Collaborator-Username` se registra en el log pero se
+ignora.
 
 **Riesgo.** Cualquier colaborador ve los equipos de Evelyn y opera los tickets
-de uebit20. **No debe llegar a producción con usuarios reales.** Es el punto
-más delicado de esta lista.
+de uebit20. **No debe llegar a producción con usuarios reales.**
 
-**Solución permanente.** Publicar `GET /api/v9/user/{username}/detail` en APIM
-y poner `Aranda:UserOverride:Enabled` en `false`. No requiere cambios de
-código.
-
-**Bloqueo.** La operación existe en el spec del repositorio
-(`docs/iac/apim/API-FC-INT-GestionAranda.json`) pero no está publicada en el
-producto `fcintgestionaranda/v1`: responde `404` de APIM. Ver el punto 3: la
-operación sí funciona llamando directo a Aranda.
-
-Al retirarse se borran `ArandaUserOverrideOptions.cs`, la propiedad
+Apagarlo no requiere código: basta `Aranda:UserOverride:Enabled = false`. El
+retiro definitivo sí, y borra `ArandaUserOverrideOptions.cs`, la propiedad
 `ArandaOptions.UserOverride`, los bloques marcados `PARCHE TEMPORAL` en
 `EquipoService` y `TicketService`, y sus pruebas.
 
+Al retirarlo aparece el problema de `UnitId` descrito en el punto 6 de
+`consultas-al-cliente.md`: conviene resolver ambos en la misma tanda.
+
 ---
 
-## 5. Desafío de Cloudflare
+## 10. Causal de anulación
 
-**Qué hay hoy.** Cloudflare, delante de Aranda, responde `403` con
-`Cf-Mitigated: challenge` de forma intermitente, incluso a peticiones
-idénticas que funcionaron un momento antes. APIM no lo evita porque reenvía los
-encabezados del cliente al backend.
+*Arranca cuando se resuelva el punto 5 de `consultas-al-cliente.md`.*
 
-`ArandaRetryHandler` lo absorbe con hasta tres intentos. Las escrituras solo se
-reintentan ante rechazos del borde (desafío y `429`), donde hay certeza de que
-Aranda no ejecutó nada; nunca ante `5xx` o tiempo de espera agotado, para no
-duplicar tickets.
+`ArandaUpdateTicketRequest` no tiene campo `reasonId`, así que las anulaciones
+del bot quedan sin causal tipificada en Aranda.
 
-**Solución permanente.** Que la política de APIM normalice el `User-Agent`
-hacia el backend y que se excluya del desafío la ruta `/ASMSAPI/api/v9/*` para
-el origen de APIM.
-
-**Prioridad.** La más baja de la lista: el reintento ya lo hace invisible. Vale
-retomarla si el `403` aparece en los logs de producción con frecuencia, porque
-cada reintento consume el presupuesto de `Aranda:TimeoutSeconds`.
+Con el ID del catálogo en mano es agregar la propiedad al record y pasarla desde
+`CancelTicketAsync`. El motivo en texto libre sigue yendo en `Commentary`.
