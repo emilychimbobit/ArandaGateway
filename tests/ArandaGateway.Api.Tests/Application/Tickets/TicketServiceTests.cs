@@ -143,6 +143,59 @@ public sealed class TicketServiceTests
     }
 
     [Fact]
+    public async Task CreateTicketAsync_WithSubjectPrefix_PrependsIt()
+    {
+        var client = new StubArandaClient
+        {
+            User = CreateUser(),
+            CreatedTicket = new()
+            {
+                Id = 200,
+                IdByProject = "RF-200"
+            }
+        };
+        var service = CreateService(
+            client,
+            options: CreateOptions(subjectPrefix: "[PRUEBA BOT]"));
+
+        await service.CreateTicketAsync(
+            new(TicketKind.ServiceRequest, "  Subject  ", "Description"),
+            CancellationToken.None);
+
+        Assert.Equal(
+            "[PRUEBA BOT] Subject",
+            client.LastCreateRequest?.Subject);
+    }
+
+    [Fact]
+    public async Task CreateTicketAsync_WithSubjectPrefix_DoesNotRepeatIt()
+    {
+        var client = new StubArandaClient
+        {
+            User = CreateUser(),
+            CreatedTicket = new()
+            {
+                Id = 200,
+                IdByProject = "RF-200"
+            }
+        };
+        var service = CreateService(
+            client,
+            options: CreateOptions(subjectPrefix: "[PRUEBA BOT]"));
+
+        await service.CreateTicketAsync(
+            new(
+                TicketKind.ServiceRequest,
+                "[prueba bot] Subject",
+                "Description"),
+            CancellationToken.None);
+
+        Assert.Equal(
+            "[prueba bot] Subject",
+            client.LastCreateRequest?.Subject);
+    }
+
+    [Fact]
     public async Task CreateTicketAsync_FailsWhenCatalogsAreMissing()
     {
         var service = CreateService(
@@ -501,10 +554,12 @@ public sealed class TicketServiceTests
             Options.Create(options ?? CreateOptions()));
 
     private static ArandaOptions CreateOptions(
-        ArandaUserOverrideOptions? userOverride = null) =>
+        ArandaUserOverrideOptions? userOverride = null,
+        string? subjectPrefix = null) =>
         new()
         {
             UserOverride = userOverride,
+            SubjectPrefix = subjectPrefix,
             BaseUrl = new("https://aranda.example/"),
             ApiKey = "Bearer test",
             ProjectId = 1,

@@ -102,7 +102,7 @@ public sealed class TicketService(
                 AuthorId = arandaOptions.AuthorId,
                 GroupId = configuration.GroupId,
                 Subject = HtmlEncoder.Default.Encode(
-                    request.Subject.Trim())
+                    ApplySubjectPrefix(request.Subject.Trim()))
             },
             cancellationToken);
 
@@ -552,6 +552,24 @@ public sealed class TicketService(
         !ticket.IsClosed &&
         (ticket.StateName is null ||
             !ClosedStates.Contains(ticket.StateName.Trim()));
+
+    /// <summary>
+    /// Marca el asunto con <c>Aranda:SubjectPrefix</c> cuando está configurado,
+    /// para que Mesa de Ayuda reconozca los tickets del bot. Sin prefijo
+    /// configurado el asunto no se toca, y si el colaborador ya lo escribió no
+    /// se repite.
+    /// </summary>
+    private string ApplySubjectPrefix(string subject)
+    {
+        var prefix = arandaOptions.SubjectPrefix?.Trim();
+        if (string.IsNullOrEmpty(prefix) ||
+            subject.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return subject;
+        }
+
+        return $"{prefix} {subject}";
+    }
 
     private static bool IsPositive(long? value) => value is > 0;
 
