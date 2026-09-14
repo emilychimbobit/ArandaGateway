@@ -225,17 +225,25 @@ que es su usuario o correo.
 Los contratos y reglas pueden probarse localmente. La validación end-to-end
 contra Aranda real está hecha: `GET /api/equipos`, `GET /api/tickets` y
 `GET /api/tickets/{caseNumber}` responden `200`, y `POST /api/tickets` responde
-`201`. La anulación está bloqueada en APIM (ver deuda técnica). El desafío de
+`201`. La anulación está bloqueada en APIM (ver
+[docs/consultas-al-cliente.md](docs/consultas-al-cliente.md)). El desafío de
 Cloudflare ya no bloquea la operación: se reintenta.
 
-### Deuda técnica
+### Pendientes
 
-Las soluciones temporales vigentes y lo que hace falta para retirarlas están en
-[docs/deuda-tecnica.md](docs/deuda-tecnica.md): la cookie de sesión manual, la
-creación de tickets bloqueada por la Sede, la API de usuarios ausente en APIM,
-el usuario fijo por dominio y el desafío de Cloudflare. Ninguno se resuelve con
-código del gateway: dependen de datos de catálogo de Aranda o de que se
-publiquen operaciones en APIM.
+Están separados por quién puede resolverlos.
+
+[docs/consultas-al-cliente.md](docs/consultas-al-cliente.md) reúne lo bloqueado
+del lado del cliente: las tres operaciones ausentes en APIM, las credenciales
+para el login automático, la decisión de salir por APIM o directo a Aranda, la
+cuenta que debe figurar como autor, el catálogo de causales de anulación, los
+IDs de sede y tipo de registro por confirmar, la política contra el desafío de
+Cloudflare y el catálogo oficial de errores.
+
+[docs/deuda-tecnica.md](docs/deuda-tecnica.md) reúne lo que se cierra con código
+de este repositorio: la protección de `/admin/aranda-session`, el campo
+`solution` sin llenar, la falta de log en la anulación, el manejo de la cookie
+vencida y varias correcciones menores.
 
 Cuatro de las cinco operaciones están validadas contra Aranda real: las tres
 consultas y la creación, que devolvió `201` con el caso RF-58501 el 11 de

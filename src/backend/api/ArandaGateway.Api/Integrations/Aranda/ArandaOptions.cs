@@ -71,6 +71,15 @@ public sealed class ArandaOptions
 
     public long? ServiceRequestCancellationStateId { get; init; }
 
+    /// <summary>
+    /// Prefijo que se antepone al asunto de todo ticket creado por el gateway,
+    /// por ejemplo <c>[PRUEBA BOT]</c>, para que Mesa de Ayuda distinga los
+    /// casos de prueba de los reales. Es el interruptor de la marca: en null o
+    /// vacío el asunto va tal cual lo escribió el colaborador. Si el asunto ya
+    /// empieza con el prefijo no se duplica.
+    /// </summary>
+    public string? SubjectPrefix { get; init; }
+
     [Range(1, 100)]
     public int SearchPageSize { get; init; } = 50;
 
