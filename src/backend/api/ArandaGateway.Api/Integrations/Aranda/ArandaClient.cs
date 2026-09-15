@@ -64,6 +64,11 @@ public sealed class ArandaClient(HttpClient httpClient) : IArandaClient
         content.Add(new StringContent("0"), "UploadType");
         content.Add(new StringContent("0"), "Concept");
 
+        // Obligatorio pese a no figurar en el manual de integración v9: sin él
+        // Aranda responde 400 con "PublicValueIsRequired". Va en true porque el
+        // adjunto lo aporta el propio colaborador sobre su caso.
+        content.Add(new StringContent("true"), "IsPublic");
+
         if (!string.IsNullOrWhiteSpace(request.Description))
         {
             content.Add(
