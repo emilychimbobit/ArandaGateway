@@ -103,7 +103,26 @@ APIM, que hoy responden `404`.
 
 El punto 1 depende de que alguien publique operaciones en APIM. Existe una
 alternativa que no depende de nadie: **apuntar el gateway directo a Aranda**.
-Resolvería de golpe la anulación y el parche de usuario fijo.
+Resolvería de golpe la anulación, el parche de usuario fijo y el desafío de
+Cloudflare del punto 7.
+
+**Medido el 15 de septiembre de 2026,** con la misma credencial y en el mismo
+momento por ambos caminos:
+
+| Operación | Por APIM | Directo |
+| --- | --- | --- |
+| `PUT /api/v9/item/{id}` (anular) | `404` | `200` |
+| `GET /api/v9/user/{username}/detail` | `404` | `200` |
+| Búsqueda de casos | 13 de 20 desafiadas | 0 de 20 desafiadas |
+
+`GET user/{username}/detail` responde `200` con el correo completo
+(`uebit20@minsur.com`); con el usuario a secas devuelve `UserNameDidNotFound`.
+Retirar el parche de usuario fijo es viable en cuanto esa ruta esté disponible,
+siempre que `X-Collaborator-Username` lleve el correo.
+
+**Salvedad.** Todo se midió desde la red del equipo de desarrollo. El App
+Service sale con IP de Azure y Cloudflare podría puntuarla distinto, así que el
+0% no está comprobado desde el entorno desplegado.
 
 A cambio, saltarse APIM contradice el diseño acordado: se pierde la puerta
 única, su control de acceso por suscripción y su telemetría.
