@@ -95,14 +95,70 @@ public sealed class ArandaSessionCookieTests
         Assert.Null(transport.LastCookieSent);
     }
 
-    private static ArandaSessionCookie CreateCookie(string? seed) =>
+    [Fact]
+    public void Value_IgnoresSeedWhenSessionCookieIsDisabled()
+    {
+        var cookie = CreateCookie("AuthCookieASMS=SEMILLA", enabled: false);
+
+        Assert.Null(cookie.Value);
+    }
+
+    [Fact]
+    public async Task Handler_DoesNotAdoptRenewedCookieWhenDisabled()
+    {
+        // Sin esto el interruptor se encendería solo: basta un Set-Cookie de
+        // Aranda para que el gateway volviera a mandar cookie en la siguiente
+        // petición, y con ella el 401 de la cookie caducada.
+        var cookie = CreateCookie("AuthCookieASMS=SEMILLA", enabled: false);
+        var transport = new StubTransport("AuthCookieASMS=RENOVADA; path=/");
+        using var client = CreateClient(cookie, transport);
+
+        await client.GetAsync("https://aranda.example/api/v9/item/1");
+        await client.GetAsync("https://aranda.example/api/v9/item/2");
+
+        Assert.Null(transport.LastCookieSent);
+        Assert.Null(cookie.Value);
+    }
+
+    [Fact]
+    public void Install_TurnsTheCookieBackOnWhileDisabled()
+    {
+        // La vía de soporte: si Aranda vuelve a exigir sesión, se instala una
+        // cookie por PUT /admin/aranda-session y el envío se reactiva en
+        // caliente, sin redesplegar ni tocar configuración.
+        var cookie = CreateCookie("AuthCookieASMS=SEMILLA", enabled: false);
+
+        cookie.Install("AuthCookieASMS=MANUAL; path=/");
+
+        Assert.Equal("AuthCookieASMS=MANUAL", cookie.Value);
+        Assert.NotNull(cookie.RenewedAt);
+    }
+
+    [Fact]
+    public async Task Handler_ResumesAdoptingCookiesAfterInstall()
+    {
+        var cookie = CreateCookie("AuthCookieASMS=SEMILLA", enabled: false);
+        var transport = new StubTransport("AuthCookieASMS=RENOVADA; path=/");
+        using var client = CreateClient(cookie, transport);
+
+        cookie.Install("AuthCookieASMS=MANUAL");
+        await client.GetAsync("https://aranda.example/api/v9/item/1");
+
+        Assert.Equal("AuthCookieASMS=MANUAL", transport.LastCookieSent);
+        Assert.Equal("AuthCookieASMS=RENOVADA", cookie.Value);
+    }
+
+    private static ArandaSessionCookie CreateCookie(
+        string? seed,
+        bool enabled = true) =>
         new(Options.Create(new ArandaOptions
         {
             BaseUrl = new("https://aranda.example/"),
             ApiKey = "Bearer test",
             ProjectId = 1,
             AuthorId = 2,
-            AuthCookie = seed
+            AuthCookie = seed,
+            SessionCookieEnabled = enabled
         }));
 
     private static HttpClient CreateClient(
