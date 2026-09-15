@@ -7,7 +7,7 @@ Lo que está bloqueado en el cliente —publicaciones en APIM, credenciales, dat
 de catálogo, decisiones de arquitectura— está en
 [`consultas-al-cliente.md`](consultas-al-cliente.md).
 
-Estado al 11 de septiembre de 2026.
+Estado al 15 de septiembre de 2026.
 
 ## Resumen
 
@@ -16,7 +16,7 @@ Estado al 11 de septiembre de 2026.
 | 1 | `/admin/aranda-session` sin protección | Seguridad | Bloquea producción |
 | 2 | `solution` nunca se llena (REQ_07 incompleto) | Requisito | Alta |
 | 3 | La anulación no deja rastro en el log | Trazabilidad | Alta |
-| 4 | Una cookie vencida tumba operaciones que funcionarían sin ella | Robustez | Media |
+| 4 | ~~Una cookie vencida tumba operaciones~~ — resuelto con el interruptor | Robustez | Cerrado |
 | 5 | `subject` ausente en el detalle del ticket | Contrato | Media |
 | 6 | `Trim()` inconsistente entre filtros de estado | Corrección | Baja |
 | 7 | La cookie viva no sobrevive al reinicio | Robustez | Baja |
@@ -38,10 +38,30 @@ APIM. Con la ruta abierta, cualquiera que conozca la URL puede:
 
 - instalar la cookie con la que la gateway opera contra Aranda, de modo que el
   servicio pase a actuar con la sesión de un tercero;
-- dejarla inoperativa instalando una cookie inválida.
+- dejarla inoperativa instalando una cookie inválida;
+- **leer la cookie viva** por `GET /admin/aranda-session/value` y suplantar a la
+  cuenta de servicio contra Aranda, con acceso a casos reales.
+
+**Sobre la lectura de la cookie.** Se agregó el 15 de septiembre de 2026 por
+decisión del equipo, sabiendo que expone una credencial por una ruta anónima.
+El motivo es concreto: Aranda rota la cookie en cada respuesta y la viva solo
+existe en la memoria del proceso, así que un despliegue la perdía sin forma de
+recuperarla. Ese día eso bloqueó el despliegue de un arreglo ya probado. La
+lectura queda registrada en el log con un `LogWarning` por cada consulta.
+
+Con `Aranda:SessionCookieEnabled` en `false` la superficie es menor —no hay
+sesión que leer ni robar— pero la ruta sigue expuesta para cuando se encienda.
 
 Es distinto del resto de los endpoints anónimos, que solo leen con una
 credencial fija y no pueden alterarla.
+
+**Cuánto pesa hoy.** Con `Aranda:SessionCookieEnabled` en `false` el gateway
+opera sin sesión, así que estas rutas quedan en reserva y no hay credencial que
+robar por ellas. Eso baja el riesgo real, pero no lo cierra: siguen anónimas y
+expuestas, y el día que la sesión se encienda vuelven a ser la vía de operación
+—una por despliegue y por reinicio— con la cookie viva legible desde internet.
+Una ruta anónima que entrega credenciales no debería quedar así de forma
+indefinida.
 
 **Mitigaciones,** por orden de menor fricción:
 
@@ -92,20 +112,32 @@ trabajo. Conviene extenderlo a creación y adjuntos por el mismo motivo.
 
 ---
 
-## 4. Una cookie vencida es peor que ninguna
+## 4. Una cookie vencida es peor que ninguna — resuelto con el interruptor
 
-Durante el diagnóstico se observó que una petición **sin** cookie puede
-funcionar mientras la misma petición **con una cookie vencida** falla con `401`.
-La creación por APIM funciona sin cookie; el gateway, al arrancar con la semilla
-caducada, la envía y recibe `401`.
+Se observó que una petición **sin** cookie puede funcionar mientras la misma
+petición **con una cookie vencida** falla con `401`. El gateway, al arrancar con
+la semilla caducada, la enviaba y recibía `401`: arrastraba la cookie vencida y
+rompía operaciones que sin ella habrían funcionado.
 
-O sea: el gateway arrastra la cookie vencida y rompe operaciones que sin ella
-habrían funcionado. El arranque con semilla caducada no degrada parcialmente,
-sino que tumba todo.
+**Medido el 15 de septiembre de 2026.** La sospecha de que "las consultas sí
+exigen cookie" era falsa. Llamando sin cookie, solo con el token de
+`Aranda:ApiKey`:
 
-**Qué hace falta.** Detectar el `401` de sesión, descartar la cookie en memoria
-y reintentar una vez sin ella. Antes conviene medir qué operaciones realmente
-funcionan sin cookie, porque las consultas sí la exigen.
+- búsqueda de casos directo a Aranda: `200` en 8 de 8;
+- búsqueda por APIM: `200` en 9 de 10, el fallo restante por el desafío de
+  Cloudflare;
+- adjuntar archivo por APIM: `200`;
+- `GET user/{username}/detail` directo: `200`.
+
+**Cómo quedó.** Se agregó `Aranda:SessionCookieEnabled`, hoy en `false`: el
+gateway no envía la semilla, no adopta el `Set-Cookie` de las respuestas y no
+ejecuta el latido. La adopción también se apaga a propósito, porque si no el
+interruptor se encendería solo con la primera respuesta de Aranda y volvería a
+arrastrar una cookie que luego caduca.
+
+**Lo que queda.** No se implementó el descarte automático del `401` de sesión
+con reintento sin cookie. Con el interruptor apagado no hace falta; volvería a
+ser necesario si alguien enciende la sesión.
 
 ---
 
@@ -157,9 +189,20 @@ obliga a coordinar el cambio en una ventana que casi nunca se alcanza.
 almacenamiento persistente, o Redis/Blob con varias instancias— para que un
 reinicio corto la recupere en vez de caer a la semilla. No cubre paradas largas.
 
-**Ojo.** Esto desaparece por completo cuando el cliente entregue las
-credenciales del punto 2 de `consultas-al-cliente.md`. Vale medir cuánto
-invertir acá antes de que llegue esa respuesta.
+**Ojo.** Esto dejó de ser urgente el 15 de septiembre de 2026, por dos motivos.
+
+El primero es que **la cookie ya no es necesaria**: con
+`Aranda:SessionCookieEnabled` en `false` no hay sesión que perder en un
+reinicio (ver punto 4). El problema solo reaparece si alguien la enciende.
+
+El segundo es que ahora la sesión viva **se puede leer** con
+`GET /admin/aranda-session/value`, así que el procedimiento ante un despliegue
+es leerla, desplegar y reinstalarla con el `PUT`. No es persistencia
+automática, pero cubre el caso que bloqueaba: ese día hubo un arreglo probado
+que no se pudo desplegar porque la cookie viva era irrecuperable.
+
+Persistirla fuera del proceso sigue siendo la solución completa, y sería lo
+correcto el día que la sesión vuelva a hacer falta de forma permanente.
 
 ---
 

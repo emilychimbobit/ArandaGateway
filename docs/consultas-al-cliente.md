@@ -7,34 +7,34 @@ esperan una publicación, una credencial, un dato de catálogo o una decisión.
 Lo que sí depende del equipo de desarrollo está en
 [`deuda-tecnica.md`](deuda-tecnica.md).
 
-Estado al 14 de septiembre de 2026.
+Estado al 15 de septiembre de 2026.
 
 ## Resumen
 
 | # | Pendiente | Responsable | Bloquea |
 | --- | --- | --- | --- |
-| 1 | Publicar tres operaciones en APIM | Admin de APIM | Anulación (REQ_06), identidad real |
-| 2 | Credenciales de usuario de servicio + tenant alias | Electrodata | Login automático |
-| 3 | Decisión: salida por APIM o directo a Aranda | Arquitectura / seguridad | Puntos 1 y 2 |
+| 1 | Publicar dos operaciones en APIM | Admin de APIM | Anulación (REQ_06), identidad real |
+| 2 | ~~Credenciales de usuario de servicio + tenant alias~~ — **cerrado, ver punto 2** | — | — |
+| 3 | Decisión: salida por APIM o directo a Aranda | Arquitectura / seguridad | Punto 1 |
 | 4 | Cuenta que debe figurar como autor de los tickets | Minsur | Trazabilidad y reportes |
 | 5 | Catálogo de causales de anulación (`reasonId`) | Electrodata | Reportes por motivo |
 | 6 | Confirmar `RegistryTypeId` y `UnitId` por sede | Electrodata | Producción multi-sede |
-| 7 | Política de APIM para el desafío de Cloudflare | Admin de APIM | Nada (paliado) |
+| 7 | Cloudflare desafía el tráfico de APIM | Admin de APIM | Disponibilidad en horario de oficina |
 | 8 | Catálogo oficial de errores de Aranda | Minsur | Mensajes al usuario |
 | 9 | Ventana y marcado de tickets de prueba | Mesa de Ayuda | Pruebas en QA |
-| 10 | Confirmar el flujo de estados y publicar `states` en APIM | Minsur / Admin de APIM | Criterio de abiertos y anulables |
+| 10 | Confirmar el flujo de estados | Minsur | Criterio de abiertos y anulables |
 | 11 | `ModelId` del modelo de incidentes (IM) y la regla para elegir el tipo | Minsur | Creación de incidentes |
 
-Los puntos 1 y 2 son los críticos: mientras sigan abiertos, la solución **no
-debe llegar a producción con usuarios reales**.
+El punto 1 es el crítico: mientras siga abierto, la solución **no debe llegar a
+producción con usuarios reales**.
 
 ---
 
-## 1. Tres operaciones faltan en APIM
+## 1. Dos operaciones faltan en APIM
 
-**Hallazgo del 11 de septiembre de 2026.** Tres operaciones responden `404` de
-APIM (`{ "statusCode": 404, "message": "Resource not found" }`, formato de
-APIM, no de Aranda) y sin embargo funcionan llamando directo a
+**Hallazgo del 11 de septiembre de 2026, revalidado el 15.** Las operaciones
+responden `404` de APIM (`{ "statusCode": 404, "message": "Resource not found" }`,
+formato de APIM, no de Aranda) y sin embargo funcionan llamando directo a
 `https://mesadeayuda.divisionminera.com/ASMSAPI`, con la misma credencial y
 cookie que ya usa el gateway:
 
@@ -42,65 +42,68 @@ cookie que ya usa el gateway:
 | --- | --- | --- | --- |
 | `PUT /api/v9/item/{id}` | Anular un ticket | `404` | `200` |
 | `GET /api/v9/user/{username}/detail` | Resolver al colaborador | `404` | `200` |
-| `POST /api/v9/authentication/` | Iniciar sesión | `404` | responde `400 ValidationError` con credenciales vacías, es decir opera |
 
 En el spec del repositorio `/api/v9/item/{id}` figura **solo con GET**, por eso
 la anulación falla: `POST /api/tickets/{caseNumber}/cancellation` devuelve `502`
-con `ARANDA_404`. El código del gateway es correcto; se verificó anulando
-RF-58496 y RF-58497 directo contra Aranda, donde el `PUT` respondió `200`.
+con `ARANDA_404`. Reproducido el 15 de septiembre de 2026 sobre `RF-59276`. El
+código del gateway es correcto; se verificó anulando RF-58496 y RF-58497 directo
+contra Aranda, donde el `PUT` respondió `200`.
 
-**Qué pedir.** Publicar las tres operaciones en el producto
+`POST /api/v9/authentication/` también responde `404` en APIM, pero ya no se
+pide: ver el punto 2.
+
+**Qué pedir.** Publicar las dos operaciones en el producto
 `fcintgestionaranda/v1`. El spec ya está en
 `docs/iac/apim/API-FC-INT-GestionAranda.json`.
 
-**Qué se desbloquea.** REQ_06 completo, el retiro del parche de usuario fijo
-(punto 9 de `deuda-tecnica.md`) y el login automático del punto 2 de acá.
+**Qué se desbloquea.** REQ_06 completo y el retiro del parche de usuario fijo
+(punto 9 de `deuda-tecnica.md`).
 
 ---
 
-## 2. Credenciales de usuario de servicio y tenant alias
+## 2. Login automático: descartado del alcance
 
-**Qué pasa.** La salida hacia Aranda necesita la cookie de sesión
-`AuthCookieASMS` además del token de `X-Authorization`. Hoy se instala a mano y
-vive solo en la memoria del proceso: cada despliegue, reinicio o instancia nueva
-la pierde, y la semilla de configuración caduca a los ~10 minutos sin uso.
+**Cerrado el 15 de septiembre de 2026 por decisión del equipo de desarrollo.**
+Las credenciales de usuario de servicio y el `x-aranda-tenant-alias` real nunca
+llegaron, y no se va a seguir pidiendo. **La sesión por cookie manual deja de ser
+un parche y pasa a ser el diseño definitivo.** Lo que sigue documenta el riesgo
+que eso implica, para que quede aceptado de forma explícita y no heredado.
 
-Aranda expone el login y el contrato está en
-`API-V9.postman_collection_2508`:
+**Cómo opera.** La salida hacia Aranda necesita la cookie de sesión
+`AuthCookieASMS` además del token de `X-Authorization`. La cookie se instala a
+mano por `PUT /admin/aranda-session` y vive solo en la memoria del proceso.
+`ArandaSessionKeepAliveService` la mantiene viva mientras el proceso siga en pie.
 
-```
-POST /api/v9/authentication/
-  X-Authorization: Bearer <token de integración>    <- el que ya se usa
-  x-aranda-tenant-alias: <alias del tenant>
-  { "consoleType": 1, "providerId": 0, "userName": "...", "password": "..." }
+**Riesgo operativo permanente.** Cada despliegue, reinicio, reciclaje del App
+Service o instancia nueva por escalado pierde la cookie viva y vuelve a la
+semilla de configuración, que caduca a los ~10 minutos sin uso. Es decir: **el
+servicio queda respondiendo `401` hasta que una persona pegue una cookie fresca
+a mano.** El despliegue tarda ~7 minutos, más que la vida de la cookie, así que
+pasarla por configuración casi nunca alcanza la ventana.
 
-POST /api/v9/authentication/renewtoken
-  Authorization: <token de sesión>
-  "<token de sesión>"
-```
+Consecuencias que el cliente debe aceptar:
 
-El login se autentica con el token de integración que ya está configurado más
-usuario y contraseña, así que el gateway podría obtener y renovar su sesión sin
-intervención humana.
+1. No hay recuperación automática ante un reinicio. Requiere intervención manual
+   con una persona disponible.
+2. No se puede escalar horizontalmente sin instalar la cookie en cada instancia.
+3. `/admin/aranda-session` queda como ruta de operación permanente, con lo que el
+   punto 1 de `deuda-tecnica.md` (hoy es anónima) pasa de deuda a requisito de
+   seguridad bloqueante.
 
-**Qué pedir.**
-
-1. Credenciales de un usuario de servicio de Aranda.
-2. El valor real de `x-aranda-tenant-alias`. En la colección aparece
-   `qextreme`, que es del entorno demo del proveedor.
-3. Publicar las dos rutas de autenticación en APIM (ver punto 1).
-
-**Qué se desbloquea.** Desaparece `Aranda:AuthCookie`, el keep-alive y la
-instalación manual de cookie por `PUT /admin/aranda-session`.
+**Si el cliente quisiera revertir la decisión,** el contrato del login ya está
+levantado en `API-V9.postman_collection_2508` y haría falta: credenciales de un
+usuario de servicio, el `x-aranda-tenant-alias` real (en la colección aparece
+`qextreme`, del entorno demo del proveedor) y publicar
+`POST /api/v9/authentication/` y `POST /api/v9/authentication/renewtoken` en
+APIM, que hoy responden `404`.
 
 ---
 
 ## 3. Decisión de arquitectura: APIM o directo a Aranda
 
-Los puntos 1 y 2 dependen de que alguien publique operaciones en APIM. Existe
-una alternativa que no depende de nadie: **apuntar el gateway directo a
-Aranda**. Resolvería de golpe la anulación, el parche de usuario fijo y la
-cookie manual.
+El punto 1 depende de que alguien publique operaciones en APIM. Existe una
+alternativa que no depende de nadie: **apuntar el gateway directo a Aranda**.
+Resolvería de golpe la anulación y el parche de usuario fijo.
 
 A cambio, saltarse APIM contradice el diseño acordado: se pierde la puerta
 única, su control de acceso por suscripción y su telemetría.
@@ -191,21 +194,42 @@ creación con `InvalidOrganizationArea`: la unidad no corresponderá al cliente.
 
 ---
 
-## 7. Política de APIM para el desafío de Cloudflare
+## 7. Cloudflare desafía el tráfico que llega desde APIM
 
 **Qué pasa.** Cloudflare, delante de Aranda, responde `403` con
-`Cf-Mitigated: challenge` de forma intermitente, incluso a peticiones idénticas
-que funcionaron un momento antes. APIM no lo evita porque reenvía los
-encabezados del cliente al backend.
+`Cf-Mitigated: challenge` y `cType: "managed"`. Es un *Managed Challenge*:
+exige ejecutar JavaScript de navegador, así que **ninguna integración
+servidor-a-servidor puede resolverlo**, por muchos reintentos que haga.
 
-**Qué pedir.** Que la política de APIM normalice el `User-Agent` hacia el
-backend, y que se excluya del desafío la ruta `/ASMSAPI/api/v9/*` para el origen
-de APIM.
+**Medición del 15 de septiembre de 2026.** Con la misma credencial, el mismo
+cliente y en el mismo momento:
 
-**Prioridad: la más baja de la lista.** `ArandaRetryHandler` ya lo absorbe con
-hasta tres intentos y lo hace invisible. Vale retomarlo si el `403` aparece con
-frecuencia en los logs de producción, porque cada reintento consume el
-presupuesto de `Aranda:TimeoutSeconds`.
+| Camino | Peticiones desafiadas |
+| --- | --- |
+| Por APIM | 13 de 20 (65%) |
+| Directo a Aranda | 0 de 20 (0%) |
+
+La tasa por APIM fluctúa: horas antes del mismo día era del 25%, y en otra
+tanda del 10%. El desafío no distingue por tipo de petición —se midió JSON
+contra multipart sin diferencia apreciable— sino por el camino.
+
+También depende del cliente: el `User-Agent` de `curl` es desafiado el 100% de
+las veces (20 de 20), mientras que Postman y el gateway rondan el 20-25%. Por
+eso **diagnosticar con `curl` crudo no sirve**: siempre da `403`.
+
+**Qué explica.** El corte del 14 de septiembre, en que la creación falló durante
+el horario laboral y "se arregló sola" cerca de las 6 p.m., sin cambios de
+nuestro lado: en las ventanas de tasa alta los tres reintentos se agotan y la
+operación cae. También explica que obtener una cookie de sesión por Postman
+saliera "a veces sí, a veces no".
+
+**Qué pedir.** Incorporar el origen de APIM a la lista de permitidos de
+Cloudflare, o excluir `/ASMSAPI/api/v9/*` del desafío para ese origen.
+
+**Prioridad: alta.** Es causa raíz de indisponibilidad intermitente en horario
+de oficina, no una molestia de diagnóstico. `ArandaRetryHandler` lo absorbe
+mientras la tasa sea baja, pero cada reintento consume el presupuesto de
+`Aranda:TimeoutSeconds` y con tasa alta no alcanza.
 
 ---
 
@@ -241,7 +265,7 @@ ventana de pruebas.
 
 ---
 
-## 10. Flujo de estados: confirmarlo y publicar `states` en APIM
+## 10. Flujo de estados: confirmarlo
 
 **Hallazgo del 14 de septiembre de 2026.** Aranda expone el flujo de estados de
 cada modelo en `GET /api/v9/model/{modelId}/{itemType}/states`. Llamando directo
@@ -280,10 +304,15 @@ nombre de estado, apoyado en `stageName`.
    consultado.
 2. Decidir si un ticket **Resuelto (66)** debe seguir visible en el listado del
    colaborador, dado que es reabrible.
-3. Publicar `GET /api/v9/model/{modelId}/{itemType}/states` en el producto
-   `fcintgestionaranda/v1`. Con ella el gateway lee el flujo desde Aranda en vez
-   de llevar los estados escritos en su configuración, y un cambio de flujo deja
-   de requerir despliegue.
+
+**Lo que NO se pide: publicar `states` en APIM.** Se evaluó leer el flujo desde
+Aranda en caliente y **se descartó el 15 de septiembre de 2026**: administrar el
+flujo de estados no está dentro del alcance de este equipo. Los estados quedan
+escritos en la configuración del gateway (`TicketService` y las claves
+`Aranda:*StateId`), y un cambio de flujo en Aranda requiere despliegue. Si Mesa
+de Ayuda modifica el modelo 17 sin avisar, el criterio de abiertos y anulables
+queda desactualizado en silencio: por eso el punto 1 de esta lista pide
+confirmar el flujo por escrito.
 
 ---
 
