@@ -248,11 +248,16 @@ que es su usuario o correo.
 
 Los contratos y reglas pueden probarse localmente. La validación end-to-end
 contra Aranda real está hecha: `GET /api/equipos`, `GET /api/tickets` y
-`GET /api/tickets/{caseNumber}` responden `200`, `POST /api/tickets` responde
-`201` y `POST /api/tickets/{caseNumber}/attachments` responde `200` desde el 15
-de septiembre de 2026. La anulación está bloqueada en APIM (ver
-[docs/consultas-al-cliente.md](docs/consultas-al-cliente.md)). El desafío de
-Cloudflare ya no bloquea la operación: se reintenta.
+`GET /api/tickets/{caseNumber}` responden `200` y `POST /api/tickets` responde
+`201` desde el 15 de septiembre de 2026. La anulación está bloqueada en APIM y
+**adjuntar está bloqueado en Cloudflare** para cualquier archivo con contenido
+binario real, incluido el portal de Aranda (ver
+[docs/consultas-al-cliente.md](docs/consultas-al-cliente.md), puntos 1 y 12). El
+desafío de Cloudflare ya no bloquea las demás operaciones: se reintenta.
+
+El `200` de `POST /api/tickets/{caseNumber}/attachments` registrado el 15 de
+septiembre fue un falso positivo: se probó con un PDF de texto plano de 776 B.
+Los adjuntos se prueban con archivos reales.
 
 ### Pendientes
 

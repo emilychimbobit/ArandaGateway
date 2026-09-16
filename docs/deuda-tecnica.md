@@ -126,7 +126,11 @@ exigen cookie" era falsa. Llamando sin cookie, solo con el token de
 - búsqueda de casos directo a Aranda: `200` en 8 de 8;
 - búsqueda por APIM: `200` en 9 de 10, el fallo restante por el desafío de
   Cloudflare;
-- adjuntar archivo por APIM: `200`;
+- adjuntar archivo por APIM: `200`, pero con un PDF de texto plano de 776 B. El
+  16 de septiembre se comprobó que todo archivo con contenido binario real
+  —texto variado comprimido, imágenes, documentos de oficina— recibe `403` del
+  WAF de Cloudflare, así que esa medición no prueba que adjuntar funcione (ver
+  [consultas-al-cliente.md](consultas-al-cliente.md), punto 12);
 - `GET user/{username}/detail` directo: `200`.
 
 **Cómo quedó.** Se agregó `Aranda:SessionCookieEnabled`, hoy en `false`: el
