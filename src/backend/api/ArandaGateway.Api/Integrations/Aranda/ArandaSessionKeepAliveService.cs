@@ -35,13 +35,6 @@ public sealed class ArandaSessionKeepAliveService(
             return;
         }
 
-        if (sessionCookie.Value is null)
-        {
-            logger.LogInformation(
-                "Latido de sesión de Aranda desactivado: no hay cookie configurada en Aranda:AuthCookie.");
-            return;
-        }
-
         logger.LogInformation(
             "Latido de sesión de Aranda activo cada {Minutes} minuto(s).",
             arandaOptions.SessionKeepAliveMinutes);
@@ -50,6 +43,15 @@ public sealed class ArandaSessionKeepAliveService(
 
         while (await timer.WaitForNextTickAsync(stoppingToken))
         {
+            // Se evalúa en cada tick y no una sola vez al arrancar: con la
+            // sesión por cookie apagada no hay nada que mantener, pero si
+            // alguien instala una por PUT /admin/aranda-session el latido debe
+            // empezar a sostenerla sin reiniciar el proceso.
+            if (sessionCookie.Value is null)
+            {
+                continue;
+            }
+
             await SendHeartbeatAsync(stoppingToken);
         }
     }

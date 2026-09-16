@@ -30,6 +30,25 @@ public sealed class ArandaOptions
     public string? AuthCookie { get; init; }
 
     /// <summary>
+    /// Interruptor de la sesión por cookie. En <c>false</c> el gateway no envía
+    /// <see cref="AuthCookie"/>, no adopta las cookies que devuelve Aranda y no
+    /// ejecuta el latido: opera solo con el token de <see cref="ApiKey"/>.
+    ///
+    /// <para>
+    /// Se apagó el 15 de septiembre de 2026 tras comprobar que Aranda responde
+    /// <c>200</c> sin cookie, tanto directo como por APIM, y que una cookie
+    /// caducada provoca <c>401</c> en peticiones que sin ella funcionan.
+    /// </para>
+    ///
+    /// <para>
+    /// Si Aranda vuelve a exigir sesión no hace falta redesplegar: basta
+    /// instalar una cookie con <c>PUT /admin/aranda-session</c>, que reactiva
+    /// el envío en caliente.
+    /// </para>
+    /// </summary>
+    public bool SessionCookieEnabled { get; init; } = true;
+
+    /// <summary>
     /// Cada cuántos minutos se toca la sesión de Aranda para que no caduque
     /// por inactividad. Debe quedar holgadamente por debajo del tiempo de
     /// expiración de Aranda: se observó una sesión muerta tras unos 10 minutos

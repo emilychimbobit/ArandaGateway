@@ -181,6 +181,10 @@ public sealed class ArandaClientTests
         Assert.Contains("name=FileItemId", handler.RequestBody);
         Assert.Contains("name=FileItemType", handler.RequestBody);
         Assert.Contains("name=Data0", handler.RequestBody);
+        // Sin IsPublic, Aranda responde 400 con "PublicValueIsRequired", aunque
+        // el manual de integración v9 no lo liste entre los campos requeridos.
+        // Verificado contra RF-59276 el 15 de septiembre de 2026.
+        Assert.Contains("name=IsPublic", handler.RequestBody);
     }
 
     [Fact]

@@ -47,6 +47,13 @@ public static class AdminEndpoints
             .WithSummary("Indica si hay sesión de Aranda y cuándo se renovó")
             .Produces<RespuestaSesionAranda>();
 
+        group
+            .MapGet("/aranda-session/value", ObtenerValorSesion)
+            .WithName("ValorSesionAranda")
+            .WithSummary("Devuelve la cookie de sesión viva")
+            .Produces<RespuestaValorSesionAranda>()
+            .Produces(StatusCodes.Status404NotFound);
+
         return endpoints;
     }
 
@@ -69,7 +76,9 @@ public static class AdminEndpoints
                     $"Se espera el par completo, por ejemplo {ArandaSessionCookie.CookieName}=VALOR.");
         }
 
-        sessionCookie.Renew(cookie);
+        // Install, no Renew: reactiva el envío aunque la sesión por cookie esté
+        // apagada por configuración. Es justamente el caso de soporte.
+        sessionCookie.Install(cookie);
 
         // El valor nunca se registra: es una credencial de sesión. Se deja
         // traza de la operación porque, siendo anónima, conviene poder ver
@@ -84,6 +93,32 @@ public static class AdminEndpoints
     private static IResult ObtenerEstadoSesion(
         ArandaSessionCookie sessionCookie) =>
         Results.Ok(BuildStatus(sessionCookie));
+
+    /// <summary>
+    /// Devuelve la cookie viva. Aranda la rota en cada respuesta y solo vive en
+    /// memoria, así que sin esto un despliegue la pierde sin vuelta atrás: ese
+    /// fue el bloqueo del 15 de septiembre de 2026.
+    /// </summary>
+    private static IResult ObtenerValorSesion(
+        ArandaSessionCookie sessionCookie,
+        ILoggerFactory loggerFactory)
+    {
+        if (sessionCookie.Value is not { } cookie)
+        {
+            return Results.NotFound();
+        }
+
+        // Se deja traza porque la ruta es anónima y entrega una credencial:
+        // conviene poder ver cuándo y cuántas veces se leyó la sesión.
+        loggerFactory
+            .CreateLogger(typeof(AdminEndpoints))
+            .LogWarning("Se consultó el valor de la sesión de Aranda.");
+
+        return Results.Ok(
+            new RespuestaValorSesionAranda(
+                cookie,
+                sessionCookie.RenewedAt));
+    }
 
     private static RespuestaSesionAranda BuildStatus(
         ArandaSessionCookie sessionCookie) =>

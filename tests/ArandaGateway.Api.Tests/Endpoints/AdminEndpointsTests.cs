@@ -76,6 +76,43 @@ public sealed class AdminEndpointsTests
         Assert.DoesNotContain("SECRETA", body);
     }
 
+    /// <summary>
+    /// La ruta que sí revela la cookie es aparte, para que el estado normal
+    /// siga sin exponerla. Existe porque la cookie viva solo vive en memoria:
+    /// sin esto, un reinicio la pierde sin posibilidad de recuperarla.
+    /// </summary>
+    [Fact]
+    public async Task Value_ReturnsTheLiveCookie()
+    {
+        using var client = factory.CreateClient();
+
+        await client.PutAsJsonAsync(
+            "/admin/aranda-session",
+            new SolicitudSesionAranda("AuthCookieASMS=VIVA; path=/; HttpOnly"));
+
+        using var response = await client.GetAsync(
+            "/admin/aranda-session/value");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var body = await response.Content
+            .ReadFromJsonAsync<RespuestaValorSesionAranda>();
+
+        Assert.Equal("AuthCookieASMS=VIVA", body!.Cookie);
+    }
+
+    [Fact]
+    public async Task Value_ReturnsNotFoundWhenThereIsNoSession()
+    {
+        using var noSession = new GatewayFactory();
+        using var client = noSession.CreateClient();
+
+        using var response = await client.GetAsync(
+            "/admin/aranda-session/value");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
     public sealed class GatewayFactory : WebApplicationFactory<Program>
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder) =>

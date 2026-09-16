@@ -18,9 +18,13 @@ public sealed class ArandaSessionCookie
     public const string CookieName = "AuthCookieASMS";
 
     private string? current;
+    private bool enabled;
 
-    public ArandaSessionCookie(IOptions<ArandaOptions> options) =>
-        current = Normalize(options.Value.AuthCookie);
+    public ArandaSessionCookie(IOptions<ArandaOptions> options)
+    {
+        enabled = options.Value.SessionCookieEnabled;
+        current = enabled ? Normalize(options.Value.AuthCookie) : null;
+    }
 
     /// <summary>Cookie a enviar, o <c>null</c> si no hay ninguna conocida.</summary>
     public string? Value => Volatile.Read(ref current);
@@ -31,7 +35,38 @@ public sealed class ArandaSessionCookie
     /// </summary>
     public DateTimeOffset? RenewedAt { get; private set; }
 
+    /// <summary>
+    /// Adopta la cookie que devolvió Aranda. Con la sesión apagada por
+    /// <see cref="ArandaOptions.SessionCookieEnabled"/> no hace nada: si
+    /// adoptara, un solo <c>Set-Cookie</c> volvería a encender el envío.
+    /// </summary>
     public void Renew(string cookie)
+    {
+        if (!Volatile.Read(ref enabled))
+        {
+            return;
+        }
+
+        Store(cookie);
+    }
+
+    /// <summary>
+    /// Instala una cookie a mano desde <c>PUT /admin/aranda-session</c>. A
+    /// diferencia de <see cref="Renew"/>, funciona con la sesión apagada y la
+    /// vuelve a encender: es la vía de soporte para reactivarla en caliente.
+    /// </summary>
+    public void Install(string cookie)
+    {
+        if (Normalize(cookie) is null)
+        {
+            return;
+        }
+
+        Volatile.Write(ref enabled, true);
+        Store(cookie);
+    }
+
+    private void Store(string cookie)
     {
         var normalized = Normalize(cookie);
         if (normalized is null)

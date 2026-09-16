@@ -37,25 +37,39 @@ dotnet user-secrets set "Aranda:SubscriptionKey" "SUBSCRIPTION_KEY" --project .\
 dotnet user-secrets set "Aranda:AuthCookie" "AuthCookieASMS=VALOR" --project .\src\backend\api\ArandaGateway.Api\ArandaGateway.Api.csproj
 ```
 
-La salida hacia Aranda necesita **tres** credenciales, no una. Faltando
-cualquiera la respuesta es `502` con `errorCode` `ARANDA_401`:
+La salida hacia Aranda necesita **dos** credenciales:
 
 | Secreto | Encabezado | Quién lo exige |
 | --- | --- | --- |
 | `Aranda:ApiKey` | `X-Authorization` | Aranda |
 | `Aranda:SubscriptionKey` | `Ocp-Apim-Subscription-Key` | Azure API Management |
-| `Aranda:AuthCookie` | `Cookie` | Aranda (sesión `AuthCookieASMS`) |
+| `Aranda:AuthCookie` | `Cookie` | opcional, ver abajo |
 
 `SubscriptionKey` solo hace falta cuando `Aranda:BaseUrl` apunta a APIM
 (`https://apim-servicios.azure-api.net/fcintgestionaranda/v1`) y no directo a
 Aranda; sin ella APIM responde 401 antes de enrutar.
 
-`AuthCookie` es una **cookie de sesión y caduca**. Aranda devuelve 401 con la
-página de IIS "You do not have permission to view this directory or page."
-cuando falta o venció, aunque el token de `ApiKey` siga vigente. No se versiona
-en el repositorio.
+`AuthCookie` **ya no es necesaria**. El 15 de septiembre de 2026 se comprobó que
+Aranda responde `200` con solo el token de `ApiKey`, tanto directo como por
+APIM: nueve de diez búsquedas y el adjunto completo salieron sin enviar cookie.
+Por eso `Aranda:SessionCookieEnabled` está en `false`.
 
-#### Cómo se mantiene viva la sesión
+Lo que sí rompe es mandar una cookie **caducada**: Aranda devuelve 401 con la
+página de IIS "You do not have permission to view this directory or page." en
+peticiones que sin cookie habrían funcionado. De ahí el interruptor, que apaga
+también la adopción del `Set-Cookie` para que la sesión no se encienda sola.
+
+#### El interruptor de la sesión por cookie
+
+`Aranda:SessionCookieEnabled` decide si el gateway opera con sesión o solo con
+el token. En `false` —el valor actual— no envía `AuthCookie`, no adopta las
+cookies que devuelve Aranda y no ejecuta el latido.
+
+Si Aranda vuelve a exigir sesión no hace falta redesplegar: basta instalar una
+cookie con `PUT /admin/aranda-session`, que **reactiva el envío en caliente**.
+Desde ahí el comportamiento vuelve a ser el de siempre, descrito abajo.
+
+#### Cómo se mantiene viva la sesión, cuando está encendida
 
 Aranda usa expiración deslizante: devuelve un `Set-Cookie` renovado en cada
 respuesta y lo que mata la sesión es la **inactividad**, no el tiempo
@@ -67,7 +81,8 @@ El gateway hace dos cosas para que no caduque:
   la siguiente. `Aranda:AuthCookie` es solo la **semilla** del primer request.
 - `ArandaSessionKeepAliveService` consulta Aranda cada
   `Aranda:SessionKeepAliveMinutes` minutos (5 por omisión, `0` desactiva) para
-  reiniciar el contador aunque no haya tráfico de usuarios.
+  reiniciar el contador aunque no haya tráfico de usuarios. Evalúa en cada tick
+  si hay sesión, así que también sostiene una instalada en caliente.
 
 #### Renovar la sesión sin reiniciar (`/admin/aranda-session`)
 
@@ -81,11 +96,18 @@ curl -X PUT "https://HOST/admin/aranda-session" \
   -d '{"cookie":"AuthCookieASMS=VALOR"}'
 
 curl "https://HOST/admin/aranda-session"
+curl "https://HOST/admin/aranda-session/value"
 ```
 
-El `PUT` reemplaza la sesión en memoria y el `GET` informa si hay sesión y
-cuándo se renovó, sin devolver nunca el valor de la cookie. Tras instalarla, el
-latido la mantiene viva mientras el proceso siga arriba.
+El `PUT` reemplaza la sesión en memoria y enciende el envío aunque
+`SessionCookieEnabled` esté en `false`. El `GET` informa si hay sesión y cuándo
+se renovó, sin revelar la cookie. `GET /aranda-session/value` sí devuelve el
+valor vivo, o `404` si no hay sesión. Tras instalarla, el latido la mantiene
+viva mientras el proceso siga arriba.
+
+`/value` existe porque Aranda rota la cookie en cada respuesta y la vigente solo
+vive en memoria: sin esa ruta, un despliegue la perdía sin forma de
+recuperarla. El procedimiento seguro es leerla, desplegar y reinstalarla.
 
 Esto no reemplaza a `Aranda:AuthCookie`, que sigue siendo la semilla del
 arranque; evita el redespliegue cuando la sesión muere en caliente.
@@ -94,9 +116,11 @@ arranque; evita el redespliegue cuando la sesión muere en caliente.
 y el App Service responde desde internet: se comprobó llamando a
 `https://ase-gestionaranda-dev.azurewebsites.net/health` sin pasar por APIM. En
 consecuencia, cualquiera que conozca la URL puede instalar la cookie con la que
-la gateway opera contra Aranda, o dejarla inoperativa enviando una inválida. Es
+la gateway opera contra Aranda, dejarla inoperativa enviando una inválida, o
+**leer la sesión viva** por `/value` y suplantar a la cuenta de servicio. Es
 distinto del resto de los endpoints anónimos, que solo leen con una credencial
-fija: esta ruta **cambia con qué credencial actúa el servicio**.
+fija: estas rutas **cambian con qué credencial actúa el servicio, y entregan
+esa credencial**. Cada lectura de `/value` queda registrada en el log.
 
 La mitigación pendiente es restringir `/admin/*` por IP con las reglas de acceso
 del App Service, o reponer una clave de autorización. Ver
@@ -224,8 +248,9 @@ que es su usuario o correo.
 
 Los contratos y reglas pueden probarse localmente. La validación end-to-end
 contra Aranda real está hecha: `GET /api/equipos`, `GET /api/tickets` y
-`GET /api/tickets/{caseNumber}` responden `200`, y `POST /api/tickets` responde
-`201`. La anulación está bloqueada en APIM (ver
+`GET /api/tickets/{caseNumber}` responden `200`, `POST /api/tickets` responde
+`201` y `POST /api/tickets/{caseNumber}/attachments` responde `200` desde el 15
+de septiembre de 2026. La anulación está bloqueada en APIM (ver
 [docs/consultas-al-cliente.md](docs/consultas-al-cliente.md)). El desafío de
 Cloudflare ya no bloquea la operación: se reintenta.
 
@@ -234,19 +259,32 @@ Cloudflare ya no bloquea la operación: se reintenta.
 Están separados por quién puede resolverlos.
 
 [docs/consultas-al-cliente.md](docs/consultas-al-cliente.md) reúne lo bloqueado
-del lado del cliente: las tres operaciones ausentes en APIM, las credenciales
-para el login automático, la decisión de salir por APIM o directo a Aranda, la
-cuenta que debe figurar como autor, el catálogo de causales de anulación, los
-IDs de sede y tipo de registro por confirmar, la política contra el desafío de
-Cloudflare y el catálogo oficial de errores.
+del lado del cliente: las dos operaciones ausentes en APIM, la decisión de salir
+por APIM o directo a Aranda, la cuenta que debe figurar como autor, el catálogo
+de causales de anulación, los IDs de sede y tipo de registro por confirmar, la
+política contra el desafío de Cloudflare y el catálogo oficial de errores.
+
+Dos frentes se cerraron por decisión del equipo el 15 de septiembre de 2026: el
+**login automático** queda fuera del alcance y el **flujo de estados** se
+mantiene escrito en la configuración, sin leerlo desde Aranda. El primero dejó
+de tener costo ese mismo día, al comprobarse que la cookie no es necesaria: sin
+sesión que reponer, no hay nada que automatizar.
 
 [docs/deuda-tecnica.md](docs/deuda-tecnica.md) reúne lo que se cierra con código
 de este repositorio: la protección de `/admin/aranda-session`, el campo
 `solution` sin llenar, la falta de log en la anulación, el manejo de la cookie
 vencida y varias correcciones menores.
 
-Cuatro de las cinco operaciones están validadas contra Aranda real: las tres
-consultas y la creación, que devolvió `201` con el caso RF-58501 el 11 de
-septiembre de 2026. **La anulación devuelve `502` con `ARANDA_404`**: APIM no
-publica `PUT /api/v9/item/{id}`, aunque la operación funciona llamando directo
-a Aranda.
+Cinco de las seis operaciones están validadas contra Aranda real: las tres
+consultas, la creación —que devolvió `201` con el caso RF-58501 el 11 de
+septiembre de 2026— y el adjunto, que responde `200` desde el 15 de septiembre.
+
+**La anulación devuelve `502` con `ARANDA_404`**: APIM no publica
+`PUT /api/v9/item/{id}`, aunque la operación funciona llamando directo a
+Aranda. Se reprodujo el 15 de septiembre de 2026 sobre RF-59276.
+
+El adjunto falló durante días con `502` y `ARANDA_400`. La causa resultó ser un
+campo del formulario: Aranda exige `IsPublic` y responde
+`{"exceptionMessage":"PublicValueIsRequired"}` sin él, pese a que el manual de
+integración v9 no lo lista entre los campos requeridos. La colección
+`API-V9.postman_collection_2508` sí lo trae, y resultó la fuente correcta.
