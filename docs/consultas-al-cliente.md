@@ -7,7 +7,7 @@ esperan una publicación, una credencial, un dato de catálogo o una decisión.
 Lo que sí depende del equipo de desarrollo está en
 [`deuda-tecnica.md`](deuda-tecnica.md).
 
-Estado al 15 de septiembre de 2026.
+Estado al 16 de septiembre de 2026.
 
 ## Resumen
 
@@ -24,9 +24,11 @@ Estado al 15 de septiembre de 2026.
 | 9 | Ventana y marcado de tickets de prueba | Mesa de Ayuda | Pruebas en QA |
 | 10 | Confirmar el flujo de estados | Minsur | Criterio de abiertos y anulables |
 | 11 | `ModelId` del modelo de incidentes (IM) y la regla para elegir el tipo | Minsur | Creación de incidentes |
+| 12 | Cloudflare bloquea todo adjunto con contenido binario | Admin de Cloudflare | Adjuntar archivos (REQ_04) |
 
-El punto 1 es el crítico: mientras siga abierto, la solución **no debe llegar a
-producción con usuarios reales**.
+Los puntos 1 y 12 son los críticos: mientras el 1 siga abierto la solución **no
+debe llegar a producción con usuarios reales**, y mientras el 12 siga abierto
+**REQ_04 no funciona con archivos reales**.
 
 ---
 
@@ -53,8 +55,22 @@ contra Aranda, donde el `PUT` respondió `200`.
 pide: ver el punto 2.
 
 **Qué pedir.** Publicar las dos operaciones en el producto
-`fcintgestionaranda/v1`. El spec ya está en
-`docs/iac/apim/API-FC-INT-GestionAranda.json`.
+`fcintgestionaranda/v1`. El spec de `GET /api/v9/user/{username}/detail` ya está
+en `docs/iac/apim/API-FC-INT-GestionAranda.json` y se puede publicar tal cual.
+
+**Lo que falta de nuestro lado.** Ese mismo spec declara
+`/api/v9/item/{id}` **solo con `get`**, así que el `put` de la anulación no está
+descrito y Victor no puede publicar lo que no figura. Agregarlo al spec es
+tarea del equipo de desarrollo, no del cliente. El cuerpo ya está definido y
+probado —`ArandaUpdateTicketRequest`: `StateId`, `Commentary` y los IDs del
+modelo— y respondió `200` directo contra Aranda el 15 de septiembre. El
+catálogo de causales del punto 5 (`reasonId`) no bloquea esto: el gateway hoy no
+envía ese campo.
+
+**Reproducido el 16 de septiembre de 2026.** `PUT /api/v9/item/{id}` por APIM
+devuelve `404` de APIM en 4 de 4 intentos (12:32 hora Lima) y **sin encabezado
+`CF-Ray`**: la petición muere en APIM y nunca llega a Cloudflare. Es un tema de
+publicación en APIM, no del WAF ni del desafío del punto 7.
 
 **Qué se desbloquea.** REQ_06 completo y el retiro del parche de usuario fijo
 (punto 9 de `deuda-tecnica.md`).
@@ -242,6 +258,28 @@ nuestro lado: en las ventanas de tasa alta los tres reintentos se agotan y la
 operación cae. También explica que obtener una cookie de sesión por Postman
 saliera "a veces sí, a veces no".
 
+**Muestra con Ray ID, del 16 de septiembre de 2026, solo por APIM.** 40
+peticiones entre las 12:24:48 y las 12:25:12 (hora Lima; 17:24:48–17:25:12 UTC),
+diez por cada endpoint que consume el gateway. Resultado: **10 desafíos de 40
+intentos (25 %)**, repartidos entre los cuatro endpoints.
+
+| Endpoint | Desafiadas | Ray ID y hora Lima |
+| --- | --- | --- |
+| `GET /api/v9/item/{id}` | 2 de 10 | `a3c191308c8cc98f-IAD` (12:24:51), `a3c19133b982d683-IAD` (12:24:52) |
+| `POST /api/v9/item/search` | 2 de 10 | `a3c1914c29244b25-IAD` (12:24:56), `a3c1915ecfcc332e-IAD` (12:24:59) |
+| `POST /api/v9/ci/cisbyuserandprojects` | 3 de 10 | `a3c191697a62d6d4-IAD` (12:25:00), `a3c1917b7af3071c-IAD` (12:25:03), `a3c1917eb875beb1-IAD` (12:25:04) |
+| `POST /api/v9/file/` | 3 de 10 | `a3c1919349f4e98e-IAD` (12:25:07), `a3c191a02c83c978-IAD` (12:25:08), `a3c191a36aa2f8be-IAD` (12:25:10) |
+
+El desafío toca **todos** los endpoints del MVP, en la misma ventana de 25
+segundos y con peticiones idénticas entre sí. Las no desafiadas de esa misma
+tanda respondieron `401` del origen —la página de IIS—, que es la prueba de que
+atravesaron Cloudflare: el `401` se decide en Aranda y el `403` con
+`Cf-Mitigated` en el borde.
+
+`POST /api/v9/item/` (crear caso) no se incluyó en la muestra para no registrar
+tickets reales; usa el mismo camino y la misma política, y su corte del 14 de
+septiembre es el síntoma conocido.
+
 **Qué pedir.** Incorporar el origen de APIM a la lista de permitidos de
 Cloudflare, o excluir `/ASMSAPI/api/v9/*` del desafío para ese origen.
 
@@ -351,6 +389,81 @@ el tipo incidente está deshabilitado.
 3. La regla de negocio para elegir entre RF e IM: si el colaborador lo indica en
    la conversación, si se deriva de la categoría o el servicio, o si siempre es
    uno de los dos. El gateway ya soporta ambos tipos; falta la regla.
+
+---
+
+## 12. Cloudflare bloquea todo adjunto con contenido binario
+
+**Hallazgo del 16 de septiembre de 2026.** Adjuntar falla con `403` cuando el
+cuerpo de la petición lleva contenido binario comprimido real —alta entropía—,
+que es el caso de cualquier archivo de usuario: un PDF de Office, un escaneo,
+una imagen. La respuesta es una página de bloqueo de Cloudflare
+—`Server: cloudflare`, "Sorry, you have been blocked ... divisionminera.com"—
+**sin** el encabezado `Cf-Mitigated`, así que no es el desafío del punto 7: es
+una regla del WAF que descarta la petición por su contenido.
+
+**Es determinista, no intermitente.** Depende del contenido, no del momento ni
+del camino. Cada archivo se probó dos veces con el mismo resultado:
+
+| Archivo | Tamaño | Bytes no ASCII | Resultado |
+| --- | --- | --- | --- |
+| PDF de texto plano, sin comprimir | 776 B | 0 | `200` |
+| PDF de texto plano, sin comprimir | 1,05 MB | 0 | `200` |
+| PDF con stream de texto muy repetitivo | 5,2 KB | 1 990 | `200` |
+| PDF con stream de bytes aleatorios | 1,8 KB | 588 | `403` |
+| PDF de texto variado (informe de 1 página) | 17 KB | 8 571 | `403` |
+| PDF con imagen (escaneo simulado) | 256 KB | 125 813 | `403` |
+| PDF real de oficina | 1,27 MB | sí | `403` |
+
+**No es la cantidad de bytes no ASCII**: un PDF con 1 990 bytes no ASCII pasa y
+otro con 588 se bloquea. Lo que distingue a los que pasan es que su contenido
+comprimido proviene de texto ASCII muy repetitivo; en cuanto el archivo tiene
+entropía de archivo real —texto variado, una imagen, cualquier documento
+generado por una herramienta de oficina— se bloquea. La regla exacta solo puede
+leerse desde la consola de Cloudflare.
+
+Esto descarta también **el tamaño**, y por un margen amplio: un PDF de texto
+plano de **7,78 MB** atraviesa Cloudflare y llega al servidor de Aranda
+—responde `401` de IIS, no `403` del borde—, mientras uno de **17 KB** con
+contenido de documento real se bloquea en el borde. El que se bloquea es 460
+veces más liviano. Por el gateway, con su límite de 3 MB, un PDF ASCII de
+2,79 MB sube correctamente en 6 de 8 intentos: los dos fallos son el desafío
+intermitente del punto 7, no este bloqueo.
+
+Descarta además a **APIM**: llamando directo a
+`https://mesadeayuda.divisionminera.com/ASMSAPI/api/v9/file/` el binario también
+recibe `403` de Cloudflare, mientras el ASCII llega al origen. Tampoco es del
+gateway: **el propio portal de Aranda** (`Mis casos` → `Adjuntos` →
+`Adjuntar archivo`), desde el navegador y con sesión de usuario, responde
+"No se pudo adjuntar archivo" con los mismos archivos.
+
+Los reintentos no ayudan y no se ejecutan a propósito: `ArandaRetryHandler`
+solo repite el desafío (`Cf-Mitigated`) y el `429`. Repetir un bloqueo por
+contenido daría `403` las tres veces.
+
+**Tampoco hay salida por código.** Aranda v9 solo acepta el archivo como
+`multipart/form-data` con la parte `Data0`; su API no ofrece variante en base64
+ni otra codificación que evite los bytes crudos.
+
+**Qué pedir.** Al administrador de Cloudflare de `divisionminera.com`:
+
+1. Revisar en Security → Events los eventos de bloqueo con estos Ray ID e
+   identificar la regla que dispara:
+   `a3c0ecdfdec207fb` y `a3c0ed42dbaf07fb` (16 de septiembre de 2026, 15:32 UTC,
+   `POST /ASMSAPI/api/v9/file/`).
+2. Crear una excepción (*skip*) de esa regla —o del conjunto administrado
+   completo— para `POST /ASMSAPI/api/v9/file/` y para la ruta de adjuntos del
+   portal. Es la misma regla que rompe el portal, así que el pedido no es solo
+   por la integración.
+
+**Prioridad: alta.** REQ_04 no funciona con archivos reales. Hoy solo suben
+archivos de texto ASCII o comprimidos de texto repetitivo, lo que en la práctica
+significa ningún archivo de usuario.
+
+**Cuidado con la validación anterior.** El `200` registrado el 15 de septiembre
+se obtuvo con un PDF de prueba de 776 B escrito a mano, sin streams comprimidos:
+fue un **falso positivo**. Toda prueba de adjuntos debe hacerse con un archivo
+real.
 
 ---
 

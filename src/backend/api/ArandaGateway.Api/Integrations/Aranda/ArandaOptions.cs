@@ -105,6 +105,19 @@ public sealed class ArandaOptions
     [Range(1, 3_145_728)]
     public long MaxAttachmentBytes { get; init; } = 3_145_728;
 
+    /// <summary>
+    /// Tope de la descripción de un ticket, medida ya codificada. No es un
+    /// límite de Aranda: acepta 100 000 caracteres y los devuelve intactos
+    /// (medido el 16 de septiembre de 2026). Es política del gateway, porque
+    /// <c>POST /api/tickets</c> está publicado en APIM y sin tope aceptaría un
+    /// cuerpo de cualquier tamaño. El valor de omisión deja más de diez veces
+    /// el máximo del formulario, que son 1500 caracteres.
+    /// A diferencia del asunto —400, límite real de Aranda y fijo en
+    /// <c>TicketService</c>— este se configura.
+    /// </summary>
+    [Range(1, 100_000)]
+    public int MaxDescriptionLength { get; init; } = 20_000;
+
     [Range(1, 120)]
     public int TimeoutSeconds { get; init; } = 30;
 
