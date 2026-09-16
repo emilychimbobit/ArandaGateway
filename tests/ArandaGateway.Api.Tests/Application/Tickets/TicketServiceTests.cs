@@ -196,6 +196,241 @@ public sealed class TicketServiceTests
     }
 
     [Fact]
+    public async Task CreateTicketAsync_KeepsAccentsUnescaped()
+    {
+        var client = CreateClientReadyToCreate();
+        var service = CreateService(client);
+
+        await service.CreateTicketAsync(
+            new(
+                TicketKind.ServiceRequest,
+                "Configuración de contraseña",
+                "No puedo acceder al módulo de facturación"),
+            CancellationToken.None);
+
+        Assert.Equal(
+            "Configuración de contraseña",
+            client.LastCreateRequest?.Subject);
+        Assert.Equal(
+            "No puedo acceder al módulo de facturación",
+            client.LastCreateRequest?.Description);
+    }
+
+    [Fact]
+    public async Task CreateTicketAsync_StillEscapesMarkup()
+    {
+        var client = CreateClientReadyToCreate();
+        var service = CreateService(client);
+
+        await service.CreateTicketAsync(
+            new(
+                TicketKind.ServiceRequest,
+                "Falla <b>grave</b>",
+                "Error en a & b"),
+            CancellationToken.None);
+
+        Assert.Equal(
+            "Falla &lt;b&gt;grave&lt;/b&gt;",
+            client.LastCreateRequest?.Subject);
+        Assert.Equal(
+            "Error en a &amp; b",
+            client.LastCreateRequest?.Description);
+    }
+
+    [Fact]
+    public async Task CreateTicketAsync_AcceptsSubjectAtArandaLimit()
+    {
+        var client = CreateClientReadyToCreate();
+        var service = CreateService(client);
+
+        var result = await service.CreateTicketAsync(
+            new(
+                TicketKind.ServiceRequest,
+                new string('a', 400),
+                "Description"),
+            CancellationToken.None);
+
+        Assert.Equal(TicketOperationResultStatus.Success, result.Status);
+        Assert.Equal(400, client.LastCreateRequest?.Subject.Length);
+    }
+
+    [Fact]
+    public async Task CreateTicketAsync_RejectsSubjectOverArandaLimit()
+    {
+        var client = CreateClientReadyToCreate();
+        var service = CreateService(client);
+
+        var result = await service.CreateTicketAsync(
+            new(
+                TicketKind.ServiceRequest,
+                new string('a', 401),
+                "Description"),
+            CancellationToken.None);
+
+        Assert.Equal(
+            TicketOperationResultStatus.InvalidRequest,
+            result.Status);
+        Assert.Contains("400", result.Error);
+        Assert.Null(client.LastCreateRequest);
+    }
+
+    /// <summary>
+    /// El límite de Aranda se mide sobre el asunto ya marcado con el prefijo,
+    /// que es lo que viaja: sin contarlo, un asunto al borde pasaría la
+    /// validación y Aranda lo rechazaría con 500 FailureAddItem.
+    /// </summary>
+    [Fact]
+    public async Task CreateTicketAsync_CountsSubjectPrefixAgainstTheLimit()
+    {
+        var client = CreateClientReadyToCreate();
+        var service = CreateService(
+            client,
+            options: CreateOptions(subjectPrefix: "[PRUEBA BOT]"));
+
+        var result = await service.CreateTicketAsync(
+            new(
+                TicketKind.ServiceRequest,
+                new string('a', 400 - "[PRUEBA BOT] ".Length + 1),
+                "Description"),
+            CancellationToken.None);
+
+        Assert.Equal(
+            TicketOperationResultStatus.InvalidRequest,
+            result.Status);
+        Assert.Null(client.LastCreateRequest);
+    }
+
+    /// <summary>
+    /// El escape multiplica por cuatro o más cada carácter marcado, así que el
+    /// límite se mide sobre el texto ya codificado y no sobre el que escribió
+    /// el colaborador: 150 caracteres —el máximo del formulario— pasan a ocupar
+    /// 600 y Aranda los rechazaría con 500.
+    /// </summary>
+    [Fact]
+    public async Task CreateTicketAsync_MeasuresTheLimitAfterEncoding()
+    {
+        var client = CreateClientReadyToCreate();
+        var service = CreateService(client);
+
+        var result = await service.CreateTicketAsync(
+            new(
+                TicketKind.ServiceRequest,
+                new string('<', 150),
+                "Description"),
+            CancellationToken.None);
+
+        Assert.Equal(
+            TicketOperationResultStatus.InvalidRequest,
+            result.Status);
+        Assert.Null(client.LastCreateRequest);
+    }
+
+    [Fact]
+    public async Task CreateTicketAsync_AcceptsDescriptionAtConfiguredLimit()
+    {
+        var client = CreateClientReadyToCreate();
+        var service = CreateService(client);
+
+        var result = await service.CreateTicketAsync(
+            new(
+                TicketKind.ServiceRequest,
+                "Subject",
+                new string('a', 20_000)),
+            CancellationToken.None);
+
+        Assert.Equal(TicketOperationResultStatus.Success, result.Status);
+        Assert.Equal(20_000, client.LastCreateRequest?.Description.Length);
+    }
+
+    [Fact]
+    public async Task CreateTicketAsync_RejectsDescriptionOverConfiguredLimit()
+    {
+        var client = CreateClientReadyToCreate();
+        var service = CreateService(client);
+
+        var result = await service.CreateTicketAsync(
+            new(
+                TicketKind.ServiceRequest,
+                "Subject",
+                new string('a', 20_001)),
+            CancellationToken.None);
+
+        Assert.Equal(
+            TicketOperationResultStatus.InvalidRequest,
+            result.Status);
+        Assert.Contains("20000", result.Error);
+        Assert.Null(client.LastCreateRequest);
+    }
+
+    /// <summary>
+    /// El tope de la descripción es política del gateway, no un límite de
+    /// Aranda —que acepta 100 000 caracteres—, así que se configura.
+    /// </summary>
+    [Fact]
+    public async Task CreateTicketAsync_HonoursConfiguredDescriptionLimit()
+    {
+        var client = CreateClientReadyToCreate();
+        var service = CreateService(
+            client,
+            options: CreateOptions(maxDescriptionLength: 100));
+
+        var result = await service.CreateTicketAsync(
+            new(
+                TicketKind.ServiceRequest,
+                "Subject",
+                new string('a', 101)),
+            CancellationToken.None);
+
+        Assert.Equal(
+            TicketOperationResultStatus.InvalidRequest,
+            result.Status);
+        Assert.Contains("100", result.Error);
+        Assert.Null(client.LastCreateRequest);
+    }
+
+    /// <summary>
+    /// Igual que el asunto: el escape puede multiplicar cada carácter, así que
+    /// el tope se mide sobre el texto ya codificado.
+    /// </summary>
+    [Fact]
+    public async Task CreateTicketAsync_MeasuresDescriptionLimitAfterEncoding()
+    {
+        var client = CreateClientReadyToCreate();
+        var service = CreateService(
+            client,
+            options: CreateOptions(maxDescriptionLength: 100));
+
+        var result = await service.CreateTicketAsync(
+            new(
+                TicketKind.ServiceRequest,
+                "Subject",
+                new string('<', 30)),
+            CancellationToken.None);
+
+        Assert.Equal(
+            TicketOperationResultStatus.InvalidRequest,
+            result.Status);
+        Assert.Null(client.LastCreateRequest);
+    }
+
+    [Fact]
+    public async Task CancelTicketAsync_KeepsAccentsUnescapedInReason()
+    {
+        var client = CreateClientWithOwnedTicket(
+            updateResult: new() { ItemVersion = 2, Result = true });
+        var service = CreateService(client);
+
+        await service.CancelTicketAsync(
+            "CASE-154",
+            new("Ya se resolvió solo", true),
+            CancellationToken.None);
+
+        Assert.Equal(
+            "Ya se resolvió solo",
+            client.LastUpdateRequest?.Commentary);
+    }
+
+    [Fact]
     public async Task CreateTicketAsync_FailsWhenCatalogsAreMissing()
     {
         var service = CreateService(
@@ -597,11 +832,13 @@ public sealed class TicketServiceTests
 
     private static ArandaOptions CreateOptions(
         ArandaUserOverrideOptions? userOverride = null,
-        string? subjectPrefix = null) =>
+        string? subjectPrefix = null,
+        int maxDescriptionLength = 20_000) =>
         new()
         {
             UserOverride = userOverride,
             SubjectPrefix = subjectPrefix,
+            MaxDescriptionLength = maxDescriptionLength,
             BaseUrl = new("https://aranda.example/"),
             ApiKey = "Bearer test",
             ProjectId = 1,
@@ -619,6 +856,17 @@ public sealed class TicketServiceTests
             ServiceRequestModelId = 12,
             ServiceRequestInitialStateId = 13,
             ServiceRequestCancellationStateId = 91
+        };
+
+    private static StubArandaClient CreateClientReadyToCreate() =>
+        new()
+        {
+            User = CreateUser(),
+            CreatedTicket = new()
+            {
+                Id = 200,
+                IdByProject = "RF-200"
+            }
         };
 
     private static StubArandaClient CreateClientWithOwnedTicket(

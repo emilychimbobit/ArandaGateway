@@ -187,6 +187,35 @@ de Aranda antes de promover la solución a producción. En una actualización,
 Aranda exige `RegistryTypeId` y acepta `UnitId = 0` para conservar la sede
 existente.
 
+#### Límites de longitud de los campos
+
+**El asunto no puede pasar de 400 caracteres.** Con 401 Aranda responde `500`
+con `FailureAddItem`, sin truncar ni decir qué campo sobra. Medido el 16 de
+septiembre de 2026 por bisección entre 313 y 4000: 400 se guarda intacto, 401
+falla. El límite cuenta **caracteres, no bytes** — un asunto de 400 con tildes
+y `ñ` entra completo.
+
+`CreateTicketAsync` lo valida y devuelve `400` con un mensaje claro en lugar de
+dejar que Aranda tire el `500`. La validación mide el asunto **ya marcado con
+el prefijo y ya codificado**, que es lo que realmente viaja.
+
+**Aranda no limita la descripción:** 100 000 caracteres vuelven completos. El
+tope de `Aranda:MaxDescriptionLength` —20 000 por omisión— es política del
+gateway, no un dato de Aranda: `POST /api/tickets` está publicado en APIM y sin
+tope aceptaría un cuerpo de cualquier tamaño. Deja más de diez veces los 1500
+del formulario. Por eso se configura, mientras el asunto va fijo en el código:
+sus 400 son un límite real de la plataforma, no una decisión nuestra.
+
+El texto se escapa con un `HtmlEncoder` restringido a `BasicLatin` y
+`Latin1Supplement`, no con `HtmlEncoder.Default`. El de omisión escapa todo lo
+que no sea ASCII, así que cada tilde ocupaba seis caracteres (`&#xF3;`) y Mesa
+de Ayuda las veía crudas en la consola: los tickets `RF-59352` y `RF-59349`
+quedaron registrados como `Tercera validaci&#xF3;n`. Además ese inflado
+consumía el presupuesto de 400: un asunto de 150 con 48 acentos o más lo
+rompía. Se sigue escapando `<`, `>`, `&`, `"` y `'`.
+
+Con esto, los 150 caracteres de asunto del formulario entran con margen.
+
 #### Parche temporal: usuario fijo (`Aranda:UserOverride`)
 
 La API de usuarios de Aranda todavía no es accesible desde el gateway, así que
@@ -258,6 +287,36 @@ desafío de Cloudflare ya no bloquea las demás operaciones: se reintenta.
 El `200` de `POST /api/tickets/{caseNumber}/attachments` registrado el 15 de
 septiembre fue un falso positivo: se probó con un PDF de texto plano de 776 B.
 Los adjuntos se prueban con archivos reales.
+
+#### Limpiar los tickets que dejan las pruebas
+
+Cada `POST /api/tickets` de prueba deja un ticket real en Mesa de Ayuda, y la
+anulación por el gateway responde `502` con `ARANDA_404` porque APIM publica
+solo `get` en `/api/v9/item/{id}`. Se cierran yendo directo a Aranda:
+
+```powershell
+$env:ARANDA_DIRECT_URL = 'https://mesadeayuda.divisionminera.com/ASMSAPI'
+$env:ARANDA_TOKEN      = 'Bearer <token>'
+
+node tools/anular-tickets-prueba.mjs RF-59557 RF-59468
+```
+
+El script lee cada ticket antes de anularlo y toma de ahí el `itemVersion` y
+los ids del caso: con un `itemVersion` que no es el vigente Aranda rechaza la
+actualización, y los tickets ya tocados por Mesa de Ayuda no están en la
+versión 1. Después del `PUT` vuelve a leer el estado, porque un `200` por sí
+solo no prueba que haya cambiado. No necesita cookie.
+
+**Tiene que ser Node.** Desde una máquina de desarrollo, `curl`, PowerShell y
+`HttpClient` de .NET reciben el Managed Challenge de Cloudflare en el 100% de
+los intentos; Node pasa porque comparte fingerprint TLS con `PostmanRuntime`,
+que es el único cliente que el borde deja entrar. Cambiar solo el `User-Agent`
+no alcanza: PowerShell con UA de Postman también es desafiado. El desafío
+igual es intermitente, así que el script reintenta.
+
+El 16 de septiembre de 2026 se cerraron así los ocho tickets `[PRUEBA BOT]` que
+quedaban abiertos (RF-59120, RF-59122, RF-59276, RF-59349, RF-59352, RF-59423,
+RF-59468 y RF-59557).
 
 ### Pendientes
 

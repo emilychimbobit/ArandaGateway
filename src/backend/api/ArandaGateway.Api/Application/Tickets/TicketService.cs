@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Encodings.Web;
+using System.Text.Unicode;
 using ArandaGateway.Api.Contracts.Tickets;
 using ArandaGateway.Api.Identity;
 using ArandaGateway.Api.Integrations.Aranda;
@@ -47,6 +48,30 @@ public sealed class TicketService(
             "Cancelado"
         };
 
+    /// <summary>
+    /// Aranda acepta asuntos de hasta 400 caracteres. Con 401 responde
+    /// <c>500</c> con <c>FailureAddItem</c>: no trunca ni dice qué campo
+    /// sobra. Medido el 16 de septiembre de 2026 contra el entorno real,
+    /// acotando por bisección entre 313 y 4000; 400 se guarda intacto y 401
+    /// falla. La descripción no necesita tope: 100 000 caracteres vuelven
+    /// completos.
+    /// </summary>
+    private const int MaxSubjectLength = 400;
+
+    /// <summary>
+    /// Escapa lo que hace daño en HTML y nada más.
+    /// <see cref="HtmlEncoder.Default"/> escapa además todo lo que no sea
+    /// ASCII, así que cada tilde ocupaba seis caracteres (<c>&amp;#xF3;</c>) y
+    /// Mesa de Ayuda las veía crudas en la consola. Con
+    /// <see cref="UnicodeRanges.Latin1Supplement"/> permitido el texto en
+    /// español viaja tal cual, y el asunto deja de inflarse contra el límite
+    /// de <see cref="MaxSubjectLength"/>.
+    /// </summary>
+    private static readonly HtmlEncoder TextEncoder = HtmlEncoder.Create(
+        new TextEncoderSettings(
+            UnicodeRanges.BasicLatin,
+            UnicodeRanges.Latin1Supplement));
+
     private static readonly HashSet<string> AllowedExtensions =
         new(StringComparer.OrdinalIgnoreCase)
         {
@@ -77,6 +102,26 @@ public sealed class TicketService(
                 "El asunto y la descripción son obligatorios.");
         }
 
+        // Los límites se miden sobre lo que realmente viaja: con el prefijo
+        // puesto y ya codificado. Medirlos sobre el texto del colaborador
+        // dejaría pasar asuntos que Aranda rechaza con un 500 sin explicación.
+        var subject = TextEncoder.Encode(
+            ApplySubjectPrefix(request.Subject.Trim()));
+        if (subject.Length > MaxSubjectLength)
+        {
+            return Invalid<RespuestaCrearTicket>(
+                $"El asunto supera el máximo de {MaxSubjectLength} " +
+                "caracteres que acepta Aranda.");
+        }
+
+        var description = TextEncoder.Encode(request.Description.Trim());
+        if (description.Length > arandaOptions.MaxDescriptionLength)
+        {
+            return Invalid<RespuestaCrearTicket>(
+                "La descripción supera el máximo de " +
+                $"{arandaOptions.MaxDescriptionLength} caracteres.");
+        }
+
         if (!TryGetTypeConfiguration(request.Type, out var configuration))
         {
             return ConfigurationMissing<RespuestaCrearTicket>();
@@ -96,8 +141,7 @@ public sealed class TicketService(
                 CategoryId = configuration.CategoryId,
                 CustomerId = user.Id,
                 ApplicantId = user.Id,
-                Description = HtmlEncoder.Default.Encode(
-                    request.Description.Trim()),
+                Description = description,
                 ItemType = configuration.ItemType,
                 ImpactId = configuration.ImpactId,
                 UrgencyId = configuration.UrgencyId,
@@ -109,8 +153,7 @@ public sealed class TicketService(
                 StateId = configuration.InitialStateId,
                 AuthorId = arandaOptions.AuthorId,
                 GroupId = configuration.GroupId,
-                Subject = HtmlEncoder.Default.Encode(
-                    ApplySubjectPrefix(request.Subject.Trim()))
+                Subject = subject
             },
             cancellationToken);
 
@@ -271,7 +314,7 @@ public sealed class TicketService(
                 RegistryTypeId = registryTypeId!.Value,
                 ServiceId = ticket.ServiceId,
                 StateId = cancellationStateId!.Value,
-                Commentary = HtmlEncoder.Default.Encode(
+                Commentary = TextEncoder.Encode(
                     request.Reason.Trim())
             },
             cancellationToken);
