@@ -36,7 +36,7 @@ variables:
     value: 'DEV'
 - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/qa') }}:
   - name: webAppName
-    value: 'ase-gestionaranda-qa'
+    value: 'ase-gestionaranda-qas'
   - name: deploymentEnvironment
     value: 'QA'
 - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
@@ -110,7 +110,7 @@ steps:
 
         : "${ARANDA_BASE_URL:?Falta la variable ARANDA_BASE_URL en el grupo de variables}"
         : "${ARANDA_API_KEY:?Falta la variable secreta ARANDA_API_KEY en el grupo de variables}"
-        : "${GATEWAY_API_KEY:?Falta la variable secreta GATEWAY_API_KEY en el grupo de variables}"
+        : "${ARANDA_AUTHCOOKIE:?Falta la variable secreta ARANDA_AUTHCOOKIE en el grupo de variables}"
 
         echo "Configurando App Service como Linux Code (.NET 10)..."
         az webapp config set \
@@ -127,7 +127,7 @@ steps:
           --settings \
             "Aranda__BaseUrl=$ARANDA_BASE_URL" \
             "Aranda__ApiKey=$ARANDA_API_KEY" \
-            "Gateway__ApiKey=$GATEWAY_API_KEY" \
+            "Aranda__AuthCookie=$ARANDA_AUTHCOOKIE" \
           --output none
 
         az webapp deploy \
@@ -143,7 +143,7 @@ steps:
       ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
       ARANDA_BASE_URL: $(ARANDA_BASE_URL)
       ARANDA_API_KEY: $(ARANDA_API_KEY)
-      GATEWAY_API_KEY: $(GATEWAY_API_KEY)
+      ARANDA_AUTHCOOKIE: $(ARANDA_AUTHCOOKIE)
       AZURE_RESOURCE_GROUP: $(resourceGroup)
       AZURE_WEBAPP_NAME: $(webAppName)
       PACKAGE_PATH: $(packagePath)
