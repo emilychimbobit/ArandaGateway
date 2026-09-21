@@ -7,7 +7,7 @@ esperan una publicación, una credencial, un dato de catálogo o una decisión.
 Lo que sí depende del equipo de desarrollo está en
 [`deuda-tecnica.md`](deuda-tecnica.md).
 
-Estado al 16 de septiembre de 2026.
+Estado al 21 de septiembre de 2026.
 
 ## Resumen
 
@@ -55,15 +55,17 @@ contra Aranda, donde el `PUT` respondió `200`.
 pide: ver el punto 2.
 
 **Qué pedir.** Publicar las dos operaciones en el producto
-`fcintgestionaranda/v1`. El spec de `GET /api/v9/user/{username}/detail` ya está
-en `docs/iac/apim/API-FC-INT-GestionAranda.json` y se puede publicar tal cual.
+`fcintgestionaranda/v1`. Las dos ya están descritas en
+`docs/iac/apim/API-FC-INT-GestionAranda.json` (v1.1.0) y se pueden publicar tal
+cual: `ObtenerDetalleUsuario` estaba desde el principio y `ActualizarCaso` se
+agregó el 21 de septiembre de 2026.
 
-**Lo que falta de nuestro lado.** Ese mismo spec declara
-`/api/v9/item/{id}` **solo con `get`**, así que el `put` de la anulación no está
-descrito y Victor no puede publicar lo que no figura. Agregarlo al spec es
-tarea del equipo de desarrollo, no del cliente. El cuerpo ya está definido y
-probado —`ArandaUpdateTicketRequest`: `StateId`, `Commentary` y los IDs del
-modelo— y respondió `200` directo contra Aranda el 15 de septiembre. El
+**Lo que faltaba de nuestro lado, ya resuelto el 21 de septiembre de 2026.** Ese
+spec declaraba `/api/v9/item/{id}` **solo con `get`**, así que el `put` de la
+anulación no estaba descrito y Victor no podía publicar lo que no figuraba. Ya
+está: la operación `ActualizarCaso` y los esquemas
+`ArandaUpdateTicketRequest` / `ArandaUpdateTicketResult` están en el spec, con
+el cuerpo que respondió `200` directo contra Aranda el 15 de septiembre. El
 catálogo de causales del punto 5 (`reasonId`) no bloquea esto: el gateway hoy no
 envía ese campo.
 

@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "API-NE-GestionAranda (Gateway)",
-    "description": "Puerta de enlace de la aplicación (App Service .NET) para Aranda Service Management. Expone solo las capacidades del MVP: crear ticket, listar tickets abiertos, consultar detalle, anular, adjuntar archivos y revisar los equipos asignados. La identidad del colaborador se envía temporalmente en X-Collaborator-Username hasta integrar Microsoft Entra ID.",
-    "version": "1.0.0"
+    "description": "Puerta de enlace de la aplicación (App Service .NET) para Aranda Service Management. Expone solo las capacidades del MVP: consultar la clasificación fija con la que se registra, crear ticket, listar tickets abiertos, consultar detalle, anular, adjuntar archivos y revisar los equipos asignados. La identidad del colaborador se envía temporalmente en X-Collaborator-Username hasta integrar Microsoft Entra ID. Las rutas /admin/* del App Service no se publican acá a propósito: entregan la cookie de sesión viva de Aranda.",
+    "version": "1.1.0"
   },
   "servers": [
     {
@@ -340,11 +340,15 @@
           },
           "subject": {
             "type": "string",
-            "description": "Asunto del ticket"
+            "minLength": 1,
+            "maxLength": 400,
+            "description": "Asunto del ticket. Los 400 caracteres son el límite real de Aranda, medido el 16 de septiembre de 2026: con 401 responde 500 sin decir qué campo sobra. La gateway lo mide ya con el prefijo puesto y codificado, así que un asunto cercano al tope puede rechazarse con 400."
           },
           "description": {
             "type": "string",
-            "description": "Descripción del ticket"
+            "minLength": 1,
+            "maxLength": 20000,
+            "description": "Descripción del ticket. Aranda no la limita —acepta 100 000 caracteres—; los 20 000 son política de la gateway y se configuran en Aranda:MaxDescriptionLength."
           }
         }
       },
