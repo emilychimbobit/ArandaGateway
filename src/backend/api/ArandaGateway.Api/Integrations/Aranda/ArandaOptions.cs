@@ -74,6 +74,14 @@ public sealed class ArandaOptions
 
     public long? GroupId { get; init; }
 
+    /// <summary>
+    /// Nombres de la clasificación fija que acompañan a
+    /// <see cref="ServiceId"/>, <see cref="ImpactId"/>,
+    /// <see cref="UrgencyId"/>, <see cref="CategoryId"/> y
+    /// <see cref="GroupId"/>. Ver <see cref="ArandaClassificationOptions"/>.
+    /// </summary>
+    public ArandaClassificationOptions Classification { get; init; } = new();
+
     public long? RegistryTypeId { get; init; }
 
     public long? UnitId { get; init; }

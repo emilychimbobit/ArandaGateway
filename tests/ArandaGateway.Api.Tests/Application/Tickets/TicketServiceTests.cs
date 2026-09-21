@@ -142,6 +142,58 @@ public sealed class TicketServiceTests
         Assert.Equal("Subject", client.LastCreateRequest?.Subject);
     }
 
+    /// <summary>
+    /// El agente arma el resumen de confirmacion con esta clasificacion en vez
+    /// de quemarla en el topic, para que no se desincronice si cambia la
+    /// configuracion del gateway. Son los cinco valores fijos del REQ_04.
+    /// </summary>
+    [Fact]
+    public void GetClassification_ReturnsTheConfiguredNames()
+    {
+        var service = CreateService(new StubArandaClient());
+
+        var clasificacion = service.GetClassification();
+
+        Assert.Equal("Por categorizar", clasificacion.Servicio);
+        Assert.Equal("Bajo", clasificacion.Impacto);
+        Assert.Equal("Bajo", clasificacion.Urgencia);
+        Assert.Equal("Ticket creado por bot", clasificacion.Categoria);
+        Assert.Equal("Mesa de Ayuda", clasificacion.Grupo);
+    }
+
+    [Fact]
+    public void GetClassification_HonoursOverriddenNames()
+    {
+        var service = CreateService(
+            new StubArandaClient(),
+            options: CreateOptions(
+                classification: new()
+                {
+                    Service = "Otro servicio",
+                    Group = "Otro grupo"
+                }));
+
+        var clasificacion = service.GetClassification();
+
+        Assert.Equal("Otro servicio", clasificacion.Servicio);
+        Assert.Equal("Otro grupo", clasificacion.Grupo);
+    }
+
+    [Fact]
+    public async Task CreateTicketAsync_EchoesTheClassificationApplied()
+    {
+        var client = CreateClientReadyToCreate();
+        var service = CreateService(client);
+
+        var result = await service.CreateTicketAsync(
+            new(TicketKind.ServiceRequest, "Subject", "Description"),
+            CancellationToken.None);
+
+        Assert.Equal(
+            service.GetClassification(),
+            result.Value?.Clasificacion);
+    }
+
     [Fact]
     public async Task CreateTicketAsync_WithSubjectPrefix_PrependsIt()
     {
@@ -833,12 +885,14 @@ public sealed class TicketServiceTests
     private static ArandaOptions CreateOptions(
         ArandaUserOverrideOptions? userOverride = null,
         string? subjectPrefix = null,
-        int maxDescriptionLength = 20_000) =>
+        int maxDescriptionLength = 20_000,
+        ArandaClassificationOptions? classification = null) =>
         new()
         {
             UserOverride = userOverride,
             SubjectPrefix = subjectPrefix,
             MaxDescriptionLength = maxDescriptionLength,
+            Classification = classification ?? new(),
             BaseUrl = new("https://aranda.example/"),
             ApiKey = "Bearer test",
             ProjectId = 1,

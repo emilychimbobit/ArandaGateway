@@ -1,4 +1,6 @@
 using System.Net;
+using System.Net.Http.Json;
+using ArandaGateway.Api.Contracts.Tickets;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
@@ -24,6 +26,26 @@ public sealed class AnonymousAccessTests
 
         Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    /// <summary>
+    /// "clasificacion" es un segmento literal y debe ganarle a
+    /// "/api/tickets/{caseNumber}", que lo tomaria por un numero de caso y
+    /// respondería 400 por falta de colaborador.
+    /// </summary>
+    [Fact]
+    public async Task ClassificationEndpoint_WinsOverTheCaseNumberRoute()
+    {
+        using var response = await client.GetAsync(
+            "/api/tickets/clasificacion",
+            CancellationToken.None);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var clasificacion = await response.Content
+            .ReadFromJsonAsync<RespuestaClasificacionTicket>(
+                CancellationToken.None);
+        Assert.Equal("Por categorizar", clasificacion?.Servicio);
+        Assert.Equal("Mesa de Ayuda", clasificacion?.Grupo);
     }
 
     [Fact]

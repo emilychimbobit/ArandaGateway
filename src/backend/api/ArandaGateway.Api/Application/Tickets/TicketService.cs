@@ -158,7 +158,21 @@ public sealed class TicketService(
             cancellationToken);
 
         return Success(
-            new RespuestaCrearTicket(created.IdByProject, "Creado"));
+            new RespuestaCrearTicket(
+                created.IdByProject,
+                "Creado",
+                GetClassification()));
+    }
+
+    public RespuestaClasificacionTicket GetClassification()
+    {
+        var clasificacion = arandaOptions.Classification;
+        return new(
+            clasificacion.Service,
+            clasificacion.Impact,
+            clasificacion.Urgency,
+            clasificacion.Category,
+            clasificacion.Group);
     }
 
     public async Task<

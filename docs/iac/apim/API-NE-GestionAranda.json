@@ -93,6 +93,26 @@
         }
       }
     },
+    "/api/tickets/clasificacion": {
+      "get": {
+        "tags": ["Tickets"],
+        "operationId": "ObtenerClasificacionTicket",
+        "summary": "Clasificación fija con la que se crea el ticket (REQ_04)",
+        "description": "Alimenta el resumen que el agente muestra antes de confirmar el registro. No consulta Aranda ni requiere colaborador.",
+        "responses": {
+          "200": {
+            "description": "Clasificación vigente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RespuestaClasificacionTicket"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/tickets/{caseNumber}": {
       "get": {
         "tags": ["Tickets"],
@@ -336,6 +356,35 @@
           },
           "status": {
             "type": "string"
+          },
+          "clasificacion": {
+            "$ref": "#/components/schemas/RespuestaClasificacionTicket"
+          }
+        }
+      },
+      "RespuestaClasificacionTicket": {
+        "type": "object",
+        "description": "Clasificación fija del REQ_04 aplicada al ticket.",
+        "properties": {
+          "servicio": {
+            "type": "string",
+            "example": "Por categorizar"
+          },
+          "impacto": {
+            "type": "string",
+            "example": "Bajo"
+          },
+          "urgencia": {
+            "type": "string",
+            "example": "Bajo"
+          },
+          "categoria": {
+            "type": "string",
+            "example": "Ticket creado por bot"
+          },
+          "grupo": {
+            "type": "string",
+            "example": "Mesa de Ayuda"
           }
         }
       },
