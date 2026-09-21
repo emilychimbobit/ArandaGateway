@@ -8,6 +8,13 @@ public interface ITicketService
         SolicitudCrearTicket request,
         CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Clasificación fija con la que se creará el ticket. No consulta Aranda:
+    /// sale de la configuración, y por eso sirve para el resumen que el agente
+    /// muestra antes de confirmar el registro.
+    /// </summary>
+    RespuestaClasificacionTicket GetClassification();
+
     Task<TicketOperationResult<IReadOnlyList<RespuestaResumenTicket>>>
         ListOpenTicketsAsync(CancellationToken cancellationToken);
 

@@ -180,6 +180,24 @@ grupo `Mesa de Ayuda` (`2`), modelo (`17`), estado inicial `Registrado` (`59`)
 y estado de cancelación `Cancelado` (`61`). Este servicio solo está disponible
 para requerimientos (`itemType = 4`), no para incidentes (`itemType = 1`).
 
+#### La clasificación fija no se quema en el agente
+
+El DEF manda mostrar un resumen y confirmarlo antes de registrar
+(REQ_04, paso 6), y QA pidió que ese resumen incluya los cinco valores de la
+clasificación. El agente no los tiene escritos en el topic: los pide al
+gateway, para que no se desincronicen si cambia la configuración de arriba.
+
+- `GET /api/tickets/clasificacion` los devuelve **antes** de crear, que es
+  cuando el agente arma el resumen. No consulta Aranda ni exige colaborador.
+- `POST /api/tickets` los repite en el campo `clasificacion` de la respuesta,
+  para que el mensaje de cierre diga lo que de verdad se aplicó.
+
+Ambos leen la misma sección `Aranda:Classification`, que lleva los nombres
+legibles de los IDs de arriba. Los nombres van aparte de los IDs porque Aranda
+no los devuelve al crear. Nada valida que un par (ID, nombre) coincida con el
+catálogo real: **si se cambia un ID hay que cambiar su nombre en el mismo
+despliegue.**
+
 La creación exige `RegistryTypeId` y `UnitId`. Para QA se configuraron
 provisionalmente `Correo` (`4608`) y `Minsur Lima` (`5875`), validados mediante
 la prueba controlada `RF-56025`. Estos valores deben confirmarse con el equipo

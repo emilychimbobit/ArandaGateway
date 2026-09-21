@@ -31,6 +31,21 @@ public static class TicketEndpoints
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound);
 
+        // Va antes de "/{caseNumber}" por legibilidad; el enrutamiento de
+        // ASP.NET Core ya prefiere el segmento literal sobre el parámetro.
+        group
+            .MapGet("/clasificacion", ObtenerClasificacion)
+            .WithName("ObtenerClasificacionTicket")
+            .WithSummary(
+                "Devuelve la clasificación fija con la que se crea el ticket")
+            .WithDescription(
+                "Implementa el resumen previo a la confirmación del REQ_04. " +
+                "El agente lo consulta para mostrar servicio, impacto, " +
+                "urgencia, categoría y grupo antes de registrar, en vez de " +
+                "tenerlos quemados en el topic. No consulta Aranda ni " +
+                "requiere colaborador.")
+            .Produces<RespuestaClasificacionTicket>();
+
         group
             .MapGet("/{caseNumber}", ObtenerDetalleTicketAsync)
             .WithName("ObtenerDetalleTicket")
@@ -88,6 +103,10 @@ public static class TicketEndpoints
                 value,
                 statusCode: StatusCodes.Status201Created));
     }
+
+    private static IResult ObtenerClasificacion(
+        ITicketService ticketService) =>
+        Results.Ok(ticketService.GetClassification());
 
     private static async Task<IResult> ListarTicketsAbiertosAsync(
         [FromHeader(Name = HeaderCurrentCollaborator.HeaderName)]
