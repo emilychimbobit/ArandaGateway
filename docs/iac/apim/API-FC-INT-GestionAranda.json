@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "API-FC-INT-GestionAranda (Backend Aranda v9)",
-    "description": "Definición de las operaciones del API externo de Aranda Service Management (Electrodata) que consume la gateway para el MVP: obtener el detalle del usuario, crear caso, buscar casos, obtener caso, adjuntar archivo y consultar los CI del inventario asignados a un usuario. Se registra en APIM como backend. Autenticación mediante el encabezado X-Authorization, cuyo valor ya incluye el prefijo Bearer. No exponer este API directamente al consumidor final.",
-    "version": "1.0.0"
+    "description": "Definición de las operaciones del API externo de Aranda Service Management (Electrodata) que consume la gateway para el MVP: obtener el detalle del usuario, crear caso, buscar casos, obtener caso, actualizar caso (con lo que se anula), adjuntar archivo y consultar los CI del inventario asignados a un usuario. Se registra en APIM como backend. Autenticación mediante el encabezado X-Authorization, cuyo valor ya incluye el prefijo Bearer. No exponer este API directamente al consumidor final. Dos operaciones están descritas acá pero todavía no publicadas en el producto fcintgestionaranda/v1, y por eso responden 404 de APIM: ObtenerDetalleUsuario y ActualizarCaso.",
+    "version": "1.1.0"
   },
   "servers": [
     {
@@ -169,6 +169,49 @@
                 }
               }
             }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Casos"],
+        "operationId": "ActualizarCaso",
+        "summary": "Actualiza un caso; la gateway la usa para anular",
+        "description": "Único camino para anular un caso (REQ_06): se envía el estado de cancelación en stateId y el motivo del colaborador en commentary. La gateway lee el caso con ObtenerCaso justo antes, porque itemVersion debe ser el vigente —con uno viejo Aranda rechaza la actualización— y porque los ids del modelo se toman del caso, no de la configuración. Probado directo contra Aranda el 15 de septiembre de 2026 (RF-58496 y RF-58497 respondieron 200). Por APIM devuelve 404 porque esta operación todavía no está publicada en el producto fcintgestionaranda/v1.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Identificador interno del caso en Aranda, el mismo de ObtenerCaso. No es el número de caso visible (idByProject).",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArandaUpdateTicketRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Actualización aceptada. Un 200 por sí solo no prueba que el estado haya cambiado: hay que confirmarlo con result y releyendo el caso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArandaUpdateTicketResult"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Aranda rechazó la actualización, por ejemplo con un itemVersion que no es el vigente."
           }
         }
       }
@@ -358,6 +401,82 @@
         "properties": {
           "id": { "type": "integer", "format": "int64" },
           "idByProject": { "type": "string" }
+        }
+      },
+      "ArandaUpdateTicketRequest": {
+        "type": "object",
+        "description": "Cuerpo de ActualizarCaso. Los ids del modelo no se inventan ni se leen de la configuración: se copian del caso que devuelve ObtenerCaso, porque un caso ya tocado por Mesa de Ayuda puede tener otros.",
+        "required": [
+          "categoryId",
+          "itemType",
+          "itemVersion",
+          "modelId",
+          "projectId",
+          "registryTypeId",
+          "serviceId",
+          "stateId",
+          "commentary"
+        ],
+        "properties": {
+          "categoryId": { "type": "integer", "format": "int64" },
+          "consoleType": { "type": "string", "default": "specialist" },
+          "itemType": { "type": "integer", "format": "int64" },
+          "itemVersion": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Versión vigente del caso, tomada de ObtenerCaso en la misma operación. Con una versión que no es la actual Aranda rechaza la actualización."
+          },
+          "modelId": { "type": "integer", "format": "int64" },
+          "projectId": { "type": "integer", "format": "int64" },
+          "registryTypeId": { "type": "integer", "format": "int64" },
+          "serviceId": { "type": "integer", "format": "int64" },
+          "stateId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Estado destino. Para anular un requerimiento del modelo 17 es Cancelado (61)."
+          },
+          "commentary": {
+            "type": "string",
+            "description": "Motivo que escribió el colaborador, codificado en HTML por la gateway."
+          },
+          "unitId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Aranda acepta 0 en una actualización para conservar la sede existente."
+          },
+          "listAdditionalField": {
+            "type": "array",
+            "items": { "type": "object" }
+          }
+        },
+        "example": {
+          "categoryId": 988,
+          "consoleType": "specialist",
+          "itemType": 4,
+          "itemVersion": 1,
+          "modelId": 17,
+          "projectId": 1,
+          "registryTypeId": 4608,
+          "serviceId": 51,
+          "stateId": 61,
+          "commentary": "Ya no necesito el equipo.",
+          "unitId": 0,
+          "listAdditionalField": []
+        }
+      },
+      "ArandaUpdateTicketResult": {
+        "type": "object",
+        "required": ["itemVersion", "result"],
+        "properties": {
+          "itemVersion": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Versión resultante tras la actualización."
+          },
+          "result": {
+            "type": "boolean",
+            "description": "La gateway trata false como fallo aunque el HTTP sea 200."
+          }
         }
       },
       "ArandaSearchTicketsRequest": {
