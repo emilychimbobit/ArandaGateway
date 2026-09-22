@@ -823,6 +823,39 @@ public sealed class TicketServiceTests
     }
 
     [Fact]
+    public async Task UploadAttachmentAsync_InfersPngWhenFileNameHasNoExtension()
+    {
+        var client = CreateClientWithOwnedTicket(
+            uploadResult:
+            [
+                new()
+                {
+                    FileName = "pasted-image.png",
+                    Result = true
+                }
+            ]);
+        var service = CreateService(client);
+        await using var content = new MemoryStream(
+            [137, 80, 78, 71, 13, 10, 26, 10, 1]);
+
+        var result = await service.UploadAttachmentAsync(
+            "CASE-154",
+            new(
+                "2ab662b2-8aa2-4616-9972-f6c24b820c45",
+                "application/pdf",
+                content.Length,
+                content,
+                null),
+            CancellationToken.None);
+
+        Assert.Equal(TicketOperationResultStatus.Success, result.Status);
+        Assert.Equal(
+            "2ab662b2-8aa2-4616-9972-f6c24b820c45.png",
+            client.LastUploadRequest?.FileName);
+        Assert.Equal("image/png", client.LastUploadRequest?.ContentType);
+    }
+
+    [Fact]
     public async Task UploadAttachmentAsync_UploadsToOwnedTicket()
     {
         var client = CreateClientWithOwnedTicket(

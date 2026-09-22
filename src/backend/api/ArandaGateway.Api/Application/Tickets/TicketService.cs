@@ -373,6 +373,16 @@ public sealed class TicketService(
 
         var fileName = Path.GetFileName(attachment.FileName);
         var extension = Path.GetExtension(fileName);
+        var contentType = attachment.ContentType;
+        if (string.IsNullOrWhiteSpace(extension) &&
+            TryInferImageFormat(attachment.Content, out var inferredExtension,
+                out var inferredContentType))
+        {
+            fileName += inferredExtension;
+            extension = inferredExtension;
+            contentType = inferredContentType;
+        }
+
         if (string.IsNullOrWhiteSpace(fileName) ||
             fileName.Any(char.IsControl) ||
             !AllowedExtensions.Contains(
@@ -404,7 +414,7 @@ public sealed class TicketService(
                 ticket.Id,
                 ticket.ItemType,
                 fileName,
-                attachment.ContentType,
+                contentType,
                 attachment.Content,
                 attachment.Description),
             cancellationToken);
@@ -418,6 +428,51 @@ public sealed class TicketService(
 
         return Success(
             new RespuestaAdjuntarArchivo(result.FileName, true));
+    }
+
+    private static bool TryInferImageFormat(
+        Stream content,
+        out string extension,
+        out string contentType)
+    {
+        extension = string.Empty;
+        contentType = string.Empty;
+        if (!content.CanSeek)
+        {
+            return false;
+        }
+
+        var originalPosition = content.Position;
+        Span<byte> header = stackalloc byte[8];
+        var bytesRead = content.Read(header);
+        content.Position = originalPosition;
+
+        if (bytesRead >= 8 &&
+            header[0] == 137 &&
+            header[1] == 80 &&
+            header[2] == 78 &&
+            header[3] == 71 &&
+            header[4] == 13 &&
+            header[5] == 10 &&
+            header[6] == 26 &&
+            header[7] == 10)
+        {
+            extension = ".png";
+            contentType = "image/png";
+            return true;
+        }
+
+        if (bytesRead >= 3 &&
+            header[0] == 255 &&
+            header[1] == 216 &&
+            header[2] == 255)
+        {
+            extension = ".jpg";
+            contentType = "image/jpeg";
+            return true;
+        }
+
+        return false;
     }
 
     private async Task<ArandaUser?> ResolveActiveUserAsync(
