@@ -9,11 +9,12 @@ public interface ITicketService
         CancellationToken cancellationToken);
 
     /// <summary>
-    /// Clasificación fija con la que se creará el ticket. No consulta Aranda:
-    /// sale de la configuración, y por eso sirve para el resumen que el agente
-    /// muestra antes de confirmar el registro.
+    /// Todo lo que el gateway aplicará al crear el ticket sin que el
+    /// colaborador lo escriba: clasificación fija, prefijo del asunto y
+    /// límites. No consulta Aranda —sale de la configuración—, y por eso sirve
+    /// para el resumen que el agente muestra antes de confirmar el registro.
     /// </summary>
-    RespuestaClasificacionTicket GetClassification();
+    RespuestaParametrosCreacion GetCreationParameters();
 
     Task<TicketOperationResult<IReadOnlyList<RespuestaResumenTicket>>>
         ListOpenTicketsAsync(CancellationToken cancellationToken);

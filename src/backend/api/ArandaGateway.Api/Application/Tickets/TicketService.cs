@@ -72,16 +72,21 @@ public sealed class TicketService(
             UnicodeRanges.BasicLatin,
             UnicodeRanges.Latin1Supplement));
 
-    private static readonly HashSet<string> AllowedExtensions =
-        new(StringComparer.OrdinalIgnoreCase)
-        {
-            ".xlsx",
-            ".docx",
-            ".ppt",
-            ".pdf",
-            ".png",
-            ".jpg"
-        };
+    /// <summary>
+    /// Extensiones que admite el adjunto, según el REQ_04. Se guardan
+    /// ordenadas porque además de filtrar se publican en
+    /// <see cref="GetCreationParameters"/>: el orden alfabético las hace
+    /// estables en el resumen aunque se agregue una nueva.
+    /// </summary>
+    private static readonly string[] AllowedExtensions =
+    [
+        ".docx",
+        ".jpg",
+        ".pdf",
+        ".png",
+        ".ppt",
+        ".xlsx"
+    ];
 
     private readonly ArandaOptions arandaOptions = options.Value;
 
@@ -160,19 +165,29 @@ public sealed class TicketService(
         return Success(
             new RespuestaCrearTicket(
                 created.IdByProject,
-                "Creado",
-                GetClassification()));
+                "Creado"));
     }
 
-    public RespuestaClasificacionTicket GetClassification()
+    public RespuestaParametrosCreacion GetCreationParameters()
     {
         var clasificacion = arandaOptions.Classification;
+        var prefijo = arandaOptions.SubjectPrefix?.Trim();
+
         return new(
-            clasificacion.Service,
-            clasificacion.Impact,
-            clasificacion.Urgency,
-            clasificacion.Category,
-            clasificacion.Group);
+            new RespuestaClasificacionTicket(
+                clasificacion.Service,
+                clasificacion.Impact,
+                clasificacion.Urgency,
+                clasificacion.Category,
+                clasificacion.Group),
+            // Sin prefijo configurado el asunto va tal cual, así que el
+            // resumen tiene que decir que no hay ninguno, no una cadena vacía.
+            string.IsNullOrEmpty(prefijo) ? null : prefijo,
+            new RespuestaLimitesTicket(
+                MaxSubjectLength,
+                arandaOptions.MaxDescriptionLength,
+                arandaOptions.MaxAttachmentBytes,
+                AllowedExtensions));
     }
 
     public async Task<
@@ -360,7 +375,9 @@ public sealed class TicketService(
         var extension = Path.GetExtension(fileName);
         if (string.IsNullOrWhiteSpace(fileName) ||
             fileName.Any(char.IsControl) ||
-            !AllowedExtensions.Contains(extension))
+            !AllowedExtensions.Contains(
+                extension,
+                StringComparer.OrdinalIgnoreCase))
         {
             return Invalid<RespuestaAdjuntarArchivo>(
                 "El formato del archivo no está permitido.");

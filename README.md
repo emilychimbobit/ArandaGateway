@@ -180,23 +180,35 @@ grupo `Mesa de Ayuda` (`2`), modelo (`17`), estado inicial `Registrado` (`59`)
 y estado de cancelación `Cancelado` (`61`). Este servicio solo está disponible
 para requerimientos (`itemType = 4`), no para incidentes (`itemType = 1`).
 
-#### La clasificación fija no se quema en el agente
+#### Lo que se aplica solo se consulta aparte de la creación
 
 El DEF manda mostrar un resumen y confirmarlo antes de registrar
-(REQ_04, paso 6), y QA pidió que ese resumen incluya los cinco valores de la
-clasificación. El agente no los tiene escritos en el topic: los pide al
-gateway, para que no se desincronicen si cambia la configuración de arriba.
+(REQ_04, paso 6). El agente no tiene esos datos escritos en el topic: los pide
+al gateway, para que no se desincronicen si cambia la configuración de arriba.
 
-- `GET /api/tickets/clasificacion` los devuelve **antes** de crear, que es
-  cuando el agente arma el resumen. No consulta Aranda ni exige colaborador.
-- `POST /api/tickets` los repite en el campo `clasificacion` de la respuesta,
-  para que el mensaje de cierre diga lo que de verdad se aplicó.
+`GET /api/tickets/parametros-creacion` devuelve **antes** de crear todo lo que
+el gateway aplica sin que el colaborador lo escriba. No consulta Aranda ni
+exige colaborador:
 
-Ambos leen la misma sección `Aranda:Classification`, que lleva los nombres
-legibles de los IDs de arriba. Los nombres van aparte de los IDs porque Aranda
-no los devuelve al crear. Nada valida que un par (ID, nombre) coincida con el
+| Campo | De dónde sale |
+|---|---|
+| `clasificacion` | `Aranda:Classification` — los cinco valores del REQ_04 |
+| `prefijoAsunto` | `Aranda:SubjectPrefix`, o `null` si no hay ninguno |
+| `limites.maxAsunto` | fijo en `TicketService`: 400, límite real de Aranda |
+| `limites.maxDescripcion` | `Aranda:MaxDescriptionLength` |
+| `limites.maxBytesAdjunto` | `Aranda:MaxAttachmentBytes` |
+| `limites.extensionesPermitidas` | fijas en `TicketService`, según el REQ_04 |
+
+`POST /api/tickets` **no** repite nada de esto: responde solo `caseNumber` y
+`status`. Se separó a pedido del cliente, porque el resumen se arma antes de
+confirmar y ahí es donde se necesitan; repetirlos en la creación daba dos
+fuentes para el mismo dato.
+
+Los nombres de la clasificación van aparte de los IDs porque Aranda no los
+devuelve al crear. Nada valida que un par (ID, nombre) coincida con el
 catálogo real: **si se cambia un ID hay que cambiar su nombre en el mismo
-despliegue.**
+despliegue.** El prefijo y los límites sí son la fuente real: el mismo código
+que los publica es el que los hace cumplir al crear.
 
 La creación exige `RegistryTypeId` y `UnitId`. Para QA se configuraron
 provisionalmente `Correo` (`4608`) y `Minsur Lima` (`5875`), validados mediante

@@ -102,7 +102,7 @@ La documentación oficial confirma que `repository = 1` representa casos abierto
 - Para anular, exigir ticket existente y propio, motivo no vacío, confirmación explícita y un estado anulable. Los estados funcionalmente anulables son `Registrado/Asignado` y `En proceso`.
 - No anular tickets en `Pendiente por usuario`, `Pendiente Proveedor`, `Cerrado`, `Resuelto` o `En Aprobación`.
 - Para crear tickets, usar los valores funcionales definidos en REQ_04, pero resolver sus IDs técnicos desde configuración o catálogos: servicio `Por categorizar`, impacto `Bajo`, urgencia `Bajo`, categoría `Ticket creado por bot` y grupo `Mesa de Ayuda`.
-- No quemar esos cinco valores en el agente: leerlos de `GET /api/tickets/clasificacion` para el resumen previo a la confirmación, y del campo `clasificacion` de la respuesta de `POST /api/tickets` para el mensaje de cierre. Ambos salen de `Aranda:Classification`.
+- No quemar esos cinco valores en el agente: leerlos de `GET /api/tickets/parametros-creacion` para el resumen previo a la confirmación, junto con el prefijo del asunto y los límites. `POST /api/tickets` no los devuelve: responde solo `caseNumber` y `status`.
 - Validar adjuntos contra los formatos `xlsx`, `docx`, `ppt`, `pdf`, `png` y `jpg`. Mantener configurables la cantidad máxima y la interpretación del límite de 3 MB hasta que sean confirmadas.
 - No inventar respuestas, estados, transiciones, IDs o comportamientos que no estén definidos por el DEF o confirmados en un contrato técnico.
 

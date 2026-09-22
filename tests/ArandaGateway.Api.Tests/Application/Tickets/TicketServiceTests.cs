@@ -148,11 +148,11 @@ public sealed class TicketServiceTests
     /// configuracion del gateway. Son los cinco valores fijos del REQ_04.
     /// </summary>
     [Fact]
-    public void GetClassification_ReturnsTheConfiguredNames()
+    public void GetCreationParameters_ReturnsTheConfiguredClassification()
     {
         var service = CreateService(new StubArandaClient());
 
-        var clasificacion = service.GetClassification();
+        var clasificacion = service.GetCreationParameters().Clasificacion;
 
         Assert.Equal("Por categorizar", clasificacion.Servicio);
         Assert.Equal("Bajo", clasificacion.Impacto);
@@ -162,7 +162,7 @@ public sealed class TicketServiceTests
     }
 
     [Fact]
-    public void GetClassification_HonoursOverriddenNames()
+    public void GetCreationParameters_HonoursOverriddenNames()
     {
         var service = CreateService(
             new StubArandaClient(),
@@ -173,14 +173,67 @@ public sealed class TicketServiceTests
                     Group = "Otro grupo"
                 }));
 
-        var clasificacion = service.GetClassification();
+        var clasificacion = service.GetCreationParameters().Clasificacion;
 
         Assert.Equal("Otro servicio", clasificacion.Servicio);
         Assert.Equal("Otro grupo", clasificacion.Grupo);
     }
 
+    /// <summary>
+    /// El resumen previo tiene que mostrar el asunto tal como quedara
+    /// registrado, prefijo incluido: sin el dato el colaborador confirma un
+    /// asunto distinto del que ve Mesa de Ayuda.
+    /// </summary>
     [Fact]
-    public async Task CreateTicketAsync_EchoesTheClassificationApplied()
+    public void GetCreationParameters_ReturnsTheConfiguredSubjectPrefix()
+    {
+        var service = CreateService(
+            new StubArandaClient(),
+            options: CreateOptions(subjectPrefix: "[PRUEBA BOT]"));
+
+        Assert.Equal(
+            "[PRUEBA BOT]",
+            service.GetCreationParameters().PrefijoAsunto);
+    }
+
+    [Fact]
+    public void GetCreationParameters_WithoutSubjectPrefix_ReturnsNull()
+    {
+        var service = CreateService(new StubArandaClient());
+
+        Assert.Null(service.GetCreationParameters().PrefijoAsunto);
+    }
+
+    /// <summary>
+    /// Los limites viajan en el resumen para que el agente recorte antes de
+    /// llamar a la creacion, en vez de descubrirlos con un 400.
+    /// </summary>
+    [Fact]
+    public void GetCreationParameters_ReturnsTheLimitsCreationEnforces()
+    {
+        var service = CreateService(
+            new StubArandaClient(),
+            options: CreateOptions(
+                maxDescriptionLength: 1_500,
+                maxAttachmentBytes: 1_048_576));
+
+        var limites = service.GetCreationParameters().Limites;
+
+        Assert.Equal(400, limites.MaxAsunto);
+        Assert.Equal(1_500, limites.MaxDescripcion);
+        Assert.Equal(1_048_576, limites.MaxBytesAdjunto);
+        Assert.Equal(
+            [".docx", ".jpg", ".pdf", ".png", ".ppt", ".xlsx"],
+            limites.ExtensionesPermitidas);
+    }
+
+    /// <summary>
+    /// La creacion ya no repite la clasificacion: vive en
+    /// <c>GET /api/tickets/parametros-creacion</c>, que el agente consulta para
+    /// el resumen previo a la confirmacion.
+    /// </summary>
+    [Fact]
+    public async Task CreateTicketAsync_ReturnsOnlyTheCaseAndItsStatus()
     {
         var client = CreateClientReadyToCreate();
         var service = CreateService(client);
@@ -189,9 +242,7 @@ public sealed class TicketServiceTests
             new(TicketKind.ServiceRequest, "Subject", "Description"),
             CancellationToken.None);
 
-        Assert.Equal(
-            service.GetClassification(),
-            result.Value?.Clasificacion);
+        Assert.Equal(new RespuestaCrearTicket("RF-200", "Creado"), result.Value);
     }
 
     [Fact]
@@ -886,12 +937,14 @@ public sealed class TicketServiceTests
         ArandaUserOverrideOptions? userOverride = null,
         string? subjectPrefix = null,
         int maxDescriptionLength = 20_000,
-        ArandaClassificationOptions? classification = null) =>
+        ArandaClassificationOptions? classification = null,
+        long maxAttachmentBytes = 3_145_728) =>
         new()
         {
             UserOverride = userOverride,
             SubjectPrefix = subjectPrefix,
             MaxDescriptionLength = maxDescriptionLength,
+            MaxAttachmentBytes = maxAttachmentBytes,
             Classification = classification ?? new(),
             BaseUrl = new("https://aranda.example/"),
             ApiKey = "Bearer test",
