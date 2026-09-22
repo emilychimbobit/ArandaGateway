@@ -11,14 +11,20 @@
 // unico cliente que pasa. Aun asi el desafio es intermitente, de ahi el
 // reintento.
 //
-// No hace falta cookie: el token de X-Authorization alcanza.
+// El token de X-Authorization alcanzaba hasta el 16 de septiembre de 2026. El
+// 18 el origen empezo a responder 401 ("You do not have permission to view this
+// directory or page.", de IIS) a toda peticion de /ASMSAPI sin AuthCookieASMS,
+// directo y por APIM, con o sin token. Con una cookie viva vuelve a responder,
+// asi que ARANDA_COOKIE es opcional pero hoy hace falta.
 //
 // Uso:
 //   $env:ARANDA_DIRECT_URL = 'https://mesadeayuda.divisionminera.com/ASMSAPI'
 //   $env:ARANDA_TOKEN      = 'Bearer <token>'
+//   $env:ARANDA_COOKIE     = 'AuthCookieASMS=<cookie>'   # opcional
 //   node tools/anular-tickets-prueba.mjs RF-59557 RF-59468
 const baseUrl = process.env.ARANDA_DIRECT_URL?.replace(/\/$/, '');
 const token = process.env.ARANDA_TOKEN;
+const cookie = process.env.ARANDA_COOKIE;
 
 if (!baseUrl || !token) {
   console.error('Faltan ARANDA_DIRECT_URL o ARANDA_TOKEN.');
@@ -40,7 +46,8 @@ async function request(method, path, body) {
         'X-Authorization': token,
         'Content-Type': 'application/json',
         'User-Agent': 'PostmanRuntime/7.43.0',
-        Accept: '*/*'
+        Accept: '*/*',
+        ...(cookie ? { Cookie: cookie } : {})
       },
       body: body ? JSON.stringify(body) : undefined
     });

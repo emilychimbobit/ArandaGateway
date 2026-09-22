@@ -327,6 +327,7 @@ solo `get` en `/api/v9/item/{id}`. Se cierran yendo directo a Aranda:
 ```powershell
 $env:ARANDA_DIRECT_URL = 'https://mesadeayuda.divisionminera.com/ASMSAPI'
 $env:ARANDA_TOKEN      = 'Bearer <token>'
+$env:ARANDA_COOKIE     = 'AuthCookieASMS=<cookie viva>'
 
 node tools/anular-tickets-prueba.mjs RF-59557 RF-59468
 ```
@@ -335,7 +336,15 @@ El script lee cada ticket antes de anularlo y toma de ahí el `itemVersion` y
 los ids del caso: con un `itemVersion` que no es el vigente Aranda rechaza la
 actualización, y los tickets ya tocados por Mesa de Ayuda no están en la
 versión 1. Después del `PUT` vuelve a leer el estado, porque un `200` por sí
-solo no prueba que haya cambiado. No necesita cookie.
+solo no prueba que haya cambiado.
+
+**Necesita cookie desde el 18 de septiembre de 2026.** Ese día `/ASMSAPI` empezó
+a responder `401` con el HTML de IIS («You do not have permission to view this
+directory or page.») a toda petición sin `AuthCookieASMS`, directo y por APIM,
+con token válido, con token inválido y sin token: el rechazo es anterior a la
+autenticación de la aplicación. Con una cookie viva las mismas llamadas
+responden `200`. `ARANDA_COOKIE` es opcional en el script, pero hoy hace falta;
+la cookie se saca de una sesión abierta en el portal.
 
 **Tiene que ser Node.** Desde una máquina de desarrollo, `curl`, PowerShell y
 `HttpClient` de .NET reciben el Managed Challenge de Cloudflare en el 100% de
@@ -346,7 +355,8 @@ igual es intermitente, así que el script reintenta.
 
 El 16 de septiembre de 2026 se cerraron así los ocho tickets `[PRUEBA BOT]` que
 quedaban abiertos (RF-59120, RF-59122, RF-59276, RF-59349, RF-59352, RF-59423,
-RF-59468 y RF-59557).
+RF-59468 y RF-59557), y el 18 los siete siguientes (RF-59934, RF-60204,
+RF-60205, RF-60206, RF-60207, RF-60208 y RF-60209), estos ya con cookie.
 
 ### Pendientes
 
