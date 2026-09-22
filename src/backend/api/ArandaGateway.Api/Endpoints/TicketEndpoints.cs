@@ -34,17 +34,18 @@ public static class TicketEndpoints
         // Va antes de "/{caseNumber}" por legibilidad; el enrutamiento de
         // ASP.NET Core ya prefiere el segmento literal sobre el parámetro.
         group
-            .MapGet("/clasificacion", ObtenerClasificacion)
-            .WithName("ObtenerClasificacionTicket")
+            .MapGet("/parametros-creacion", ObtenerParametrosCreacion)
+            .WithName("ObtenerParametrosCreacion")
             .WithSummary(
-                "Devuelve la clasificación fija con la que se crea el ticket")
+                "Devuelve lo que el gateway aplicará al crear el ticket")
             .WithDescription(
                 "Implementa el resumen previo a la confirmación del REQ_04. " +
-                "El agente lo consulta para mostrar servicio, impacto, " +
-                "urgencia, categoría y grupo antes de registrar, en vez de " +
-                "tenerlos quemados en el topic. No consulta Aranda ni " +
-                "requiere colaborador.")
-            .Produces<RespuestaClasificacionTicket>();
+                "El agente lo consulta para mostrar la clasificación fija " +
+                "—servicio, impacto, urgencia, categoría y grupo—, el " +
+                "prefijo del asunto y los límites, en vez de tenerlos " +
+                "quemados en el topic. La creación ya no los repite. No " +
+                "consulta Aranda ni requiere colaborador.")
+            .Produces<RespuestaParametrosCreacion>();
 
         group
             .MapGet("/{caseNumber}", ObtenerDetalleTicketAsync)
@@ -104,9 +105,9 @@ public static class TicketEndpoints
                 statusCode: StatusCodes.Status201Created));
     }
 
-    private static IResult ObtenerClasificacion(
+    private static IResult ObtenerParametrosCreacion(
         ITicketService ticketService) =>
-        Results.Ok(ticketService.GetClassification());
+        Results.Ok(ticketService.GetCreationParameters());
 
     private static async Task<IResult> ListarTicketsAbiertosAsync(
         [FromHeader(Name = HeaderCurrentCollaborator.HeaderName)]

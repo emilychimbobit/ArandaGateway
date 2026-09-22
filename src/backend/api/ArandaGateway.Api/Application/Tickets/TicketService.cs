@@ -72,16 +72,21 @@ public sealed class TicketService(
             UnicodeRanges.BasicLatin,
             UnicodeRanges.Latin1Supplement));
 
-    private static readonly HashSet<string> AllowedExtensions =
-        new(StringComparer.OrdinalIgnoreCase)
-        {
-            ".xlsx",
-            ".docx",
-            ".ppt",
-            ".pdf",
-            ".png",
-            ".jpg"
-        };
+    /// <summary>
+    /// Extensiones que admite el adjunto, según el REQ_04. Se guardan
+    /// ordenadas porque además de filtrar se publican en
+    /// <see cref="GetCreationParameters"/>: el orden alfabético las hace
+    /// estables en el resumen aunque se agregue una nueva.
+    /// </summary>
+    private static readonly string[] AllowedExtensions =
+    [
+        ".docx",
+        ".jpg",
+        ".pdf",
+        ".png",
+        ".ppt",
+        ".xlsx"
+    ];
 
     private readonly ArandaOptions arandaOptions = options.Value;
 
@@ -160,19 +165,29 @@ public sealed class TicketService(
         return Success(
             new RespuestaCrearTicket(
                 created.IdByProject,
-                "Creado",
-                GetClassification()));
+                "Creado"));
     }
 
-    public RespuestaClasificacionTicket GetClassification()
+    public RespuestaParametrosCreacion GetCreationParameters()
     {
         var clasificacion = arandaOptions.Classification;
+        var prefijo = arandaOptions.SubjectPrefix?.Trim();
+
         return new(
-            clasificacion.Service,
-            clasificacion.Impact,
-            clasificacion.Urgency,
-            clasificacion.Category,
-            clasificacion.Group);
+            new RespuestaClasificacionTicket(
+                clasificacion.Service,
+                clasificacion.Impact,
+                clasificacion.Urgency,
+                clasificacion.Category,
+                clasificacion.Group),
+            // Sin prefijo configurado el asunto va tal cual, así que el
+            // resumen tiene que decir que no hay ninguno, no una cadena vacía.
+            string.IsNullOrEmpty(prefijo) ? null : prefijo,
+            new RespuestaLimitesTicket(
+                MaxSubjectLength,
+                arandaOptions.MaxDescriptionLength,
+                arandaOptions.MaxAttachmentBytes,
+                AllowedExtensions));
     }
 
     public async Task<
@@ -358,9 +373,21 @@ public sealed class TicketService(
 
         var fileName = Path.GetFileName(attachment.FileName);
         var extension = Path.GetExtension(fileName);
+        var contentType = attachment.ContentType;
+        if (string.IsNullOrWhiteSpace(extension) &&
+            TryInferImageFormat(attachment.Content, out var inferredExtension,
+                out var inferredContentType))
+        {
+            fileName += inferredExtension;
+            extension = inferredExtension;
+            contentType = inferredContentType;
+        }
+
         if (string.IsNullOrWhiteSpace(fileName) ||
             fileName.Any(char.IsControl) ||
-            !AllowedExtensions.Contains(extension))
+            !AllowedExtensions.Contains(
+                extension,
+                StringComparer.OrdinalIgnoreCase))
         {
             return Invalid<RespuestaAdjuntarArchivo>(
                 "El formato del archivo no está permitido.");
@@ -387,7 +414,7 @@ public sealed class TicketService(
                 ticket.Id,
                 ticket.ItemType,
                 fileName,
-                attachment.ContentType,
+                contentType,
                 attachment.Content,
                 attachment.Description),
             cancellationToken);
@@ -401,6 +428,51 @@ public sealed class TicketService(
 
         return Success(
             new RespuestaAdjuntarArchivo(result.FileName, true));
+    }
+
+    private static bool TryInferImageFormat(
+        Stream content,
+        out string extension,
+        out string contentType)
+    {
+        extension = string.Empty;
+        contentType = string.Empty;
+        if (!content.CanSeek)
+        {
+            return false;
+        }
+
+        var originalPosition = content.Position;
+        Span<byte> header = stackalloc byte[8];
+        var bytesRead = content.Read(header);
+        content.Position = originalPosition;
+
+        if (bytesRead >= 8 &&
+            header[0] == 137 &&
+            header[1] == 80 &&
+            header[2] == 78 &&
+            header[3] == 71 &&
+            header[4] == 13 &&
+            header[5] == 10 &&
+            header[6] == 26 &&
+            header[7] == 10)
+        {
+            extension = ".png";
+            contentType = "image/png";
+            return true;
+        }
+
+        if (bytesRead >= 3 &&
+            header[0] == 255 &&
+            header[1] == 216 &&
+            header[2] == 255)
+        {
+            extension = ".jpg";
+            contentType = "image/jpeg";
+            return true;
+        }
+
+        return false;
     }
 
     private async Task<ArandaUser?> ResolveActiveUserAsync(

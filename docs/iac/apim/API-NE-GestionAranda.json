@@ -93,19 +93,19 @@
         }
       }
     },
-    "/api/tickets/clasificacion": {
+    "/api/tickets/parametros-creacion": {
       "get": {
         "tags": ["Tickets"],
-        "operationId": "ObtenerClasificacionTicket",
-        "summary": "Clasificación fija con la que se crea el ticket (REQ_04)",
-        "description": "Alimenta el resumen que el agente muestra antes de confirmar el registro. No consulta Aranda ni requiere colaborador.",
+        "operationId": "ObtenerParametrosCreacion",
+        "summary": "Lo que el gateway aplicará al crear el ticket (REQ_04)",
+        "description": "Alimenta el resumen que el agente muestra antes de confirmar el registro: clasificación fija, prefijo del asunto y límites. La creación ya no los repite. No consulta Aranda ni requiere colaborador.",
         "responses": {
           "200": {
-            "description": "Clasificación vigente",
+            "description": "Parámetros de creación vigentes",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RespuestaClasificacionTicket"
+                  "$ref": "#/components/schemas/RespuestaParametrosCreacion"
                 }
               }
             }
@@ -360,9 +360,51 @@
           },
           "status": {
             "type": "string"
-          },
+          }
+        }
+      },
+      "RespuestaParametrosCreacion": {
+        "type": "object",
+        "description": "Todo lo que el gateway aplica sin que el colaborador lo escriba. Se consulta antes de crear, para el resumen de confirmación.",
+        "properties": {
           "clasificacion": {
             "$ref": "#/components/schemas/RespuestaClasificacionTicket"
+          },
+          "prefijoAsunto": {
+            "type": "string",
+            "nullable": true,
+            "example": "[PRUEBA BOT]",
+            "description": "Prefijo que se antepone al asunto. Nulo cuando no hay ninguno configurado: el asunto va tal cual."
+          },
+          "limites": {
+            "$ref": "#/components/schemas/RespuestaLimitesTicket"
+          }
+        }
+      },
+      "RespuestaLimitesTicket": {
+        "type": "object",
+        "description": "Límites que la creación hace cumplir, para que el agente recorte antes de llamar en vez de descubrirlos con un 400.",
+        "properties": {
+          "maxAsunto": {
+            "type": "integer",
+            "example": 400,
+            "description": "Máximo del asunto ya prefijado y codificado, no del texto que escribe el colaborador."
+          },
+          "maxDescripcion": {
+            "type": "integer",
+            "example": 20000
+          },
+          "maxBytesAdjunto": {
+            "type": "integer",
+            "format": "int64",
+            "example": 3145728
+          },
+          "extensionesPermitidas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [".docx", ".jpg", ".pdf", ".png", ".ppt", ".xlsx"]
           }
         }
       },

@@ -29,23 +29,24 @@ public sealed class AnonymousAccessTests
     }
 
     /// <summary>
-    /// "clasificacion" es un segmento literal y debe ganarle a
+    /// "parametros-creacion" es un segmento literal y debe ganarle a
     /// "/api/tickets/{caseNumber}", que lo tomaria por un numero de caso y
     /// respondería 400 por falta de colaborador.
     /// </summary>
     [Fact]
-    public async Task ClassificationEndpoint_WinsOverTheCaseNumberRoute()
+    public async Task CreationParametersEndpoint_WinsOverTheCaseNumberRoute()
     {
         using var response = await client.GetAsync(
-            "/api/tickets/clasificacion",
+            "/api/tickets/parametros-creacion",
             CancellationToken.None);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var clasificacion = await response.Content
-            .ReadFromJsonAsync<RespuestaClasificacionTicket>(
+        var parametros = await response.Content
+            .ReadFromJsonAsync<RespuestaParametrosCreacion>(
                 CancellationToken.None);
-        Assert.Equal("Por categorizar", clasificacion?.Servicio);
-        Assert.Equal("Mesa de Ayuda", clasificacion?.Grupo);
+        Assert.Equal("Por categorizar", parametros?.Clasificacion.Servicio);
+        Assert.Equal("Mesa de Ayuda", parametros?.Clasificacion.Grupo);
+        Assert.Equal(400, parametros?.Limites.MaxAsunto);
     }
 
     [Fact]

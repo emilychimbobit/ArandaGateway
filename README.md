@@ -180,23 +180,35 @@ grupo `Mesa de Ayuda` (`2`), modelo (`17`), estado inicial `Registrado` (`59`)
 y estado de cancelación `Cancelado` (`61`). Este servicio solo está disponible
 para requerimientos (`itemType = 4`), no para incidentes (`itemType = 1`).
 
-#### La clasificación fija no se quema en el agente
+#### Lo que se aplica solo se consulta aparte de la creación
 
 El DEF manda mostrar un resumen y confirmarlo antes de registrar
-(REQ_04, paso 6), y QA pidió que ese resumen incluya los cinco valores de la
-clasificación. El agente no los tiene escritos en el topic: los pide al
-gateway, para que no se desincronicen si cambia la configuración de arriba.
+(REQ_04, paso 6). El agente no tiene esos datos escritos en el topic: los pide
+al gateway, para que no se desincronicen si cambia la configuración de arriba.
 
-- `GET /api/tickets/clasificacion` los devuelve **antes** de crear, que es
-  cuando el agente arma el resumen. No consulta Aranda ni exige colaborador.
-- `POST /api/tickets` los repite en el campo `clasificacion` de la respuesta,
-  para que el mensaje de cierre diga lo que de verdad se aplicó.
+`GET /api/tickets/parametros-creacion` devuelve **antes** de crear todo lo que
+el gateway aplica sin que el colaborador lo escriba. No consulta Aranda ni
+exige colaborador:
 
-Ambos leen la misma sección `Aranda:Classification`, que lleva los nombres
-legibles de los IDs de arriba. Los nombres van aparte de los IDs porque Aranda
-no los devuelve al crear. Nada valida que un par (ID, nombre) coincida con el
+| Campo | De dónde sale |
+|---|---|
+| `clasificacion` | `Aranda:Classification` — los cinco valores del REQ_04 |
+| `prefijoAsunto` | `Aranda:SubjectPrefix`, o `null` si no hay ninguno |
+| `limites.maxAsunto` | fijo en `TicketService`: 400, límite real de Aranda |
+| `limites.maxDescripcion` | `Aranda:MaxDescriptionLength` |
+| `limites.maxBytesAdjunto` | `Aranda:MaxAttachmentBytes` |
+| `limites.extensionesPermitidas` | fijas en `TicketService`, según el REQ_04 |
+
+`POST /api/tickets` **no** repite nada de esto: responde solo `caseNumber` y
+`status`. Se separó a pedido del cliente, porque el resumen se arma antes de
+confirmar y ahí es donde se necesitan; repetirlos en la creación daba dos
+fuentes para el mismo dato.
+
+Los nombres de la clasificación van aparte de los IDs porque Aranda no los
+devuelve al crear. Nada valida que un par (ID, nombre) coincida con el
 catálogo real: **si se cambia un ID hay que cambiar su nombre en el mismo
-despliegue.**
+despliegue.** El prefijo y los límites sí son la fuente real: el mismo código
+que los publica es el que los hace cumplir al crear.
 
 La creación exige `RegistryTypeId` y `UnitId`. Para QA se configuraron
 provisionalmente `Correo` (`4608`) y `Minsur Lima` (`5875`), validados mediante
@@ -315,6 +327,7 @@ solo `get` en `/api/v9/item/{id}`. Se cierran yendo directo a Aranda:
 ```powershell
 $env:ARANDA_DIRECT_URL = 'https://mesadeayuda.divisionminera.com/ASMSAPI'
 $env:ARANDA_TOKEN      = 'Bearer <token>'
+$env:ARANDA_COOKIE     = 'AuthCookieASMS=<cookie viva>'
 
 node tools/anular-tickets-prueba.mjs RF-59557 RF-59468
 ```
@@ -323,7 +336,15 @@ El script lee cada ticket antes de anularlo y toma de ahí el `itemVersion` y
 los ids del caso: con un `itemVersion` que no es el vigente Aranda rechaza la
 actualización, y los tickets ya tocados por Mesa de Ayuda no están en la
 versión 1. Después del `PUT` vuelve a leer el estado, porque un `200` por sí
-solo no prueba que haya cambiado. No necesita cookie.
+solo no prueba que haya cambiado.
+
+**Necesita cookie desde el 18 de septiembre de 2026.** Ese día `/ASMSAPI` empezó
+a responder `401` con el HTML de IIS («You do not have permission to view this
+directory or page.») a toda petición sin `AuthCookieASMS`, directo y por APIM,
+con token válido, con token inválido y sin token: el rechazo es anterior a la
+autenticación de la aplicación. Con una cookie viva las mismas llamadas
+responden `200`. `ARANDA_COOKIE` es opcional en el script, pero hoy hace falta;
+la cookie se saca de una sesión abierta en el portal.
 
 **Tiene que ser Node.** Desde una máquina de desarrollo, `curl`, PowerShell y
 `HttpClient` de .NET reciben el Managed Challenge de Cloudflare en el 100% de
@@ -334,7 +355,8 @@ igual es intermitente, así que el script reintenta.
 
 El 16 de septiembre de 2026 se cerraron así los ocho tickets `[PRUEBA BOT]` que
 quedaban abiertos (RF-59120, RF-59122, RF-59276, RF-59349, RF-59352, RF-59423,
-RF-59468 y RF-59557).
+RF-59468 y RF-59557), y el 18 los siete siguientes (RF-59934, RF-60204,
+RF-60205, RF-60206, RF-60207, RF-60208 y RF-60209), estos ya con cookie.
 
 ### Pendientes
 

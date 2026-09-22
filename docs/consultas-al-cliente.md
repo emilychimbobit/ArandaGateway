@@ -282,6 +282,14 @@ atravesaron Cloudflare: el `401` se decide en Aranda y el `403` con
 tickets reales; usa el mismo camino y la misma política, y su corte del 14 de
 septiembre es el síntoma conocido.
 
+Las dos operaciones que hoy solo existen por el camino directo (punto 1) también
+son desafiadas: `PUT /api/v9/item/{id}` dio 1 desafío de 10 intentos
+—`a3c290478dc68259-GYE`, 15:19:00 hora Lima, con un id inexistente para no
+modificar ningún caso— y `GET /api/v9/user/{username}/detail` dio 1 de 6 en la
+tanda de las 12:21 (`a3c18cc35b35b3c7-MIA`, 12:21:50), aunque 0 de 10 a las
+15:19. La exclusión debe cubrir el prefijo `/ASMSAPI/api/v9/*` completo, no una
+operación a la vez.
+
 **Qué pedir.** Incorporar el origen de APIM a la lista de permitidos de
 Cloudflare, o excluir `/ASMSAPI/api/v9/*` del desafío para ese origen.
 
