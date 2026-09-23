@@ -13,7 +13,7 @@ Estado al 21 de septiembre de 2026.
 
 | # | Pendiente | Responsable | Bloquea |
 | --- | --- | --- | --- |
-| 1 | Publicar dos operaciones en APIM | Admin de APIM | Anulación (REQ_06), identidad real |
+| 1 | Publicar `PUT /api/v9/item/{id}` en APIM — `GET user/detail` ya está | Admin de APIM | Anulación (REQ_06) |
 | 2 | ~~Credenciales de usuario de servicio + tenant alias~~ — **cerrado, ver punto 2** | — | — |
 | 3 | Decisión: salida por APIM o directo a Aranda | Arquitectura / seguridad | Punto 1 |
 | 4 | Cuenta que debe figurar como autor de los tickets | Minsur | Trazabilidad y reportes |
@@ -42,8 +42,8 @@ cookie que ya usa el gateway:
 
 | Operación | Para qué sirve | APIM | Directo a Aranda |
 | --- | --- | --- | --- |
-| `PUT /api/v9/item/{id}` | Anular un ticket | `404` | `200` |
-| `GET /api/v9/user/{username}/detail` | Resolver al colaborador | `404` | `200` |
+| `PUT /api/v9/item/{id}` | Anular un ticket | `404` (16 sept) | `200` |
+| `GET /api/v9/user/{username}/detail` | Resolver al colaborador | ~~`404`~~ → `200` (23 sept) | `200` |
 
 En el spec del repositorio `/api/v9/item/{id}` figura **solo con GET**, por eso
 la anulación falla: `POST /api/tickets/{caseNumber}/cancellation` devuelve `502`
@@ -74,8 +74,13 @@ devuelve `404` de APIM en 4 de 4 intentos (12:32 hora Lima) y **sin encabezado
 `CF-Ray`**: la petición muere en APIM y nunca llega a Cloudflare. Es un tema de
 publicación en APIM, no del WAF ni del desafío del punto 7.
 
-**Qué se desbloquea.** REQ_06 completo y el retiro del parche de usuario fijo
-(punto 9 de `deuda-tecnica.md`).
+**`GET user/{username}/detail` ya publicado, confirmado el 23 de septiembre de
+2026.** Por APIM y con `evelyn.nunez@minsur.com` y `uebit20@minsur.com`
+responde `200` con datos reales. Con eso se retiró el parche de usuario fijo
+(punto 9 de `deuda-tecnica.md`, cerrado). Sigue pendiente `PUT /api/v9/item/{id}`
+para la anulación (REQ_06).
+
+**Qué se desbloquea.** REQ_06 completo (falta `PUT /api/v9/item/{id}`).
 
 ---
 

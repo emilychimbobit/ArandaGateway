@@ -21,9 +21,10 @@ Estado al 15 de septiembre de 2026.
 | 6 | `Trim()` inconsistente entre filtros de estado | Corrección | Baja |
 | 7 | La cookie viva no sobrevive al reinicio | Robustez | Baja |
 | 8 | Un test fija un valor que Aranda ignora | Pruebas | Baja |
+| 9 | ~~Parche de usuario fijo~~ — retirado, ver abajo | Requisito | Cerrado |
 
-Los puntos 9 y 10 son trabajo preparado que arranca cuando el cliente
-desbloquee lo suyo.
+El punto 10 es trabajo preparado que arranca cuando el cliente desbloquee lo
+suyo.
 
 ---
 
@@ -226,25 +227,31 @@ vuelva a perder tiempo persiguiéndolo.
 
 ---
 
-## 9. Retiro del parche de usuario fijo
+## 9. Retiro del parche de usuario fijo — cerrado
 
-*Arranca cuando se resuelva el punto 1 de `consultas-al-cliente.md`.*
+*Retirado el 23 de septiembre de 2026: el cliente confirmó que la API de
+usuarios de Aranda ya está publicada en APIM.*
 
-La resolución del colaborador está reemplazada por un usuario fijo: `1562`
-(`evelyn.nunez@minsur.com`) para equipos y `15019` (`uebit20@minsur.com`) para
-tickets. El encabezado `X-Collaborator-Username` se registra en el log pero se
-ignora.
+La resolución del colaborador ya no pasa por un usuario fijo. Se borraron
+`ArandaUserOverrideOptions.cs`, la propiedad `ArandaOptions.UserOverride`, los
+bloques `PARCHE TEMPORAL` en `EquipoService` y `TicketService`, la sección
+`Aranda:UserOverride` de `appsettings.json` y sus pruebas dedicadas.
+`X-Collaborator-Username` vuelve a resolverse contra Aranda en cada operación.
 
-**Riesgo.** Cualquier colaborador ve los equipos de Evelyn y opera los tickets
-de uebit20. **No debe llegar a producción con usuarios reales.**
+**Probado a mano** (con `evelyn.nunez@minsur.com` y `uebit20@minsur.com`, sin
+override) contra `/api/tickets` y `/api/equipos`: `200` con los datos reales de
+cada usuario en ambos.
 
-Apagarlo no requiere código: basta `Aranda:UserOverride:Enabled = false`. El
-retiro definitivo sí, y borra `ArandaUserOverrideOptions.cs`, la propiedad
-`ArandaOptions.UserOverride`, los bloques marcados `PARCHE TEMPORAL` en
-`EquipoService` y `TicketService`, y sus pruebas.
+**Bug encontrado y arreglado de paso.** `GET user/{username}/detail` no
+siempre devuelve `404` para un usuario que no existe: con uno inventado
+respondió `400` con `{"exceptionMessage":"UserNameDidNotFound", ...}`. El
+`catch` de `ResolveActiveUserAsync` solo atrapaba `404`, así que un username
+mal escrito habría reventado como `502 ARANDA_400` en vez de un
+"colaborador no encontrado" limpio. Se agregó `ArandaApiException.IsUserNotFound()`
+para cubrir los dos casos.
 
-Al retirarlo aparece el problema de `UnitId` descrito en el punto 6 de
-`consultas-al-cliente.md`: conviene resolver ambos en la misma tanda.
+Queda pendiente el problema de `UnitId` descrito en el punto 6 de
+`consultas-al-cliente.md`, que es independiente de este retiro.
 
 ---
 
