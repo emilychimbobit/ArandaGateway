@@ -32,6 +32,19 @@ public sealed class ArandaApiException : Exception
     /// </summary>
     public string? ResponseBody { get; }
 
+    /// <summary>
+    /// El usuario no existe en Aranda. Normalmente es <c>404</c>, pero
+    /// <c>GET user/{username}/detail</c> devuelve <c>400</c> con
+    /// <c>exceptionMessage: "UserNameDidNotFound"</c> (medido el 23 de
+    /// septiembre de 2026 contra un usuario inexistente).
+    /// </summary>
+    public bool IsUserNotFound() =>
+        StatusCode == HttpStatusCode.NotFound ||
+        (StatusCode == HttpStatusCode.BadRequest &&
+            ResponseBody?.Contains(
+                "UserNameDidNotFound",
+                StringComparison.Ordinal) == true);
+
     private static string BuildMessage(
         HttpStatusCode statusCode,
         string? requestUri)
