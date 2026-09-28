@@ -223,7 +223,7 @@ public sealed class TicketServiceTests
         Assert.Equal(1_500, limites.MaxDescripcion);
         Assert.Equal(1_048_576, limites.MaxBytesAdjunto);
         Assert.Equal(
-            [".docx", ".jpg", ".pdf", ".png", ".ppt", ".xlsx"],
+            [".docx", ".jpg", ".pdf", ".png", ".ppt", ".pptx", ".xlsx"],
             limites.ExtensionesPermitidas);
     }
 
@@ -883,6 +883,35 @@ public sealed class TicketServiceTests
         Assert.Equal(TicketOperationResultStatus.Success, result.Status);
         Assert.Equal("evidence.pdf", result.Value?.FileName);
         Assert.Equal(154, client.LastUploadRequest?.TicketId);
+    }
+
+    [Fact]
+    public async Task UploadAttachmentAsync_AcceptsPptxExtension()
+    {
+        var client = CreateClientWithOwnedTicket(
+            uploadResult:
+            [
+                new()
+                {
+                    FileName = "slides.pptx",
+                    Result = true
+                }
+            ]);
+        var service = CreateService(client);
+        await using var content = new MemoryStream([1, 2, 3]);
+
+        var result = await service.UploadAttachmentAsync(
+            "CASE-154",
+            new(
+                "slides.pptx",
+                "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                content.Length,
+                content,
+                "Slides"),
+            CancellationToken.None);
+
+        Assert.Equal(TicketOperationResultStatus.Success, result.Status);
+        Assert.Equal("slides.pptx", result.Value?.FileName);
     }
 
     private static TicketService CreateService(

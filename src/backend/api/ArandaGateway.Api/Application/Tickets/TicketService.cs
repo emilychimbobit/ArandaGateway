@@ -85,6 +85,7 @@ public sealed class TicketService(
         ".pdf",
         ".png",
         ".ppt",
+        ".pptx",
         ".xlsx"
     ];
 
