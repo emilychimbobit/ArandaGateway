@@ -404,7 +404,7 @@
             "items": {
               "type": "string"
             },
-            "example": [".docx", ".jpg", ".pdf", ".png", ".ppt", ".xlsx"]
+            "example": [".docx", ".jpg", ".pdf", ".png", ".ppt", ".pptx", ".xlsx"]
           }
         }
       },
