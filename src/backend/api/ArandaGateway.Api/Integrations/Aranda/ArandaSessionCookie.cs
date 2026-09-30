@@ -66,6 +66,36 @@ public sealed class ArandaSessionCookie
         Store(cookie);
     }
 
+    /// <summary>
+    /// Descarta la cookie que acaba de ser rechazada sin borrar una cookie
+    /// más reciente instalada concurrentemente.
+    /// </summary>
+    public bool Invalidate(string rejectedCookie)
+    {
+        while (true)
+        {
+            var currentCookie = Volatile.Read(ref current);
+            if (currentCookie is null ||
+                !string.Equals(
+                    currentCookie,
+                    rejectedCookie,
+                    StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(
+                Interlocked.CompareExchange(
+                    ref current,
+                    null,
+                    currentCookie),
+                currentCookie))
+            {
+                return true;
+            }
+        }
+    }
+
     private void Store(string cookie)
     {
         var normalized = Normalize(cookie);

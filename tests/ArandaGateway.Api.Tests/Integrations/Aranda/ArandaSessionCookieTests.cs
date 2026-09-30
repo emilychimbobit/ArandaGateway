@@ -96,6 +96,78 @@ public sealed class ArandaSessionCookieTests
     }
 
     [Fact]
+    public async Task Handler_InvalidatesRejectedCookieAndRetriesWithAuthorization()
+    {
+        var cookie = CreateCookie("AuthCookieASMS=VENCIDA");
+        var transport = new StubTransport(
+            setCookie: null,
+            HttpStatusCode.Unauthorized,
+            HttpStatusCode.OK);
+        using var client = CreateClient(cookie, transport);
+
+        using var response = await client.GetAsync(
+            "https://aranda.example/api/v9/item/46479");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(
+            ["AuthCookieASMS=VENCIDA", null],
+            transport.CookiesSent);
+        Assert.Equal(["Bearer test", "Bearer test"],
+            transport.AuthorizationsSent);
+        Assert.Equal(["apim-test", "apim-test"],
+            transport.SubscriptionKeysSent);
+        Assert.Null(cookie.Value);
+    }
+
+    [Fact]
+    public async Task Handler_ReplaysPostBodyWithoutRejectedCookie()
+    {
+        const string body = "{\"subject\":\"test\"}";
+        var cookie = CreateCookie("AuthCookieASMS=VENCIDA");
+        var transport = new StubTransport(
+            setCookie: null,
+            HttpStatusCode.Unauthorized,
+            HttpStatusCode.OK);
+        using var client = CreateClient(cookie, transport);
+        using var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            "https://aranda.example/api/v9/item/")
+        {
+            Content = new StringContent(body)
+        };
+
+        using var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal([body, body], transport.BodiesSent);
+        Assert.Equal(
+            ["AuthCookieASMS=VENCIDA", null],
+            transport.CookiesSent);
+        Assert.Equal(["Bearer test", "Bearer test"],
+            transport.AuthorizationsSent);
+        Assert.Equal(["apim-test", "apim-test"],
+            transport.SubscriptionKeysSent);
+        Assert.Null(cookie.Value);
+    }
+
+    [Fact]
+    public async Task Handler_DoesNotRetryUnauthorizedWhenNoCookieWasSent()
+    {
+        var cookie = CreateCookie(null);
+        var transport = new StubTransport(
+            setCookie: null,
+            HttpStatusCode.Unauthorized);
+        using var client = CreateClient(cookie, transport);
+
+        using var response = await client.GetAsync(
+            "https://aranda.example/api/v9/item/46479");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Single(transport.CookiesSent);
+        Assert.Null(transport.CookiesSent[0]);
+    }
+
+    [Fact]
     public void Value_IgnoresSeedWhenSessionCookieIsDisabled()
     {
         var cookie = CreateCookie("AuthCookieASMS=SEMILLA", enabled: false);
@@ -172,14 +244,33 @@ public sealed class ArandaSessionCookieTests
             InnerHandler = transport
         };
 
-        return new(handler);
+        var client = new HttpClient(handler);
+        client.DefaultRequestHeaders.TryAddWithoutValidation(
+            "X-Authorization",
+            "Bearer test");
+        client.DefaultRequestHeaders.TryAddWithoutValidation(
+            "Ocp-Apim-Subscription-Key",
+            "apim-test");
+        return client;
     }
 
-    private sealed class StubTransport(string? setCookie) : HttpMessageHandler
+    private sealed class StubTransport(
+        string? setCookie,
+        params HttpStatusCode[] statuses) : HttpMessageHandler
     {
+        private int attempts;
+
         public string? LastCookieSent { get; private set; }
 
-        protected override Task<HttpResponseMessage> SendAsync(
+        public List<string?> CookiesSent { get; } = [];
+
+        public List<string?> AuthorizationsSent { get; } = [];
+
+        public List<string?> SubscriptionKeysSent { get; } = [];
+
+        public List<string?> BodiesSent { get; } = [];
+
+        protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
@@ -188,16 +279,36 @@ public sealed class ArandaSessionCookieTests
                 out var values)
                 ? string.Join("; ", values)
                 : null;
+            CookiesSent.Add(LastCookieSent);
+            AuthorizationsSent.Add(request.Headers.TryGetValues(
+                "X-Authorization",
+                out var authorization)
+                ? string.Join("; ", authorization)
+                : null);
+            SubscriptionKeysSent.Add(request.Headers.TryGetValues(
+                "Ocp-Apim-Subscription-Key",
+                out var subscriptionKey)
+                ? string.Join("; ", subscriptionKey)
+                : null);
+            BodiesSent.Add(request.Content is null
+                ? null
+                : await request.Content.ReadAsStringAsync(
+                    cancellationToken));
 
-            var response = new HttpResponseMessage(HttpStatusCode.OK);
-            if (setCookie is not null)
+            var statusCode = attempts < statuses.Length
+                ? statuses[attempts]
+                : HttpStatusCode.OK;
+            attempts++;
+
+            var response = new HttpResponseMessage(statusCode);
+            if (response.IsSuccessStatusCode && setCookie is not null)
             {
                 response.Headers.TryAddWithoutValidation(
                     "Set-Cookie",
                     setCookie);
             }
 
-            return Task.FromResult(response);
+            return response;
         }
     }
 }

@@ -5,15 +5,15 @@ namespace ArandaGateway.Api.Integrations.Aranda;
 
 /// <summary>
 /// Mantiene viva la sesión de Aranda. La sesión usa expiración deslizante, así
-/// que caduca por inactividad: en un periodo sin tráfico la cookie muere y las
-/// operaciones empiezan a fallar con 401 hasta que alguien pega una nueva a
-/// mano. Este latido hace una consulta de solo lectura cada
+/// que caduca por inactividad. Si Aranda rechaza la cookie, el handler la
+/// descarta y reintenta sin ella usando X-Authorization. Este latido hace una
+/// consulta de solo lectura cada
 /// <see cref="ArandaOptions.SessionKeepAliveMinutes"/> minutos, lo que reinicia
 /// el contador y renueva la cookie a través de
 /// <see cref="ArandaSessionCookieHandler"/>.
 ///
 /// Solo se activa si hay una cookie semilla configurada: sin ella no hay sesión
-/// que mantener y las llamadas fallarían igual.
+/// que mantener y las llamadas usan X-Authorization sin cookie.
 /// </summary>
 public sealed class ArandaSessionKeepAliveService(
     IServiceScopeFactory scopeFactory,
@@ -88,10 +88,10 @@ public sealed class ArandaSessionKeepAliveService(
         catch (Exception exception)
         {
             // Un latido fallido no debe tumbar el servicio: la siguiente
-            // petición real reintentará y el proximo latido tambien.
+            // petición real y el próximo latido volverán a intentarlo.
             logger.LogWarning(
                 exception,
-                "El latido de sesión de Aranda falló. Si la causa es un 401, la cookie de Aranda:AuthCookie caducó y hay que renovarla.");
+                "El latido de sesión de Aranda falló incluso después del fallback de autenticación.");
         }
     }
 }

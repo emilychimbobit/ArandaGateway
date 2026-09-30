@@ -1,3 +1,4 @@
+using System.Net;
 using ArandaGateway.Api.Application.Tickets;
 using ArandaGateway.Api.Contracts.Tickets;
 using ArandaGateway.Api.Identity;
@@ -27,14 +28,25 @@ public sealed class TicketServiceTests
     [Fact]
     public async Task GetTicketDetailAsync_ResolvesInternalIdFromCaseNumber()
     {
-        var client = CreateClientWithOwnedTicket();
+        var ticket = CreateTicket("collaborator") with
+        {
+            Id = 46479,
+            IdByProject = "RF-46479"
+        };
+        var client = new StubArandaClient
+        {
+            User = CreateUser(),
+            Ticket = ticket
+        };
         var service = CreateService(client);
 
-        await service.GetTicketDetailAsync(
-            "case-154",
+        var result = await service.GetTicketDetailAsync(
+            "rf-46479",
             CancellationToken.None);
 
-        Assert.Equal(154, client.LastTicketId);
+        Assert.Equal(TicketDetailResultStatus.Success, result.Status);
+        Assert.Equal(46479, client.LastTicketId);
+        Assert.Null(client.LastSearchRequest);
     }
 
     [Fact]
@@ -43,7 +55,7 @@ public sealed class TicketServiceTests
         var client = new StubArandaClient
         {
             User = CreateUser(),
-            SearchResult = EmptySearchResult()
+            TicketNotFound = true
         };
         var service = CreateService(client);
 
@@ -55,7 +67,8 @@ public sealed class TicketServiceTests
             TicketDetailResultStatus.NotFoundOrNotOwned,
             result.Status);
         Assert.Null(result.Ticket);
-        Assert.Null(client.LastTicketId);
+        Assert.Equal(999, client.LastTicketId);
+        Assert.Null(client.LastSearchRequest);
     }
 
     [Fact]
@@ -64,7 +77,6 @@ public sealed class TicketServiceTests
         var client = new StubArandaClient
         {
             User = CreateUser(),
-            SearchResult = SearchResultWith(CreateTicket("another-user")),
             Ticket = CreateTicket("another-user")
         };
         var service = CreateService(client);
@@ -77,6 +89,8 @@ public sealed class TicketServiceTests
             TicketDetailResultStatus.NotFoundOrNotOwned,
             result.Status);
         Assert.Null(result.Ticket);
+        Assert.Equal(154, client.LastTicketId);
+        Assert.Null(client.LastSearchRequest);
     }
 
     [Fact]
@@ -109,6 +123,7 @@ public sealed class TicketServiceTests
             TicketDetailResultStatus.NotFoundOrNotOwned,
             result.Status);
         Assert.Null(client.LastSearchRequest);
+        Assert.Null(client.LastTicketId);
     }
 
     [Fact]
@@ -1032,6 +1047,8 @@ public sealed class TicketServiceTests
 
         public ArandaTicket? Ticket { get; init; }
 
+        public bool TicketNotFound { get; init; }
+
         public ArandaPagedResponse<ArandaTicket>? SearchResult
         {
             get;
@@ -1085,6 +1102,11 @@ public sealed class TicketServiceTests
             CancellationToken cancellationToken)
         {
             LastTicketId = ticketId;
+            if (TicketNotFound)
+            {
+                throw new ArandaApiException(HttpStatusCode.NotFound);
+            }
+
             return Task.FromResult(
                 Ticket ?? throw new InvalidOperationException());
         }

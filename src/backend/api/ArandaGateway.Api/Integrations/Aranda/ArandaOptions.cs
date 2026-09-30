@@ -21,11 +21,11 @@ public sealed class ArandaOptions
     public string? SubscriptionKey { get; init; }
 
     /// <summary>
-    /// Cookie de sesión de Aranda (<c>AuthCookieASMS=...</c>), enviada tal cual
-    /// en el encabezado <c>Cookie</c>. Aranda exige la cookie además del token
-    /// de <see cref="ApiKey"/>: sin ella responde 401 aunque el token sea
-    /// válido. Es una credencial de sesión y caduca, así que se configura por
-    /// secreto o variable de entorno, nunca en appsettings.json.
+    /// Cookie de sesión opcional de Aranda (<c>AuthCookieASMS=...</c>), enviada
+    /// tal cual en el encabezado <c>Cookie</c>. Si Aranda la rechaza, el
+    /// handler la descarta y reintenta sin cookie, conservando el token de
+    /// <see cref="ApiKey"/>. Es una credencial de sesión y debe configurarse
+    /// por secreto o variable de entorno, nunca en appsettings.json.
     /// </summary>
     public string? AuthCookie { get; init; }
 
