@@ -13,7 +13,43 @@ public sealed class TicketServiceTests
     [Fact]
     public async Task GetTicketDetailAsync_ReturnsOwnedTicket()
     {
-        var client = CreateClientWithOwnedTicket();
+        var client = new StubArandaClient
+        {
+            User = CreateUser(),
+            Ticket = CreateTicket("collaborator") with
+            {
+                Id = 46479,
+                IdByProject = "RF-46479",
+                CommentaryNoHtml =
+                    "Se procedió a compartir la cotización con MDA.",
+                IsSolved = true
+            }
+        };
+        var service = CreateService(client);
+
+        var result = await service.GetTicketDetailAsync(
+            "RF-46479",
+            CancellationToken.None);
+
+        Assert.Equal(TicketDetailResultStatus.Success, result.Status);
+        Assert.Equal("RF-46479", result.Ticket?.CaseNumber);
+        Assert.Equal(
+            "Se procedió a compartir la cotización con MDA.",
+            result.Ticket?.Solution);
+    }
+
+    [Fact]
+    public async Task GetTicketDetailAsync_DoesNotExposeCommentaryAsSolutionWhenUnsolved()
+    {
+        var client = new StubArandaClient
+        {
+            User = CreateUser(),
+            Ticket = CreateTicket("collaborator") with
+            {
+                CommentaryNoHtml = "Comentario en curso",
+                IsSolved = false
+            }
+        };
         var service = CreateService(client);
 
         var result = await service.GetTicketDetailAsync(
@@ -21,7 +57,6 @@ public sealed class TicketServiceTests
             CancellationToken.None);
 
         Assert.Equal(TicketDetailResultStatus.Success, result.Status);
-        Assert.Equal("CASE-154", result.Ticket?.CaseNumber);
         Assert.Null(result.Ticket?.Solution);
     }
 

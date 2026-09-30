@@ -24,6 +24,8 @@ public sealed record ArandaTicket
 
     public string? CommentaryNoHtml { get; init; }
 
+    public bool? IsSolved { get; init; }
+
     public required bool IsClosed { get; init; }
 
     /// <summary>

@@ -270,7 +270,10 @@ public sealed class TicketService(
                 ticket.GroupName,
                 DateTimeOffset.FromUnixTimeMilliseconds(
                     ticket.ModifiedDate.Value),
-                null));
+                ticket.IsSolved == true &&
+                    !string.IsNullOrWhiteSpace(ticket.CommentaryNoHtml)
+                    ? ticket.CommentaryNoHtml.Trim()
+                    : null));
     }
 
     public async Task<TicketOperationResult<RespuestaAnularTicket>>

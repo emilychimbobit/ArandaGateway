@@ -586,6 +586,7 @@
           "groupName": { "type": "string", "nullable": true },
           "descriptionNoHtml": { "type": "string", "nullable": true },
           "commentaryNoHtml": { "type": "string", "nullable": true },
+          "isSolved": { "type": "boolean", "nullable": true },
           "isClosed": { "type": "boolean" },
           "itemVersion": {
             "type": "integer",
