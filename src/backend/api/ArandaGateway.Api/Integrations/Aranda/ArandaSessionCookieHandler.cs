@@ -13,21 +13,101 @@ public sealed class ArandaSessionCookieHandler(
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
-        if (sessionCookie.Value is { } cookie)
+        var cookie = sessionCookie.Value;
+        if (cookie is not null)
         {
             request.Headers.Remove("Cookie");
             request.Headers.TryAddWithoutValidation("Cookie", cookie);
+
+            // La segunda transmisión debe poder reproducir también los POST
+            // multipart si Aranda rechaza la cookie antes de ejecutarlos.
+            if (request.Content is not null)
+            {
+                await request.Content.LoadIntoBufferAsync(
+                    cancellationToken);
+            }
         }
 
         var response = await base.SendAsync(request, cancellationToken);
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized &&
+            cookie is not null)
+        {
+            sessionCookie.Invalidate(cookie);
+            response.Dispose();
+
+            logger.LogWarning(
+                "Aranda rechazó la cookie de sesión; se reintentará la solicitud sin Cookie y con X-Authorization.");
+
+            using var fallbackRequest = await CloneWithoutCookieAsync(
+                request,
+                cancellationToken);
+            var fallbackResponse = await base.SendAsync(
+                fallbackRequest,
+                cancellationToken);
+            CaptureRenewedCookie(fallbackResponse);
+            return fallbackResponse;
+        }
 
         CaptureRenewedCookie(response);
 
         return response;
     }
 
+    private static async Task<HttpRequestMessage> CloneWithoutCookieAsync(
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var clone = new HttpRequestMessage(request.Method, request.RequestUri)
+        {
+            Version = request.Version,
+            VersionPolicy = request.VersionPolicy
+        };
+
+        if (request.Content is not null)
+        {
+            var content = new ByteArrayContent(
+                await request.Content.ReadAsByteArrayAsync(
+                    cancellationToken));
+            foreach (var header in request.Content.Headers)
+            {
+                content.Headers.TryAddWithoutValidation(
+                    header.Key,
+                    header.Value);
+            }
+
+            clone.Content = content;
+        }
+
+        foreach (var header in request.Headers)
+        {
+            if (!string.Equals(
+                header.Key,
+                "Cookie",
+                StringComparison.OrdinalIgnoreCase))
+            {
+                clone.Headers.TryAddWithoutValidation(
+                    header.Key,
+                    header.Value);
+            }
+        }
+
+        foreach (var option in request.Options)
+        {
+            clone.Options.Set(
+                new HttpRequestOptionsKey<object?>(option.Key),
+                option.Value);
+        }
+
+        return clone;
+    }
+
     private void CaptureRenewedCookie(HttpResponseMessage response)
     {
+        if (!response.IsSuccessStatusCode)
+        {
+            return;
+        }
+
         if (!response.Headers.TryGetValues("Set-Cookie", out var setCookies))
         {
             return;

@@ -50,10 +50,9 @@ public static class ArandaServiceCollectionExtensions
                         options.SubscriptionKey);
                 }
 
-                // Aranda exige una cookie de sesión ademas del token de
-                // X-Authorization; sin ella responde 401 aunque el token sea
-                // valido. La cookie no se fija aqui porque cambia en cada
-                // respuesta: la pone ArandaSessionCookieHandler.
+                // La cookie de sesión es opcional y la gestiona
+                // ArandaSessionCookieHandler. Si Aranda la rechaza, el
+                // handler reintenta sin Cookie manteniendo X-Authorization.
             })
             // El reintento va por fuera de la cookie para que cada intento
             // salga con la sesión vigente.

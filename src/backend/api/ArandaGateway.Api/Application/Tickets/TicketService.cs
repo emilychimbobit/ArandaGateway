@@ -1,4 +1,5 @@
 using System.Net;
+using System.Globalization;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
 using ArandaGateway.Api.Contracts.Tickets;
@@ -526,16 +527,23 @@ public sealed class TicketService(
             ]
         };
 
-    // El consumidor solo conoce el número de caso (idByProject). Aranda
-    // consulta el detalle por su identificador interno, así que el caso se
-    // resuelve dentro de los tickets del propio colaborador: eso traduce el
-    // identificador y confirma la propiedad en un solo paso.
+    // En los casos idByProject como RF-46479, el sufijo es el ID que espera
+    // GET /api/v9/item/{id}. La búsqueda no se usa aquí porque puede excluir
+    // casos cerrados.
     private async Task<ArandaTicket?> ResolveOwnedTicketAsync(
         string caseNumber,
         string username,
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(caseNumber))
+        {
+            return null;
+        }
+
+        var normalizedCaseNumber = caseNumber.Trim();
+        if (!TryGetInternalTicketId(
+            normalizedCaseNumber,
+            out var internalTicketId))
         {
             return null;
         }
@@ -548,36 +556,23 @@ public sealed class TicketService(
             return null;
         }
 
-        var search = await arandaClient.SearchTicketsAsync(
-            BuildCollaboratorTicketsSearch(user.Id),
-            cancellationToken);
-
-        var match = search.Content.FirstOrDefault(ticket =>
-            string.Equals(
-                ticket.IdByProject?.Trim(),
-                caseNumber.Trim(),
-                StringComparison.OrdinalIgnoreCase));
-        if (match is null)
-        {
-            return null;
-        }
-
-        // La propiedad se verifica contra el usuario resuelto en Aranda, no
-        // contra la cabecera.
         return await GetOwnedTicketOrNullAsync(
-            match.Id,
+            internalTicketId,
+            normalizedCaseNumber,
             user.UserName,
             cancellationToken);
     }
 
     private async Task<ArandaTicket?> GetOwnedTicketOrNullAsync(
-        long caseNumber,
+        long internalTicketId,
+        string caseNumber,
         string ownerUserName,
         CancellationToken cancellationToken)
     {
         try
         {
             return await GetOwnedTicketAsync(
+                internalTicketId,
                 caseNumber,
                 ownerUserName,
                 cancellationToken);
@@ -590,20 +585,40 @@ public sealed class TicketService(
     }
 
     private async Task<ArandaTicket?> GetOwnedTicketAsync(
-        long caseNumber,
+        long internalTicketId,
+        string caseNumber,
         string ownerUserName,
         CancellationToken cancellationToken)
     {
         var ticket = await arandaClient.GetTicketAsync(
-            caseNumber,
+            internalTicketId,
             cancellationToken);
 
         return string.Equals(
-            ticket.CustomerUserName,
-            ownerUserName,
-            StringComparison.OrdinalIgnoreCase)
+                ticket.IdByProject?.Trim(),
+                caseNumber,
+                StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(
+                ticket.CustomerUserName,
+                ownerUserName,
+                StringComparison.OrdinalIgnoreCase)
             ? ticket
             : null;
+    }
+
+    private static bool TryGetInternalTicketId(
+        string caseNumber,
+        out long internalTicketId)
+    {
+        internalTicketId = 0;
+        var separatorIndex = caseNumber.LastIndexOf('-');
+        return separatorIndex > 0 &&
+            long.TryParse(
+                caseNumber.AsSpan(separatorIndex + 1),
+                NumberStyles.None,
+                CultureInfo.InvariantCulture,
+                out internalTicketId) &&
+            internalTicketId > 0;
     }
 
     private bool TryGetTypeConfiguration(
