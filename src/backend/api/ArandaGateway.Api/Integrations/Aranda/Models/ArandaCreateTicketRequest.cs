@@ -45,6 +45,9 @@ public sealed record ArandaCreateTicketRequest
 
     public required long GroupId { get; init; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public long? ResponsibleId { get; init; }
+
     public int TempItemId { get; init; } = -2;
 
     public required string Subject { get; init; }

@@ -583,6 +583,68 @@ public sealed class TicketServiceTests
             client.LastUpdateRequest?.Commentary);
     }
 
+    /// <summary>
+    /// Los fines de semana Aranda asigna a alguien fuera de Mesa de Ayuda y el
+    /// ticket queda sin poder anularse; el gateway elige uno de la lista.
+    /// </summary>
+    [Theory]
+    [InlineData("2026-10-03T14:43:00Z")] // sábado 09:43 en Lima
+    [InlineData("2026-10-04T20:00:00Z")] // domingo 15:00 en Lima
+    [InlineData("2026-10-05T04:30:00Z")] // domingo 23:30 en Lima, lunes en UTC
+    public async Task CreateTicketAsync_OnWeekend_AssignsOneOfTheConfiguredResponsibles(
+        string utcNow)
+    {
+        var client = CreateClientReadyToCreate();
+        var service = CreateService(
+            client,
+            options: CreateOptions(weekendResponsibleIds: [15063, 14735]),
+            timeProvider: new FixedTimeProvider(DateTimeOffset.Parse(utcNow)));
+
+        await service.CreateTicketAsync(
+            new(TicketKind.ServiceRequest, "Subject", "Description"),
+            CancellationToken.None);
+
+        Assert.Contains(
+            client.LastCreateRequest?.ResponsibleId,
+            new long?[] { 15063, 14735 });
+    }
+
+    [Theory]
+    [InlineData("2026-10-02T15:00:00Z")] // viernes 10:00 en Lima
+    [InlineData("2026-10-03T04:30:00Z")] // viernes 23:30 en Lima, sábado en UTC
+    [InlineData("2026-10-05T05:30:00Z")] // lunes 00:30 en Lima
+    public async Task CreateTicketAsync_OnWeekday_DoesNotSendResponsible(
+        string utcNow)
+    {
+        var client = CreateClientReadyToCreate();
+        var service = CreateService(
+            client,
+            options: CreateOptions(weekendResponsibleIds: [15063, 14735]),
+            timeProvider: new FixedTimeProvider(DateTimeOffset.Parse(utcNow)));
+
+        await service.CreateTicketAsync(
+            new(TicketKind.ServiceRequest, "Subject", "Description"),
+            CancellationToken.None);
+
+        Assert.Null(client.LastCreateRequest?.ResponsibleId);
+    }
+
+    [Fact]
+    public async Task CreateTicketAsync_OnWeekendWithoutConfiguredResponsibles_DoesNotSendResponsible()
+    {
+        var client = CreateClientReadyToCreate();
+        var service = CreateService(
+            client,
+            timeProvider: new FixedTimeProvider(
+                DateTimeOffset.Parse("2026-10-03T14:43:00Z")));
+
+        await service.CreateTicketAsync(
+            new(TicketKind.ServiceRequest, "Subject", "Description"),
+            CancellationToken.None);
+
+        Assert.Null(client.LastCreateRequest?.ResponsibleId);
+    }
+
     [Fact]
     public async Task CreateTicketAsync_FailsWhenCatalogsAreMissing()
     {
@@ -967,22 +1029,31 @@ public sealed class TicketServiceTests
     private static TicketService CreateService(
         StubArandaClient client,
         string? username = "collaborator",
-        ArandaOptions? options = null) =>
+        ArandaOptions? options = null,
+        TimeProvider? timeProvider = null) =>
         new(
             new StubCurrentCollaborator(username),
             client,
-            Options.Create(options ?? CreateOptions()));
+            Options.Create(options ?? CreateOptions()),
+            timeProvider: timeProvider);
+
+    private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+    }
 
     private static ArandaOptions CreateOptions(
         string? subjectPrefix = null,
         int maxDescriptionLength = 20_000,
         ArandaClassificationOptions? classification = null,
-        long maxAttachmentBytes = 3_145_728) =>
+        long maxAttachmentBytes = 3_145_728,
+        IReadOnlyList<long>? weekendResponsibleIds = null) =>
         new()
         {
             SubjectPrefix = subjectPrefix,
             MaxDescriptionLength = maxDescriptionLength,
             MaxAttachmentBytes = maxAttachmentBytes,
+            WeekendResponsibleIds = weekendResponsibleIds ?? [],
             Classification = classification ?? new(),
             BaseUrl = new("https://aranda.example/"),
             ApiKey = "Bearer test",
