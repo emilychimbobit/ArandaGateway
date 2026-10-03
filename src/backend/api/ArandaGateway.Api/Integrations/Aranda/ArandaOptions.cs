@@ -75,6 +75,16 @@ public sealed class ArandaOptions
     public long? GroupId { get; init; }
 
     /// <summary>
+    /// Responsables entre los que se elige uno al crear un ticket en sábado o
+    /// domingo (hora de Lima). Esos días la regla de Aranda asigna a alguien
+    /// fuera de <see cref="GroupId"/> y el ticket no se puede anular
+    /// (<c>InvalidResponsable</c>). Cada uno debe ser un especialista activo de
+    /// ese grupo. Vacío, o de lunes a viernes, no se envía responsable y
+    /// Aranda asigna por su cuenta.
+    /// </summary>
+    public IReadOnlyList<long> WeekendResponsibleIds { get; init; } = [];
+
+    /// <summary>
     /// Nombres de la clasificación fija que acompañan a
     /// <see cref="ServiceId"/>, <see cref="ImpactId"/>,
     /// <see cref="UrgencyId"/>, <see cref="CategoryId"/> y

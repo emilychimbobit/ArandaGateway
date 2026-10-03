@@ -14,8 +14,13 @@ public sealed class TicketService(
     ICurrentCollaborator currentCollaborator,
     IArandaClient arandaClient,
     IOptions<ArandaOptions> options,
-    ILogger<TicketService>? logger = null) : ITicketService
+    ILogger<TicketService>? logger = null,
+    TimeProvider? timeProvider = null) : ITicketService
 {
+    // Perú no tiene horario de verano, así que un desfase fijo evita depender
+    // de la base de zonas horarias del sistema.
+    private static readonly TimeSpan LimaOffset = TimeSpan.FromHours(-5);
+
     /// <summary>
     /// Estados anulables del DEF, con los nombres reales del modelo 17 leídos
     /// de <c>api/v9/model/17/4/states</c>: Registrado (59), Asignado (60) y
@@ -160,6 +165,7 @@ public sealed class TicketService(
                 StateId = configuration.InitialStateId,
                 AuthorId = arandaOptions.AuthorId,
                 GroupId = configuration.GroupId,
+                ResponsibleId = PickWeekendResponsible(),
                 Subject = subject
             },
             cancellationToken);
@@ -168,6 +174,26 @@ public sealed class TicketService(
             new RespuestaCrearTicket(
                 created.IdByProject,
                 "Creado"));
+    }
+
+    private long? PickWeekendResponsible()
+    {
+        var candidates = arandaOptions.WeekendResponsibleIds
+            .Where(id => id > 0)
+            .ToArray();
+        if (candidates.Length == 0)
+        {
+            return null;
+        }
+
+        var now = (timeProvider ?? TimeProvider.System).GetUtcNow();
+        var day = now.ToOffset(LimaOffset).DayOfWeek;
+        if (day is not (DayOfWeek.Saturday or DayOfWeek.Sunday))
+        {
+            return null;
+        }
+
+        return candidates[Random.Shared.Next(candidates.Length)];
     }
 
     public RespuestaParametrosCreacion GetCreationParameters()
